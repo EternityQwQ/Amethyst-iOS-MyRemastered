@@ -1247,7 +1247,17 @@ static bool dlsym_EGL() {
         const char *sfpewBackend = getenv("AMETHYST_SFPEW_BACKEND");
         if (sfpewBackend != NULL && sfpewBackend[0] != '\0') eglRenderer = sfpewBackend;
     }
-    const char *eglLibrary = isSelfEglRenderer(eglRenderer) ? eglRenderer : RENDERER_NAME_MTL_ANGLE;
+    /* Kopper EGL (mesa iOS platform, default OFF): Zink renderer + opt-in
+     * env AMETHYST_KOPPER_EGL=1 loads mesa libEGL instead of ANGLE's.
+     * Used with eglGetPlatformDisplay(EGL_PLATFORM_IOS_MESA, layer).
+     * dlopen failure below falls back gracefully with a log. */
+    const char *kopperEgl = NULL;
+    if (getenv("AMETHYST_KOPPER_EGL") && eglRenderer &&
+        !strcmp(eglRenderer, RENDERER_NAME_VK_ZINK)) {
+        kopperEgl = "@rpath/libEGL.1.dylib";
+        NSLog(@"[EGLBridge] Kopper mode: mesa EGL at %s", kopperEgl);
+    }
+    const char *eglLibrary = kopperEgl ? kopperEgl : (isSelfEglRenderer(eglRenderer) ? eglRenderer : RENDERER_NAME_MTL_ANGLE);
     NSString *eglPath = [NSString stringWithFormat:@"@rpath/%s", eglLibrary ?: ""];
     void* dl_handle = dlopen(eglPath.UTF8String, RTLD_NOW | RTLD_GLOBAL);
     if (!dl_handle) {
@@ -1470,9 +1480,47 @@ static BOOL ame_mgBootstrap(EGLDisplay dpy, EGLConfig config) {
     return YES;
 }
 
+#ifndef EGL_PLATFORM_IOS_MESA
+#define EGL_PLATFORM_IOS_MESA 0x31E0
+#endif
+
+/* Kopper EGL active iff Zink renderer + opt-in env. Mirrors the dlsym_EGL
+ * selection so display init agrees with the loaded libEGL. */
+static bool useKopperEGL(void) {
+    if (!getenv("AMETHYST_KOPPER_EGL"))
+        return false;
+    const char *renderer = getenv("AMETHYST_RENDERER");
+    if (isSFPEWRenderer(renderer)) {
+        const char *sfpewBackend = getenv("AMETHYST_SFPEW_BACKEND");
+        if (sfpewBackend != NULL && sfpewBackend[0] != '\0') renderer = sfpewBackend;
+    }
+    return renderer && !strcmp(renderer, RENDERER_NAME_VK_ZINK);
+}
+
 static bool gl_init() {
     if (!dlsym_EGL()) {
         return false;
+    }
+
+    if (useKopperEGL() && handle.eglGetPlatformDisplay) {
+        CALayer *klayer = SurfaceViewController.surface.layer;
+        if ([klayer isKindOfClass:CAMetalLayer.class]) {
+            EGLDisplay kdpy = handle.eglGetPlatformDisplay(
+                EGL_PLATFORM_IOS_MESA, (__bridge void *)klayer, NULL);
+            if (kdpy != EGL_NO_DISPLAY) {
+                g_EglDisplay = kdpy;
+                NSLog(@"[EGLBridge] Kopper mode: platform display %p from CAMetalLayer %p",
+                      kdpy, (__bridge void *)klayer);
+                if (!handle.eglInitialize(g_EglDisplay, NULL, NULL)) {
+                    NSDebugLog(@"EGLBridge: Error eglInitialize() failed: 0x%x", handle.eglGetError());
+                    return false;
+                }
+                return true;
+            }
+            NSLog(@"[EGLBridge] Kopper GetPlatformDisplay failed, falling back to default display");
+        } else {
+            NSLog(@"[EGLBridge] Kopper mode: surface layer is not CAMetalLayer, falling back");
+        }
     }
 
     g_EglDisplay = handle.eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -1507,6 +1555,10 @@ gl_render_window_t* gl_init_context(gl_render_window_t *share) {
     // eglBindAPI(EGL_OPENGL_API)；其余（gl4es / MobileGlues / LTW）是 OpenGL ES。
     BOOL desktopGL = isDesktopGLRenderer(apiRenderer);
     BOOL mobileGL = isMobileGLRenderer(apiRenderer);
+    /* Kopper EGL serves desktop GL 4.x through Zink regardless of the
+     * renderer's nominal family (libOSMesa is not in the desktop list). */
+    if (useKopperEGL())
+        desktopGL = YES;
 
     const EGLint attribs[] = {
         EGL_RED_SIZE, 8,
