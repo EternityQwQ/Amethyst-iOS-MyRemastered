@@ -299,6 +299,14 @@ static int pojavInitOpenGLInternal(BOOL setLwjglProperty) {
     } else if ([renderer hasPrefix:@"libOSMesa"]) {
         setenv("GALLIUM_DRIVER","zink",1);
         set_osm_bridge_tbl();
+        /* Kopper unilateral handshake (default OFF): when AMETHYST_KOPPER_PRESENT
+         * is set, mesa presents directly to the Metal layer on flush, so skip
+         * the readback present path here. FPS counting and first-frame
+         * notification above are unaffected (they run before br_swap_buffers). */
+        if (getenv("AMETHYST_KOPPER_PRESENT")) {
+            NSLog(@"[egl_bridge] Kopper direct present active, readback present skipped");
+            br_swap_buffers = NULL;
+        }
     } else if ([renderer isEqualToString:@ RENDERER_NAME_VULKAN]) {
         // 关键修复（MoltenVK + OpenGL 黑屏 + 图形 API 切换无效）：
         //
