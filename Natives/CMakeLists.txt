@@ -22,6 +22,7 @@ endif()
 
 include_directories(
   "."
+  "UI/Shell"
   "external/AFNetworking/AFNetworking"
   "external/AFNetworking/UIKit+AFNetworking"
   "external/DBNumberedSlider/Classes"
@@ -356,14 +357,14 @@ add_executable(AngelAuraAmethyst
   # ZeroTierBridge.m
   # SOCKS5Proxy.m
   # PortForwarder.m
-  LauncherMenuViewController.m
-  LauncherNavigationController.m
-  LauncherNewsViewController.m
+  UI/Shell/LauncherMenuViewController.m
+  UI/Shell/LauncherNavigationController.m
+  UI/Shell/LauncherNewsViewController.m
   HomeCustomizeViewController.m
-  LauncherRootViewController.m
-  LauncherCardLayoutViewController.m
-  UIViewController+LauncherShellRouting.m
-  LauncherRightPanelViewController.m
+  UI/Shell/LauncherRootViewController.m
+  UI/Shell/LauncherCardLayoutViewController.m
+  UI/Shell/UIViewController+LauncherShellRouting.m
+  UI/Shell/LauncherRightPanelViewController.m
   VersionManagerViewController.m
   ProfileSettingsViewController.m
   DownloadViewController.m
@@ -373,7 +374,7 @@ add_executable(AngelAuraAmethyst
   LauncherPrefGameDirViewController.m
   LauncherPrefManageJREViewController.m
   LauncherProfileEditorViewController.m
-  LauncherSplitViewController.m
+  UI/Shell/LauncherSplitViewController.m
   MinecraftResourceDownloadTask.m
   MinecraftResourceUtils.m
   PickTextField.m
