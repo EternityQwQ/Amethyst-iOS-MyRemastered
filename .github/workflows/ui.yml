@@ -177,8 +177,9 @@ jobs:
            'UZKArchive.h','UnzipKit.h','config.h','mach_excServer.h','ZeroTierSockets.h'}
           bad = {}
           for f in glob.glob('Natives/**/*.m', recursive=True) + glob.glob('Natives/**/*.h', recursive=True):
-              txt = open(f, encoding='utf-8', errors='ignore').read()
-              for imp in re.findall(r'#import\s+"([^"]+)"', txt):
+              lines = [l for l in open(f, encoding='utf-8', errors='ignore').read().splitlines()
+                       if not l.strip().startswith('//')]
+              for imp in re.findall(r'#import\s+"([^"]+)"', '\n'.join(lines)):
                   base = imp.split('/')[-1]
                   ok = (os.path.exists(os.path.join(os.path.dirname(f), imp))
                         or os.path.exists(os.path.join('Natives', imp))
