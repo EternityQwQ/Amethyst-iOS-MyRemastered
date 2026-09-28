@@ -1,6 +1,7 @@
 #import <Foundation/Foundation.h>
 
 #import "DBNumberedSlider.h"
+#import "UITheme.h"
 #import "HostManagerBridge.h"
 #import "LauncherNavigationController.h"
 #import "LauncherMenuViewController.h"
@@ -119,15 +120,8 @@
 }
 
 - (nullable UIColor *)colorFromHexString:(id)hex {
-    if (![hex isKindOfClass:[NSString class]] || [(NSString *)hex length] == 0) return nil;
-    NSString *clean = [(NSString *)hex stringByReplacingOccurrencesOfString:@"#" withString:@""];
-    unsigned int rgb = 0;
-    NSScanner *scanner = [NSScanner scannerWithString:clean];
-    if (![scanner scanHexInt:&rgb]) return nil;
-    return [UIColor colorWithRed:((rgb >> 16) & 0xFF) / 255.0
-                           green:((rgb >> 8) & 0xFF) / 255.0
-                            blue:(rgb & 0xFF) / 255.0
-                           alpha:1.0];
+    // 收敛到 UITheme（语义逐行一致，见 UITheme.h）；保留方法壳，调用点不动。
+    return UIThemeColorFromHex(hex);
 }
 
 - (NSString *)hexStringFromColor:(UIColor *)color {

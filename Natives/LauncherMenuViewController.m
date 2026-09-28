@@ -1,4 +1,5 @@
 #import "LauncherMenuViewController.h"
+#import "LauncherRouter.h"
 #import "LauncherPreferencesViewController.h"
 #import "LauncherPreferences.h"
 #import "VersionManagerViewController.h"
@@ -261,15 +262,15 @@
     switch (index) {
         case 0: // 主页
             // 通知父控制器切换到新闻页
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowHomePage" object:nil];
+            RouterPost(kRouterShowHomePage, nil, nil);
             break;
 
         case 1: // 下载
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowDownloadPage" object:nil];
+            RouterPost(kRouterShowDownloadPage, nil, nil);
             break;
 
         case 2: // AI 助手
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowAIPage" object:nil];
+            RouterPost(kRouterShowAIPage, nil, nil);
             break;
 
         case 3: // 版本管理（合并了原"当前版本设置"功能）
@@ -284,23 +285,23 @@
 
 - (void)showVersionManager {
     // 发送通知让 LauncherRootViewController 在中间内容区显示
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowVersionManager" object:nil];
+    RouterPost(kRouterShowVersionManager, nil, nil);
 }
 
 - (void)showMultiplayer {
     // 发送通知让 LauncherRootViewController 显示陶瓦联机界面
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowMultiplayer" object:nil];
+    RouterPost(kRouterShowMultiplayer, nil, nil);
 }
 
 - (void)showZeroTier {
     // 发送通知让 LauncherRootViewController 显示 ZeroTier 联机界面
     // ZeroTier 与陶瓦联机为并列的两套联机方案，独立菜单入口避免用户先进入陶瓦再切换。
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowZeroTier" object:nil];
+    RouterPost(kRouterShowZeroTier, nil, nil);
 }
 
 - (void)showSettings {
     // 发送通知让 LauncherRootViewController 在中间内容区显示
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowSettings" object:nil];
+    RouterPost(kRouterShowSettings, nil, nil);
 }
 
 #pragma mark - Data Updates

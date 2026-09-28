@@ -6,8 +6,9 @@
 // LauncherMenuViewController.m:241、LauncherCardLayoutViewController.m:293、
 // LauncherPreferencesViewController.m:121 四处重复实现；强调色十六进制
 // （#8B5CF6 等）散落在 HomeCustomizeViewController.m:11-15。
-// 本文件提供唯一语义实现（与现四处逐行一致：去 # → scanHexInt → RGB/255），
-// 后续 Phase1 把四处调用点逐个替换为 UIThemeColorFromHex。
+// 本函数与 Card/Preferences 版逐行一致（任意长度取低 24 位 RRGGBB，alpha 恒 1.0），
+// Card/Preferences 已收敛到此。Root（8 位 AARRGGBB）与 Menu（8 位 RRGGBBAA）的
+// alpha 语义互斥，暂不收敛（见 TODO-theme-alpha，需要 UI 侧确认 8 位格式后再定）。
 //
 // 约定：header-only（static inline），不新增 .m，不改 CMakeLists，
 // 与上游原生构建修复零冲突；暗黑模式沿用 systemColor，不在此硬编码。
