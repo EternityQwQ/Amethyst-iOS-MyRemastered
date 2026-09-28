@@ -362,6 +362,7 @@ add_executable(AngelAuraAmethyst
   HomeCustomizeViewController.m
   LauncherRootViewController.m
   LauncherCardLayoutViewController.m
+  UIViewController+LauncherShellRouting.m
   LauncherRightPanelViewController.m
   VersionManagerViewController.m
   ProfileSettingsViewController.m

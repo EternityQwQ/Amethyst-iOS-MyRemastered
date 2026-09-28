@@ -397,66 +397,66 @@ static CGFloat LauncherCardLayoutRightPanelWidth(UITraitCollection *trait) {
     
     // 注册通知监听
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showHomePage)
+                                             selector:@selector(ame_showHomePage)
                                                  name:kRouterShowHomePage
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showDownloadPage)
+                                             selector:@selector(ame_showDownloadPage)
                                                  name:kRouterShowDownloadPage
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showVersionManager)
+                                             selector:@selector(ame_showVersionManager)
                                                  name:kRouterShowVersionManager
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showProfileEditor:)
+                                             selector:@selector(ame_showProfileEditor:)
                                                  name:kRouterShowProfileEditor
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showSettings)
+                                             selector:@selector(ame_showSettings)
                                                  name:kRouterShowSettings
                                                object:nil];
     // ZeroTier/Terracotta 联机暂时移除（排查启动崩溃）
     // [[NSNotificationCenter defaultCenter] addObserver:self
-    //                                          selector:@selector(showMultiplayer)
+    //                                          selector:@selector(ame_showMultiplayer)
     //                                              name:kRouterShowMultiplayer
     //                                            object:nil];
     // [[NSNotificationCenter defaultCenter] addObserver:self
-    //                                          selector:@selector(showZeroTier)
+    //                                          selector:@selector(ame_showZeroTier)
     //                                              name:kRouterShowZeroTier
     //                                            object:nil];
     // 账户管理：右侧面板点击头像会发 ShowAccountManager 通知。
     // 原实现遗漏此监听，导致卡片布局下点头像无反应、无法登录账号。
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showAccountManager)
+                                             selector:@selector(ame_showAccountManager)
                                                  name:kRouterShowAccountManager
                                                object:nil];
     // AI 助手：卡片布局下点侧边栏 AI Agent 按钮发 ShowAIPage 通知。
     // 关键修复（点 AI 中间栏不切换）：卡片布局此前未监听 ShowAIPage，
     // 导致菜单发出通知后无人响应、中间栏不变。与 LauncherRootViewController 对齐。
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showAIPage)
+                                             selector:@selector(ame_showAIPage)
                                                  name:kRouterShowAIPage
                                                object:nil];
     // 首页快捷瓷砖触发：切到对应内容区子页面（不再 FormSheet 弹窗）
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showModsManager)
+                                             selector:@selector(ame_showModsManager)
                                                  name:kRouterShowModsManager
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showShadersManager)
+                                             selector:@selector(ame_showShadersManager)
                                                  name:kRouterShowShadersManager
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showModpackImport)
+                                             selector:@selector(ame_showModpackImport)
                                                  name:kRouterShowModpackImport
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(showGameDirectory)
+                                             selector:@selector(ame_showGameDirectory)
                                                  name:kRouterShowGameDirectory
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(backgroundChanged)
+                                             selector:@selector(ame_backgroundChanged)
                                                  name:kRouterBackgroundChanged
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -465,209 +465,37 @@ static CGFloat LauncherCardLayoutRightPanelWidth(UITraitCollection *trait) {
                                                object:nil];
     // 监听版本切换，重新加载编辑器
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(reloadProfileEditorIfNeeded)
+                                             selector:@selector(ame_reloadProfileEditorIfNeeded)
                                                  name:kRouterSelectedProfileChanged
                                                object:nil];
     // 监听游戏目录切换，重新加载版本列表
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(reloadVersionLists)
+                                             selector:@selector(ame_reloadVersionLists)
                                                  name:kRouterReloadProfileList
                                                object:nil];
     // 监听查找版本请求
     [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(findVersionInRemoteList:)
+                                             selector:@selector(ame_findVersionInRemoteList:)
                                                  name:kRouterFindVersionInRemoteList
                                                object:nil];
 }
 
-- (void)findVersionInRemoteList:(NSNotification *)notification {
-    NSDictionary *userInfo = notification.userInfo;
-    NSString *versionId = userInfo[@"versionId"];
-    void (^callback)(NSDictionary *) = userInfo[@"callback"];
-    
-    if (!versionId || !callback) {
-        return;
-    }
-    
-    // 在远程版本列表中查找
-    NSDictionary *versionObject = nil;
-    for (NSDictionary *version in remoteVersionList) {
-        if ([version[@"id"] isEqualToString:versionId]) {
-            versionObject = version;
-            break;
-        }
-    }
-    
-    // 如果在远程列表中找不到，检查是否是本地版本
-    if (!versionObject) {
-        for (NSDictionary *version in localVersionList) {
-            if ([version[@"id"] isEqualToString:versionId]) {
-                versionObject = version;
-                break;
-            }
-        }
-    }
-    
-    callback(versionObject);
-}
+// P5a: findVersionInRemoteList:/reloadVersionLists 已移入共享路由
+// （ame_findVersionInRemoteList:/ame_reloadVersionLists）。
 
-- (void)reloadVersionLists {
-    // 重新加载版本列表
-    [self initializeVersionLists];
-    // 通知右侧面板刷新版本显示
-    RouterPost(kRouterSelectedProfileChanged, nil, nil);
-}
-
-- (void)showHomePage {
-    LauncherNewsViewController *newsVC = [[LauncherNewsViewController alloc] init];
-    [self setContentViewController:newsVC animated:YES];
-}
-
-- (void)showDownloadPage {
-    // 在中间内容区显示下载页面，包在 NavigationController 中以便子流程（版本选择/安装器）push 显示
-    DownloadViewController *downloadVC = [[DownloadViewController alloc] init];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:downloadVC];
-    nav.navigationBar.prefersLargeTitles = NO;
-    [self setContentViewController:nav animated:YES];
-}
-
-- (void)showVersionManager {
-    // 在中间内容区显示版本管理页面，包在 NavigationController 中以便子流程（模组/光影/游戏目录管理）push
-    VersionManagerViewController *vc = [[VersionManagerViewController alloc] init];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.navigationBar.prefersLargeTitles = NO;
-    [self setContentViewController:nav animated:YES];
-}
-
-- (void)showProfileEditor:(NSNotification *)notification {
-    // 在中间内容区显示版本编辑器页面（使用 ProfileSettingsViewController）
-    NSString *profileName = notification.object;
-
-    ProfileSettingsViewController *vc = [[ProfileSettingsViewController alloc] init];
-    vc.profileName = profileName;
-
-    // 包装在导航控制器中
-    UINavigationController *navVC = [[UINavigationController alloc] initWithRootViewController:vc];
-    navVC.navigationBar.prefersLargeTitles = NO;
-
-    self.profileEditorVC = vc;
-    self.isShowingProfileEditor = YES;
-    [self setContentViewController:navVC animated:YES];
-}
-
-- (void)reloadProfileEditorIfNeeded {
-    // 如果当前正在显示编辑器页面，重新加载
-    if (self.isShowingProfileEditor) {
-        NSString *currentProfile = PLProfiles.current.selectedProfileName;
-        if (currentProfile) {
-            RouterPost(kRouterShowProfileEditor, currentProfile, nil);
-        }
-    }
-}
-
-- (void)showSettings {
-    // 在中间内容区显示设置页面
-    LauncherPreferencesViewController *vc = [[LauncherPreferencesViewController alloc] init];
-    // 包装在导航控制器中，使其子页面能够正常导航
-    UINavigationController *navVC = [[UINavigationController alloc] initWithRootViewController:vc];
-    navVC.navigationBar.prefersLargeTitles = YES;
-    [self setContentViewController:navVC animated:YES];
-}
-
-- (void)showAIPage {
-    // 在中间内容区显示 AI 助手页面（与 LauncherRootViewController showAIPage 一致）。
-    // 关键修复（点 AI 中间栏不切换）：卡片布局此前缺失此方法，
-    // 现在 ShowAIPage 通知到达后能正常切到 AI 页面。
-    // 从 AiSessionStore 取最近会话，没有则让 AIViewController 新建一个。
-    AiSession *session = [[AiSessionStore sharedStore] lastActiveSession];
-    AIViewController *vc = [[AIViewController alloc] initWithSession:session];
-    UINavigationController *navVC = [[UINavigationController alloc] initWithRootViewController:vc];
-    navVC.navigationBar.prefersLargeTitles = NO;
-    [self setContentViewController:navVC animated:YES];
-}
+// P5a: 19 个共享路由方法已移入 UIViewController+LauncherShellRouting（ame_ 前缀），
+// 本体仅保留容器相关、代理方法与 dealloc。
 
 // ZeroTier/Terracotta 联机暂时移除（排查启动崩溃）
 // - (void)showMultiplayer { ... TerracottaViewController ... }
 // - (void)showZeroTier { ... MultiplayerViewController ... TerracottaManager ... }
-- (void)showMultiplayer {
-    [self showMultiplayerDisabledAlert];
-}
-- (void)showZeroTier {
-    [self showMultiplayerDisabledAlert];
-}
-- (void)showMultiplayerDisabledAlert {
-    UIAlertController *alert = [UIAlertController
-        alertControllerWithTitle:localize(@"i18n_str_320", nil)
-                          message:localize(@"i18n_str_321", nil)
-                   preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:localize(@"i18n_str_322", nil) style:UIAlertActionStyleDefault handler:nil]];
-    [self presentViewController:alert animated:YES completion:nil];
-}
+// P5a: showMultiplayer/showZeroTier/showMultiplayerDisabledAlert 已移入共享路由。
 
-- (void)showAccountManager {
-    // 卡片布局下账户管理在中间内容区显示（与 VS 布局 LauncherRootViewController 行为一致）。
-    // 右侧面板点击头像发 ShowAccountManager 通知触发此方法。
-    // 使用 insetGrouped 样式让账户列表呈现圆角分组卡片（原默认 plain 为直角行）。
-    AccountListViewController *vc = [[AccountListViewController alloc] initWithStyle:UITableViewStyleInsetGrouped];
-    vc.whenItemSelected = ^void() {
-        RouterPost(kRouterUpdateAccountInfo, nil, nil);
-    };
-    vc.whenDelete = ^void(NSString *name) {
-        RouterPost(kRouterUpdateAccountInfo, nil, nil);
-    };
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
-    nav.navigationBar.prefersLargeTitles = NO;
-    [self setContentViewController:nav animated:YES];
-}
+// P5a: showAccountManager 已移入共享路由。
 
-#pragma mark - 首页快捷入口 (替换原 FormSheet 弹窗)
+// P5a: showModsManager/showShadersManager/showGameDirectory/showModpackImport 已移入共享路由。
 
-- (void)showModsManager {
-    // 切到版本管理页并直接 push 模组管理
-    // 修复"前一界面未消失"竞态：先构建完整 nav 栈再 setContentViewController，
-    // 这样 setContentViewController 内的 for 循环能一次性透明化栈中所有 VC，
-    // 避免 animated:YES 的 crossDissolve 进行中再 animated:NO push 导致新 VC 未透明化。
-    VersionManagerViewController *vm = [[VersionManagerViewController alloc] init];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vm];
-    nav.navigationBar.prefersLargeTitles = NO;
-    ModsManagerViewController *m = [[ModsManagerViewController alloc] init];
-    [nav pushViewController:m animated:NO];
-    [self setContentViewController:nav animated:YES];
-}
-
-- (void)showShadersManager {
-    VersionManagerViewController *vm = [[VersionManagerViewController alloc] init];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vm];
-    nav.navigationBar.prefersLargeTitles = NO;
-    ShadersManagerViewController *s = [[ShadersManagerViewController alloc] init];
-    s.initialMode = ShadersManagerModeLocal;
-    [nav pushViewController:s animated:NO];
-    [self setContentViewController:nav animated:YES];
-}
-
-- (void)showGameDirectory {
-    VersionManagerViewController *vm = [[VersionManagerViewController alloc] init];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vm];
-    nav.navigationBar.prefersLargeTitles = NO;
-    LauncherPrefGameDirViewController *g = [[LauncherPrefGameDirViewController alloc] init];
-    [nav pushViewController:g animated:NO];
-    [self setContentViewController:nav animated:YES];
-}
-
-- (void)showModpackImport {
-    // 切到下载页并直接 push 整合包导入界面
-    DownloadViewController *d = [[DownloadViewController alloc] init];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:d];
-    nav.navigationBar.prefersLargeTitles = NO;
-    ModpackImportViewController *m = [[ModpackImportViewController alloc] init];
-    [nav pushViewController:m animated:NO];
-    [self setContentViewController:nav animated:YES];
-}
-
-- (void)backgroundChanged {
-    // 重新应用背景
-    [[BackgroundManager sharedManager] applyBackgroundToView:self.view];
-}
+// P5a: backgroundChanged 已移入共享路由（ame_backgroundChanged）。
 
 - (void)uiEffectChanged:(NSNotification *)notification {
     // 重新应用毛玻璃/半透明效果到卡片容器视图

@@ -1,9 +1,10 @@
 #import <UIKit/UIKit.h>
+#import "UIViewController+LauncherShellRouting.h"
 
 // 卡片式（便当盒）启动器根视图控制器
 // 左侧：功能菜单卡片 | 中间：内容卡片 | 右侧：账户和启动卡片
 
-@interface LauncherCardLayoutViewController : UIViewController <UINavigationControllerDelegate>
+@interface LauncherCardLayoutViewController : UIViewController <UINavigationControllerDelegate, LauncherShellContainer>
 
 // 三个主要区域
 @property(nonatomic, strong, readonly) UIViewController *sidebarViewController;      // 左侧边栏
