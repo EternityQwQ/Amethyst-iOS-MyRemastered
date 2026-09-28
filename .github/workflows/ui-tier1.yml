@@ -1,0 +1,127 @@
+name: UI Tier1 (structural analysis)
+
+on:
+  pull_request:
+    branches-ignore:
+      - 'l10n_main'
+    types: [opened, reopened, synchronize]
+  push:
+    branches-ignore:
+      - 'l10n_main'
+  workflow_dispatch:
+
+jobs:
+  tier1:
+    name: UI Tier1 structural checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout (no submodules needed)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Imports resolve (same-dir, Natives root, recursive, submodule/generated allowlist)
+        run: |
+          set -e
+          python3 - <<'PYEOF'
+          import re, glob, os, sys
+          bybase = {}
+          for p in glob.glob('Natives/**/*', recursive=True):
+              if os.path.isfile(p):
+                  bybase.setdefault(os.path.basename(p), []).append(p)
+          # submodule / 生成头文件（源码树本就没有，需 allowlist）
+          ALLOW = {'AFNetworking.h','ALTServerConnection.h','DBNumberedSlider.h','HostManagerBridge.h',
+           'NSFileManager+NRFileManager.h','UIImageView+AFNetworking.h','UIKit+AFNetworking.h',
+           'UZKArchive.h','UnzipKit.h','config.h','mach_excServer.h','ZeroTierSockets.h'}
+          bad = {}
+          for f in glob.glob('Natives/**/*.m', recursive=True) + glob.glob('Natives/**/*.h', recursive=True):
+              txt = open(f, encoding='utf-8', errors='ignore').read()
+              for imp in re.findall(r'#import\s+"([^"]+)"', txt):
+                  base = imp.split('/')[-1]
+                  ok = (os.path.exists(os.path.join(os.path.dirname(f), imp))
+                        or os.path.exists(os.path.join('Natives', imp))
+                        or base in bybase or base in ALLOW)
+                  if not ok:
+                      bad.setdefault(imp, []).append(f)
+          if bad:
+              print('[tier1] unresolvable imports:', bad); sys.exit(1)
+          print('[tier1] imports resolve')
+          PYEOF
+
+      - name: RouterPost constants valid (used ⊆ defined)
+        run: |
+          set -e
+          python3 - <<'PYEOF'
+          import re, glob, sys
+          defs = set(re.findall(r'static NSString \* const (kRouter\w+)',
+                                open('Natives/LauncherRouter.h', encoding='utf-8').read()))
+          used = set()
+          for f in glob.glob('Natives/**/*.m', recursive=True):
+              used |= set(re.findall(r'RouterPost\((kRouter\w+)',
+                                     open(f, encoding='utf-8', errors='ignore').read()))
+          undefined = used - defs
+          if undefined:
+              print('[tier1] undefined Router constants:', undefined); sys.exit(1)
+          print(f'[tier1] Router constants valid ({len(used)} used, {len(defs)} defined)')
+          PYEOF
+
+      - name: No duplicated hex bodies (Card/Prefs delegate to UITheme)
+        run: |
+          set -e
+          python3 - <<'PYEOF'
+          import re, sys
+          bad = []
+          for f in ['Natives/LauncherCardLayoutViewController.m',
+                    'Natives/LauncherPreferencesViewController.m']:
+              t = open(f, encoding='utf-8').read()
+              m = re.search(r'-\s*\(.*?\)colorFromHexString[^{]*\{([^}]*)\}', t)
+              body = m.group(1) if m else ''
+              if 'UIThemeColorFromHex' not in body or 'scanHexInt' in body:
+                  bad.append(f)
+          if bad:
+              print('[tier1] duplicated hex bodies:', bad); sys.exit(1)
+          print('[tier1] hex bodies converge')
+          PYEOF
+
+      - name: CMake full-tree invariant (top-level .m listed, 2 documented exceptions)
+        run: |
+          set -e
+          python3 - <<'PYEOF'
+          import glob, os, sys
+          cmake = open('Natives/CMakeLists.txt', encoding='utf-8').read()
+          exc = {'SSZipArchive.m', 'shaderc_sandbox.m'}  # 独立 target / 构建期条件编译
+          missing = [os.path.basename(f) for f in glob.glob('Natives/*.m')
+                     if os.path.basename(f) not in exc and os.path.basename(f) not in cmake]
+          if missing:
+              print('[tier1] .m not in CMakeLists:', missing); sys.exit(1)
+          print('[tier1] CMake invariant holds')
+          PYEOF
+
+      - name: ObjC block balance on touched scope (vendored/external excluded)
+        run: |
+          set -e
+          python3 - <<'PYEOF'
+          import re, glob, sys
+          # 历史存量失衡（第三方头/个别老文件），仅冻结不再新增：
+          # 门禁 = 除例外表外 @interface/@implementation/@protocol 与 @end 配平
+          EXC = {'Natives/CurseForgeAPIKeyViewController.m',
+                 'Natives/installer/CurseForgeAPIKeyViewController.m',
+                 'Natives/SurfaceViewController.m', 'Natives/PLDownloadClient.m',
+                 'Natives/SSZipArchive.h'}
+          bad = []
+          for f in glob.glob('Natives/*.m') + glob.glob('Natives/*.h') \
+                   + glob.glob('Natives/AI/*.m') + glob.glob('Natives/AI/*.h') \
+                   + glob.glob('Natives/installer/*.m') + glob.glob('Natives/installer/modpack/*.m'):
+              if f in EXC:
+                  continue
+              t = open(f, encoding='utf-8', errors='ignore').read()
+              opens = len(re.findall(r'@(interface|implementation|protocol)\b', t))
+              ends = len(re.findall(r'@end\b', t))
+              if opens != ends:
+                  bad.append((f, opens, ends))
+          if bad:
+              print('[tier1] unbalanced ObjC blocks:', bad); sys.exit(1)
+          print('[tier1] ObjC blocks balanced')
+          PYEOF
