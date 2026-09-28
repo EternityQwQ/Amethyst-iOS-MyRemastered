@@ -125,3 +125,45 @@ jobs:
               print('[tier1] unbalanced ObjC blocks:', bad); sys.exit(1)
           print('[tier1] ObjC blocks balanced')
           PYEOF
+
+      - name: Pub/sub pairing (every posted value observed, observers known)
+        run: |
+          set -e
+          python3 - <<'PYEOF'
+          import re, glob, sys
+          vals = dict(re.findall(r'static NSString \* const (kRouter\w+)\s*=\s*@"([^"]+)"',
+                                 open('Natives/LauncherRouter.h', encoding='utf-8').read()))
+          # 观察者：selector 式 + block 式
+          obs = set()
+          for f in glob.glob('Natives/**/*.m', recursive=True):
+              txt = open(f, encoding='utf-8', errors='ignore').read()
+              obs |= set(re.findall(r'addObserver:[^;]*?name:@"([^"]+)"', txt))
+              obs |= set(re.findall(r'removeObserver:[^;]*?name:@"([^"]+)"', txt))
+              obs |= set(re.findall(r'addObserverForName:@"([^"]+)"', txt))
+          unknown = obs - set(vals.values())
+          if unknown:
+              print('[tier1-deep] observer names outside Router:', sorted(unknown)); sys.exit(1)
+          pub = set()
+          for f in glob.glob('Natives/**/*.m', recursive=True):
+              pub |= set(re.findall(r'RouterPost\((kRouter\w+)',
+                                    open(f, encoding='utf-8', errors='ignore').read()))
+          pubvals = {vals[k] for k in pub if k in vals}
+          # 存量死端（冻结备忘，非本次引入）：
+          # - LauncherAppearanceApplied：Root 投稿，树内零订阅
+          # - PLLogOutputLineNotification：唯一订阅者在 LanPortDetector.m，
+          #   该文件在 Natives/CMakeLists.txt 被注释排除编译（ZeroTier 移除）
+          DEAD = {'LauncherAppearanceApplied', 'PLLogOutputLineNotification'}
+          orphan = [v for v in sorted(pubvals) if v not in obs and v not in DEAD]
+          if orphan:
+              print('[tier1-deep] posted but never observed:', orphan); sys.exit(1)
+          print(f'[tier1-deep] pub/sub paired ({len(pubvals)} posted, {len(obs)} observed, {len(DEAD)} known-dead)')
+          PYEOF
+
+      - name: Workflow self-lint (no secrets/vars in if:, repo lesson)
+        run: |
+          set -e
+          # development.yml 头部注释的教训：if: 里求值 secrets/vars 会编译失败。
+          # 本门禁保证 ui-* 工作流自身不重蹈（upstream 的 development.yml:142 存量问题不管）。
+          hits=$(grep -n "if:.*secrets\.\|if:.*vars\." .github/workflows/ui-tier*.yml 2>/dev/null || true)
+          if [ -n "$hits" ]; then echo "$hits"; echo '[tier1-deep] secrets/vars in if:'; exit 1; fi
+          echo '[tier1-deep] workflows self-lint passed'
