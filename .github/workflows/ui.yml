@@ -311,9 +311,9 @@ jobs:
         run: |
           set -e -x
           SDK=$(xcrun --sdk iphoneos --show-sdk-path)
-          FLAGS="-isysroot $SDK -miphoneos-version-min=14.0 -fobjc-arc -Wunguarded-availability -Werror=unguarded-availability"
-          clang -fsyntax-only -x objective-c-header $FLAGS Natives/LauncherRouter.h
-          clang -fsyntax-only -x objective-c-header $FLAGS Natives/UITheme.h
+          FLAGS=(-isysroot "$SDK" -miphoneos-version-min=14.0 -fobjc-arc -Wunguarded-availability -Werror=unguarded-availability)
+          clang -fsyntax-only -x objective-c-header "${FLAGS[@]}" Natives/LauncherRouter.h
+          clang -fsyntax-only -x objective-c-header "${FLAGS[@]}" Natives/UITheme.h
           cat > /tmp/ui_smoke.m <<'EOF'
           #import "LauncherRouter.h"
           #import "UITheme.h"
@@ -326,7 +326,7 @@ jobs:
               (void)d; (void)h;
           }
           EOF
-          clang -fsyntax-only -x objective-c $FLAGS -INatives /tmp/ui_smoke.m
+          clang -fsyntax-only -x objective-c "${FLAGS[@]}" -INatives /tmp/ui_smoke.m
           echo '[tier-apple] headers + API smoke compile passed'
 
   tier-compile:
@@ -370,8 +370,10 @@ jobs:
           SDK=$(xcrun --sdk iphoneos --show-sdk-path)
           # -I 覆盖 Natives 下所有含头文件目录（含 installer/modpack 等深层目录，
           # 使构建外死文件也能解析；缺的只会是 submodule/生成头，按上两步已备齐）。
-          INCLUDES=$(find Natives -type d | sed 's/^/-I/')
-          FLAGS="-isysroot $SDK -miphoneos-version-min=14.0 -fobjc-arc -target arm64-apple-ios -Wunguarded-availability"
+          # 注意：部分第三方目录名含空格，必须用 bash 数组逐个 -I（字符串拼接会被拆散）。
+          INCLUDES=()
+          while IFS= read -r d; do INCLUDES+=("-I$d"); done < <(find Natives -type d)
+          FLAGS=(-isysroot "$SDK" -miphoneos-version-min=14.0 -fobjc-arc -target arm64-apple-ios -Wunguarded-availability)
           git fetch origin main --depth 1 --filter=blob:none 2>/dev/null || true
           base="origin/main"
           git rev-parse --verify "$base" >/dev/null 2>&1 || base="${{ github.event.before }}"
@@ -385,8 +387,7 @@ jobs:
               echo "[tier-compile] skip (upstream-owned broken file): $f"; continue
             fi
             COUNT=$((COUNT+1))
-            # shellcheck disable=SC2086
-            if ! clang -fsyntax-only -x objective-c $FLAGS $INCLUDES "$f" 2>"/tmp/tc_$(echo $f | tr '/' '_').log"; then
+            if ! clang -fsyntax-only -x objective-c "${FLAGS[@]}" "${INCLUDES[@]}" "$f" 2>"/tmp/tc_$(echo $f | tr '/' '_').log"; then
               echo "[tier-compile] FAILED: $f"
               grep -m3 "error:" "/tmp/tc_$(echo $f | tr '/' '_').log" || true
               FAILED=1
