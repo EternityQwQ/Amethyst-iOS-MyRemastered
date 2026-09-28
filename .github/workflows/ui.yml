@@ -328,3 +328,70 @@ jobs:
           EOF
           clang -fsyntax-only -x objective-c $FLAGS -INatives /tmp/ui_smoke.m
           echo '[tier-apple] headers + API smoke compile passed'
+
+  tier-compile:
+    name: UI Tier compile (branch files syntax check)
+    # 深度层：用真实 AppleClang 逐文件语法编译本分支改动的全部 Natives .m，
+    # 与上游 main_hook 坏点无关（它不在本分支 diff 内）；upsteam 修好后 Tier2 接管全量。
+    runs-on: macos-14
+    permissions:
+      contents: read
+    steps:
+      - name: Select Xcode 15.4
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-path
+
+      - name: Checkout (no submodules yet)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Checkout submodules (headers needed, LFS fixtures skipped)
+        env:
+          GIT_LFS_SKIP_SMUDGE: "1"
+        run: git submodule update --init --recursive
+
+      - name: Generate config.h (gitignored artifact, same as real build)
+        run: |
+          set -e
+          # Natives/CMakeLists.txt:12 configure_file(config.h.in -> config.h)；
+          # 值仅影响 #if 分支取值，语法门以 release 形态为准（与 CI 默认一致）。
+          sed -e 's/#cmakedefine \([^ ]*\) 1/#define \1 1/' \
+              -e 's/#cmakedefine \([^ ]*\) "@[^"]*"/#define \1 ""/' \
+              -e 's/@[A-Za-z_0-9]*@/0/g' \
+              Natives/config.h.in > Natives/config.h
+          grep -c "#define" Natives/config.h
+
+      - name: Syntax-only compile every branch-touched Natives .m
+        run: |
+          set -e
+          SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+          INCLUDES="-INatives"
+          # 与 Natives/CMakeLists.txt include_directories 同源（相对 Natives/）
+          for d in . external/AFNetworking/AFNetworking external/AFNetworking/UIKit+AFNetworking \
+                   external/DBNumberedSlider/Classes external/NRFileManager external/UnzipKit \
+                   external/fishhook external/lzma external/mesa external/AltKit external/Apple \
+                   external/ballpa1n external/ballpa1n/wrapped external/mach; do
+            INCLUDES="$INCLUDES -INatives/$d"
+          done
+          FLAGS="-isysroot $SDK -miphoneos-version-min=14.0 -fobjc-arc -target arm64-apple-ios -Wunguarded-availability"
+          git fetch origin main --depth 1 --filter=blob:none 2>/dev/null || true
+          base="origin/main"
+          git rev-parse --verify "$base" >/dev/null 2>&1 || base="${{ github.event.before }}"
+          git rev-parse --verify "$base" >/dev/null 2>&1 || { echo "[tier-compile] no base ref"; exit 1; }
+          FAILED=0
+          COUNT=0
+          for f in $(git diff --name-only "$base" HEAD -- 'Natives/*.m' 'Natives/**/*.m' 2>/dev/null || true); do
+            [ -f "$f" ] || continue
+            COUNT=$((COUNT+1))
+            echo "[tier-compile] $f"
+            # shellcheck disable=SC2086
+            if ! clang -fsyntax-only -x objective-c $FLAGS $INCLUDES "$f"; then
+              echo "[tier-compile] FAILED: $f"; FAILED=1
+            fi
+          done
+          echo "[tier-compile] compiled $COUNT files"
+          [ "$COUNT" -gt 0 ] || { echo "[tier-compile] empty file list"; exit 1; }
+          exit $FAILED
