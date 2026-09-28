@@ -41,6 +41,7 @@
 //
 
 #import "MultiplayerViewController.h"
+#import "LauncherRouter.h"
 #import "MultiplayerManager.h"
 #import "BackgroundManager.h"
 #import "LauncherPreferences.h"
@@ -156,7 +157,7 @@ NS_INLINE NSString *MPLocalized(NSString *key, NSString *fallback) {
     // 监听背景效果变化通知，背景切换时重新应用透明效果并刷新表格
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(backgroundEffectChanged)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     // 游戏内模式：监听 LAN 端口检测通知（房主流程依赖）

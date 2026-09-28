@@ -8,6 +8,7 @@
 //
 
 #import "ResourceListViewController.h"
+#import "LauncherRouter.h"
 #import "BackgroundManager.h"
 #import "LauncherPreferences.h"
 #import "DownloadTaskItem.h"
@@ -77,7 +78,7 @@ static CGFloat const kBatchToolbarBottomGap = 12.0; // 工具栏与安全区底�
     // 监听背景效果变化通知，背景切换时重新应用透明效果
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reapplyBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     // 监听资源下载完成通知：文件落盘后自动重载列表。

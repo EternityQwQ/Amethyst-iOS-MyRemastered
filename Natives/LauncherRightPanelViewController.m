@@ -90,12 +90,12 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     // 监听账户信息更新通知
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(updateAccountInfo)
-                                                 name:@"UpdateAccountInfo"
+                                                 name:kRouterUpdateAccountInfo
                                                object:nil];
     // 监听版本/配置切换通知
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(updateVersionInfo)
-                                                 name:@"SelectedProfileChanged"
+                                                 name:kRouterSelectedProfileChanged
                                                object:nil];
 
     // 监听统一下载任务聚合状态变化，以更新启动按钮
@@ -120,20 +120,20 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     // 监听下载中心被用户手动关闭的通知，设置标记避免反复自动弹出
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleDownloadCenterDismissed)
-                                                 name:@"DownloadCenterDidDismiss"
+                                                 name:kRouterDownloadCenterDidDismiss
                                                object:nil];
 
     // 监听启动器外观变化（自定义字体/卡片颜色），刷新文字颜色
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applyCustomAppearance)
-                                                 name:@"LauncherAppearanceChanged"
+                                                 name:kRouterLauncherAppearanceChanged
                                                object:nil];
 
     // 监听背景 UI 效果变化通知：当用户在背景设置中切换毛玻璃/半透明或调整透明度时，
     // 重新调用 makeViewControllerTransparent 以应用最新的视觉效果，保证背景始终正确透出。
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reapplyBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 }
 

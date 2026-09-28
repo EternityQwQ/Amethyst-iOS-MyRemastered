@@ -1,4 +1,5 @@
 #import "utils.h"
+#import "LauncherRouter.h"
 //
 //  ModLoaderInstallViewController.m
 //  Amethyst
@@ -372,7 +373,7 @@
     }
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(refreshBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"chevron.left"]
@@ -809,7 +810,7 @@
     [[BackgroundManager sharedManager] makeViewControllerTransparent:self];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(refreshBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"chevron.left"]

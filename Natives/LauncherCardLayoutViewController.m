@@ -114,7 +114,7 @@ static CGFloat LauncherCardLayoutRightPanelWidth(UITraitCollection *trait) {
     // 监听启动器外观变化（自定义字体/卡片颜色），刷新卡片背景
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applyCustomAppearance)
-                                                 name:@"LauncherAppearanceChanged"
+                                                 name:kRouterLauncherAppearanceChanged
                                                object:nil];
 }
 
@@ -398,85 +398,85 @@ static CGFloat LauncherCardLayoutRightPanelWidth(UITraitCollection *trait) {
     // 注册通知监听
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showHomePage)
-                                                 name:@"ShowHomePage"
+                                                 name:kRouterShowHomePage
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showDownloadPage)
-                                                 name:@"ShowDownloadPage"
+                                                 name:kRouterShowDownloadPage
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showVersionManager)
-                                                 name:@"ShowVersionManager"
+                                                 name:kRouterShowVersionManager
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showProfileEditor:)
-                                                 name:@"ShowProfileEditor"
+                                                 name:kRouterShowProfileEditor
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showSettings)
-                                                 name:@"ShowSettings"
+                                                 name:kRouterShowSettings
                                                object:nil];
     // ZeroTier/Terracotta 联机暂时移除（排查启动崩溃）
     // [[NSNotificationCenter defaultCenter] addObserver:self
     //                                          selector:@selector(showMultiplayer)
-    //                                              name:@"ShowMultiplayer"
+    //                                              name:kRouterShowMultiplayer
     //                                            object:nil];
     // [[NSNotificationCenter defaultCenter] addObserver:self
     //                                          selector:@selector(showZeroTier)
-    //                                              name:@"ShowZeroTier"
+    //                                              name:kRouterShowZeroTier
     //                                            object:nil];
     // 账户管理：右侧面板点击头像会发 ShowAccountManager 通知。
     // 原实现遗漏此监听，导致卡片布局下点头像无反应、无法登录账号。
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showAccountManager)
-                                                 name:@"ShowAccountManager"
+                                                 name:kRouterShowAccountManager
                                                object:nil];
     // AI 助手：卡片布局下点侧边栏 AI Agent 按钮发 ShowAIPage 通知。
     // 关键修复（点 AI 中间栏不切换）：卡片布局此前未监听 ShowAIPage，
     // 导致菜单发出通知后无人响应、中间栏不变。与 LauncherRootViewController 对齐。
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showAIPage)
-                                                 name:@"ShowAIPage"
+                                                 name:kRouterShowAIPage
                                                object:nil];
     // 首页快捷瓷砖触发：切到对应内容区子页面（不再 FormSheet 弹窗）
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showModsManager)
-                                                 name:@"ShowModsManager"
+                                                 name:kRouterShowModsManager
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showShadersManager)
-                                                 name:@"ShowShadersManager"
+                                                 name:kRouterShowShadersManager
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showModpackImport)
-                                                 name:@"ShowModpackImport"
+                                                 name:kRouterShowModpackImport
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(showGameDirectory)
-                                                 name:@"ShowGameDirectory"
+                                                 name:kRouterShowGameDirectory
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(backgroundChanged)
-                                                 name:@"BackgroundChanged"
+                                                 name:kRouterBackgroundChanged
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(uiEffectChanged:)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
     // 监听版本切换，重新加载编辑器
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reloadProfileEditorIfNeeded)
-                                                 name:@"SelectedProfileChanged"
+                                                 name:kRouterSelectedProfileChanged
                                                object:nil];
     // 监听游戏目录切换，重新加载版本列表
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reloadVersionLists)
-                                                 name:@"ReloadProfileList"
+                                                 name:kRouterReloadProfileList
                                                object:nil];
     // 监听查找版本请求
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(findVersionInRemoteList:)
-                                                 name:@"FindVersionInRemoteList"
+                                                 name:kRouterFindVersionInRemoteList
                                                object:nil];
 }
 

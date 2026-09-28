@@ -1,4 +1,5 @@
 #import <AVFoundation/AVFoundation.h>
+#import "LauncherRouter.h"
 #import <GameController/GameController.h>
 #import <objc/runtime.h>
 #import "authenticator/BaseAuthenticator.h"
@@ -1096,7 +1097,7 @@ static UIView *findSDL_uikitview(UIView *root);
 
     // 关键修复（UI 累积异常）：将块观察者存为属性，dealloc 中移除。
     // 之前返回值未存储，导致每次新建 SurfaceViewController 都泄漏一个观察者 + 强引用 self。
-    self.mousePointerUpdatedCallback = [[NSNotificationCenter defaultCenter] addObserverForName:@"MousePointerUpdated" object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification * _Nonnull note) {
+    self.mousePointerUpdatedCallback = [[NSNotificationCenter defaultCenter] addObserverForName:kRouterMousePointerUpdated object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification * _Nonnull note) {
         [self reloadMousePointerImage];
     }];
 
@@ -1686,7 +1687,7 @@ static BOOL ame87_mcVersionRequiresTextureBuffer(NSString *mcVersionId) {
     // 注册首帧渲染通知（egl_bridge.m 中 pojavSwapBuffers 首次调用时发送）
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(onFirstFrameRendered)
-                                                 name:@"PojavFirstFrameRendered"
+                                                 name:kRouterPojavFirstFrameRendered
                                                object:nil];
 
     // 兜底：关闭 SDL GL bridge 后，GL 上下文由 SDL 自行管理，egl_bridge 的
@@ -1763,7 +1764,7 @@ static BOOL ame87_mcVersionRequiresTextureBuffer(NSString *mcVersionId) {
             self.launchGradientLayer = nil;
             [self.launchCancelButton removeFromSuperview];
             self.launchCancelButton = nil;
-            [[NSNotificationCenter defaultCenter] removeObserver:self name:@"PojavFirstFrameRendered" object:nil];
+            [[NSNotificationCenter defaultCenter] removeObserver:self name:kRouterPojavFirstFrameRendered object:nil];
             NSLog(@"[SurfaceViewController] Launch overlay dismissed after %.1f seconds", elapsed);
         }];
     });
@@ -1776,7 +1777,7 @@ static BOOL ame87_mcVersionRequiresTextureBuffer(NSString *mcVersionId) {
         self.launchOverlayDismissed = YES;
 
         [self.launchSpinner stopAnimating];
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:@"PojavFirstFrameRendered" object:nil];
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:kRouterPojavFirstFrameRendered object:nil];
 
         [self.launchOverlayView removeFromSuperview];
         self.launchOverlayView = nil;
@@ -2955,7 +2956,7 @@ CALayer *Amethyst_SDL3RenderLayer(void) {
     self.statsDisplayLinkTarget = nil;  // 释放 CADisplayLink target
 
     // 清理启动遮罩层资源
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"PojavFirstFrameRendered" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kRouterPojavFirstFrameRendered object:nil];
     self.launchOverlayView = nil;
     self.launchGradientLayer = nil;
 

@@ -4,6 +4,7 @@
 //
 
 #import "AIViewController.h"
+#import "LauncherRouter.h"
 #import "AIMessageCell.h"
 #import "AIInputBarView.h"
 #import "AiAgent.h"
@@ -74,7 +75,7 @@ static const NSTimeInterval kUIThrottleInterval = 0.2;
     // 收到后即时整表刷新，保证「assistant tool_calls → tool 结果 → 下一轮回复」按序显示。
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleSessionMessagesChanged:)
-                                                 name:@"AiSessionMessagesDidChangeNotification"
+                                                 name:kRouterAiSessionMessagesDidChange
                                                object:nil];
 }
 

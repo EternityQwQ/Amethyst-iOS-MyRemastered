@@ -46,7 +46,7 @@
     // 重新调用 makeViewControllerTransparent 以应用最新的视觉效果，保证背景始终正确透出。
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reapplyBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 }
 

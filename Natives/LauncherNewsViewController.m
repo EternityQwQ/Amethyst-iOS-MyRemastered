@@ -304,7 +304,7 @@ static NSString *festivalGreeting(void) {
         [self setupBaseViews];
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(handleBackgroundUIEffectChanged)
-                                                     name:@"BackgroundUIEffectChanged"
+                                                     name:kRouterBackgroundUIEffectChanged
                                                    object:nil];
     }
     return self;
@@ -783,16 +783,16 @@ static NSString *festivalGreeting(void) {
     // 重新调用 makeViewControllerTransparent 以应用最新的视觉效果，保证背景始终正确透出。
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reapplyBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(updateSkinDisplay)
-                                                 name:@"AccountChanged"
+                                                 name:kRouterAccountChanged
                                                object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(updateSkinDisplay)
-                                                 name:@"UpdateAccountInfo"
+                                                 name:kRouterUpdateAccountInfo
                                                object:nil];
 }
 

@@ -1,4 +1,5 @@
 #import "LauncherSplitViewController.h"
+#import "LauncherRouter.h"
 #import "LauncherMenuViewController.h"
 #import "LauncherNewsViewController.h"
 #import "LauncherNavigationController.h"
@@ -64,19 +65,19 @@ extern NSMutableDictionary *prefDict;
     // Listen for background change notifications
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(backgroundChanged:)
-                                                 name:@"BackgroundChanged"
+                                                 name:kRouterBackgroundChanged
                                                object:nil];
 
     // Listen for UI effect change notifications
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(uiEffectChanged:)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     // Listen for navigation changes to ensure transparency
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(navigationControllerDidShow:)
-                                                 name:@"UINavigationControllerDidShowViewControllerNotification"
+                                                 name:kRouterNavDidShowViewController
                                                object:nil];
 }
 

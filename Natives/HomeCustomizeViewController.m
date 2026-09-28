@@ -1,4 +1,5 @@
 #import "utils.h"
+#import "LauncherRouter.h"
 #import "HomeCustomizeViewController.h"
 #import "LauncherNewsViewController.h"
 #import "BackgroundManager.h"
@@ -230,17 +231,17 @@ static UIColor *hexColor(NSString *hex) {
     // 重新调用 makeViewControllerTransparent 以应用最新的视觉效果，保证背景始终正确透出。
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reapplyBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleBackgroundUIEffectChanged:)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"BackgroundUIEffectChanged" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kRouterBackgroundUIEffectChanged object:nil];
 }
 
 - (void)setupTableView {

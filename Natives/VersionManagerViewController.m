@@ -742,22 +742,22 @@ static NSInteger const kSectionVersions    = 1;
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(profileChanged)
-                                                 name:@"SelectedProfileChanged"
+                                                 name:kRouterSelectedProfileChanged
                                                object:nil];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(profileChanged)
-                                                 name:@"ReloadProfileList"
+                                                 name:kRouterReloadProfileList
                                                object:nil];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleBackgroundUIEffectChanged:)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleAccentColorChanged)
-                                                 name:@"LauncherAppearanceChanged"
+                                                 name:kRouterLauncherAppearanceChanged
                                                object:nil];
 }
 

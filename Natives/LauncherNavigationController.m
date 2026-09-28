@@ -86,7 +86,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     // 监听配置文件列表刷新通知
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reloadProfileList)
-                                                 name:@"ReloadProfileList"
+                                                 name:kRouterReloadProfileList
                                                object:nil];
 
     UIBarButtonItem *versionFlexibleSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
@@ -168,7 +168,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     [self fetchRemoteVersionList];
     [NSNotificationCenter.defaultCenter addObserver:self
         selector:@selector(receiveNotification:)
-        name:@"InstallModpack"
+        name:kRouterInstallModpack
         object:nil];
 
     // ===== 下载中心入口通知监听 =====
@@ -187,7 +187,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     // 监听下载中心被用户手动关闭的通知，设置标记避免反复自动弹出
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleDownloadCenterDismissed)
-                                                 name:@"DownloadCenterDidDismiss"
+                                                 name:kRouterDownloadCenterDidDismiss
                                                object:nil];
 
     if ([BaseAuthenticator.current isKindOfClass:MicrosoftAuthenticator.class]) {

@@ -6,6 +6,7 @@
 //
 
 #import "ThirdPartyLoginViewController.h"
+#import "LauncherRouter.h"
 #import "authenticator/ThirdPartyAuthenticator.h"
 #import "BackgroundManager.h"
 #import "ios_uikit_bridge.h"
@@ -58,7 +59,7 @@
     // 监听背景 UI 效果变化通知，当用户切换背景效果（半透明/毛玻璃）时重新应用透明化
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reapplyBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 }
 

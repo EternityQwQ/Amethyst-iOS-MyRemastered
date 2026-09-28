@@ -1,4 +1,5 @@
 #import "TerracottaViewController.h"
+#import "LauncherRouter.h"
 #import "TerracottaManager.h"
 #import "TerracottaBridge.h"
 #import "LauncherPreferences.h"
@@ -153,7 +154,7 @@
 - (void)registerBackgroundNotifications {
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(backgroundEffectChanged:)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 }
 

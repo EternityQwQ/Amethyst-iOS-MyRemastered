@@ -174,8 +174,10 @@ jobs:
                                 open('Natives/LauncherRouter.h', encoding='utf-8').read()))
           used = set()
           for f in glob.glob('Natives/**/*.m', recursive=True):
-              used |= set(re.findall(r'RouterPost\((kRouter\w+)',
-                                     open(f, encoding='utf-8', errors='ignore').read()))
+              txt = open(f, encoding='utf-8', errors='ignore').read()
+              used |= set(re.findall(r'RouterPost\((kRouter\w+)', txt))
+              used |= set(re.findall(r'(?:addObserver|removeObserver)[^;]*?name:(kRouter\w+)', txt))
+              used |= set(re.findall(r'addObserverForName:(kRouter\w+)', txt))
           undefined = used - defs
           if undefined:
               print('[tier1] undefined Router constants:', undefined); sys.exit(1)
@@ -248,13 +250,18 @@ jobs:
           import re, glob, sys
           vals = dict(re.findall(r'static NSString \* const (kRouter\w+)\s*=\s*@"([^"]+)"',
                                  open('Natives/LauncherRouter.h', encoding='utf-8').read()))
-          # 观察者：selector 式 + block 式
+          # 观察者：selector 式 + block 式，字面量与常量两态
           obs = set()
+          obsv = set()
           for f in glob.glob('Natives/**/*.m', recursive=True):
               txt = open(f, encoding='utf-8', errors='ignore').read()
               obs |= set(re.findall(r'addObserver:[^;]*?name:@"([^"]+)"', txt))
               obs |= set(re.findall(r'removeObserver:[^;]*?name:@"([^"]+)"', txt))
               obs |= set(re.findall(r'addObserverForName:@"([^"]+)"', txt))
+              for k in re.findall(r'addObserver:[^;]*?name:(kRouter\w+)', txt): obsv.add(vals[k])
+              for k in re.findall(r'removeObserver:[^;]*?name:(kRouter\w+)', txt): obsv.add(vals[k])
+              for k in re.findall(r'addObserverForName:(kRouter\w+)', txt): obsv.add(vals[k])
+          obs |= obsv
           unknown = obs - set(vals.values())
           if unknown:
               print('[tier1-deep] observer names outside Router:', sorted(unknown)); sys.exit(1)

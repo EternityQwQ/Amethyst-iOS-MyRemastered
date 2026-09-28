@@ -1,4 +1,5 @@
 #import "AFNetworking.h"
+#import "LauncherRouter.h"
 #import "FabricInstallViewController.h"
 #import "FabricUtils.h"
 #import "LauncherNavigationController.h"
@@ -45,7 +46,7 @@ extern NSMutableArray *localVersionList;
     // 监听背景效果变化通知，实时刷新毛玻璃
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(refreshBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     // Setup appearance

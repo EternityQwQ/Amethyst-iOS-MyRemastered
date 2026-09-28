@@ -4,6 +4,7 @@
 //
 
 #import "MinecraftNewsViewController.h"
+#import "LauncherRouter.h"
 #import "MinecraftNewsService.h"
 #import "MinecraftNewsItem.h"
 #import "BackgroundManager.h"
@@ -214,7 +215,7 @@ static const NSInteger kNewsPageSize = 24;
     // 监听背景效果变化通知
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reapplyBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     [self loadFirstPage];

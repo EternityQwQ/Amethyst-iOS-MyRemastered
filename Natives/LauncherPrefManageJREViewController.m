@@ -1,4 +1,5 @@
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#import "LauncherRouter.h"
 #import "LauncherNavigationController.h"
 #import "LauncherPreferences.h"
 #import "LauncherPrefManageJREViewController.h"
@@ -127,7 +128,7 @@ static NSString *currentImportTaskId;
     // 重新透明化当前 VC 并 reload cell，让每个 cell 重新应用 applyEffectToCell:
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reapplyBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 }
 

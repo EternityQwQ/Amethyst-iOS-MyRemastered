@@ -1,4 +1,5 @@
 #import "utils.h"
+#import "LauncherRouter.h"
 #import "ModVersionViewController.h"
 #import "installer/modpack/ModrinthAPI.h"
 #import "installer/modpack/CurseForgeAPI.h"
@@ -113,7 +114,7 @@ static NSArray<NSDictionary *> *SortOptionItems(void) {
     // 监听背景效果变化通知，背景切换时重新应用透明效果
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reapplyBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 }
 

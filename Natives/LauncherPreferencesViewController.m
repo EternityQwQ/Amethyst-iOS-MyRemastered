@@ -1258,19 +1258,19 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleBackgroundUIEffectChanged:)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     // 监听背景 UI 效果变化通知：当用户在背景设置中切换毛玻璃/半透明或调整透明度时，
     // 重新调用 makeViewControllerTransparent 以应用最新的视觉效果，保证背景始终正确透出。
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reapplyBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(openCurseForgeAPIKeySettings)
-                                                 name:@"OpenCurseForgeAPIKeySettings"
+                                                 name:kRouterOpenCurseForgeAPIKeySettings
                                                object:nil];
 }
 
@@ -1426,8 +1426,8 @@
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"BackgroundUIEffectChanged" object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"OpenCurseForgeAPIKeySettings" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kRouterBackgroundUIEffectChanged object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kRouterOpenCurseForgeAPIKeySettings object:nil];
 }
 
 - (void)viewWillAppear:(BOOL)animated {

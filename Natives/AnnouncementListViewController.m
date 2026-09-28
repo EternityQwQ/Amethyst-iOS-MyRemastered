@@ -1,4 +1,5 @@
 #import "utils.h"
+#import "LauncherRouter.h"
 //
 //  AnnouncementListViewController.m
 //  Amethyst
@@ -146,7 +147,7 @@ static const CGFloat kAnnHighPriorityBarWidth = 4.0;
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reapplyBackgroundEffect)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     [self loadAnnouncements];

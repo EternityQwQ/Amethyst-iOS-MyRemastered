@@ -173,12 +173,12 @@ static NSString * localizeProfileTitle(NSString *title) {
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleBackgroundUIEffectChanged:)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(reloadVersionList)
-                                                 name:@"ReloadProfileList"
+                                                 name:kRouterReloadProfileList
                                                object:nil];
 }
 

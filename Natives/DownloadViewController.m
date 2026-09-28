@@ -635,7 +635,7 @@ typedef NS_ENUM(NSInteger, ModernAssetType) {
         [self.vanillaPreinstallTask.progress cancel];
         self.vanillaPreinstallTask = nil;
     }
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"BackgroundUIEffectChanged" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kRouterBackgroundUIEffectChanged object:nil];
 }
 
 - (void)viewDidLoad {
@@ -700,7 +700,7 @@ typedef NS_ENUM(NSInteger, ModernAssetType) {
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleBackgroundUIEffectChanged:)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 }
 

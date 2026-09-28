@@ -4,6 +4,7 @@
 //
 
 #import "ServerListViewController.h"
+#import "LauncherRouter.h"
 #import "BackgroundManager.h"
 #import "InlineMessageView.h"
 #import "PLPreferences.h"
@@ -77,14 +78,14 @@
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleBackgroundUIEffectChanged:)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 
     [self loadServerList];
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"BackgroundUIEffectChanged" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kRouterBackgroundUIEffectChanged object:nil];
 }
 
 - (void)actionClose {

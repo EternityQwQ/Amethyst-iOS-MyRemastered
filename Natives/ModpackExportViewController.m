@@ -1,4 +1,5 @@
 #import "utils.h"
+#import "LauncherRouter.h"
 //
 //  ModpackExportViewController.m
 //  Amethyst
@@ -82,12 +83,12 @@
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleBackgroundUIEffectChanged:)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"BackgroundUIEffectChanged" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kRouterBackgroundUIEffectChanged object:nil];
 }
 
 - (void)loadProfiles {

@@ -1,4 +1,5 @@
 #import "SceneDelegate.h"
+#import "LauncherRouter.h"
 #import "ios_uikit_bridge.h"
 #import "utils.h"
 #import "LauncherRootViewController.h"
@@ -88,7 +89,7 @@ extern UIWindow *mainWindow;
     // 监听主题切换通知（设置页"外观模式"切换时实时应用，无需重启）
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applyUITheme:)
-                                                 name:@"UIThemeChanged"
+                                                 name:kRouterUIThemeChanged
                                                object:nil];
 }
 
@@ -142,7 +143,7 @@ extern UIWindow *mainWindow;
 }
 
 - (void)sceneDidDisconnect:(UIScene *)scene {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"UIThemeChanged" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kRouterUIThemeChanged object:nil];
 }
 
 - (void)sceneDidBecomeActive:(UIScene *)scene {

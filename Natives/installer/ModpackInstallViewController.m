@@ -1,4 +1,5 @@
 #import "ModpackInstallViewController.h"
+#import "LauncherRouter.h"
 #import "BackgroundManager.h"
 #import "InlineMessageView.h"
 #import "modpack/ModrinthAPI.h"
@@ -58,12 +59,12 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleBackgroundUIEffectChanged:)
-                                                 name:@"BackgroundUIEffectChanged"
+                                                 name:kRouterBackgroundUIEffectChanged
                                                object:nil];
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"BackgroundUIEffectChanged" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kRouterBackgroundUIEffectChanged object:nil];
 }
 
 // 重写 tableView 的 getter 以修改背景（避免重复代码）
