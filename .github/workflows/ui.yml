@@ -478,3 +478,97 @@ jobs:
           echo "[tier-compile] checked $COUNT files"
           [ "$COUNT" -gt 0 ] || { echo "[tier-compile] empty file list"; exit 1; }
           exit $FAILED
+
+  tier-full-compile:
+    name: UI Tier full compile (all target files, high cost)
+    # 高成本高质量：把 add_executable 全部 ~187 个 .m 在真 SDK 下逐个语法编译
+    # （-fsyntax-only + xargs 并行，约数分钟 wall time）。
+    # 价值：任一头文件改动波及的非 diff 文件亦被覆盖（如 Router.h 改坏会炸 60+ 引用者）。
+    # 唯一排除 main_hook.m（上游 task132 坏点，Tier2 同错，哨兵盯着）。
+    runs-on: macos-14
+    permissions:
+      contents: read
+    steps:
+      - name: Select Xcode 15.4
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-path
+
+      - name: Checkout (no submodules yet)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Checkout submodules (headers needed, LFS fixtures skipped)
+        env:
+          GIT_LFS_SKIP_SMUDGE: "1"
+        run: git submodule update --init --recursive
+
+      - name: Generate config.h (gitignored artifact, same as real build)
+        run: |
+          set -e
+          sed -e 's/#cmakedefine \([^ ]*\) 1/#define \1 1/' \
+              -e 's/#cmakedefine \([^ ]*\) "@[^"]*"/#define \1 ""/' \
+              -e 's/@[A-Za-z_0-9]*@/0/g' \
+              Natives/config.h.in > Natives/config.h
+          grep -c "#define" Natives/config.h
+
+      - name: Syntax-only compile every app-target .m except upstream-broken
+        run: |
+          set -e
+          SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+          mkdir -p /tmp/tfc
+          {
+            echo "-isysroot"; printf '"%s"\n' "$SDK"
+            echo "-miphoneos-version-min=14.0"
+            echo "-fobjc-arc"
+            echo "-target"; echo "arm64-apple-ios"
+            echo "-Wunguarded-availability"
+            for d in . UI/Shell external/AFNetworking/AFNetworking external/AFNetworking/UIKit+AFNetworking \
+                     external/DBNumberedSlider/Classes external/NRFileManager external/UnzipKit \
+                     external/fishhook external/lzma external/mesa external/AltKit external/Apple \
+                     external/ballpa1n external/ballpa1n/wrapped external/mach \
+                     installer installer/modpack AI; do
+              printf -- '-I"Natives/%s"\n' "$d"
+            done
+          } > /tmp/tfc/flags.rsp
+          FILES=$(python3 - <<'PYEOF'
+          import re, os
+          txt = open('Natives/CMakeLists.txt', encoding='utf-8', errors='ignore').read()
+          start = txt.find('add_executable(AngelAuraAmethyst')
+          block = txt[start:txt.find('target_link_libraries(AngelAuraAmethyst')]
+          out = []
+          for line in block.splitlines():
+              s = line.strip()
+              if not s or s.startswith('#'):
+                  continue
+              m = re.fullmatch(r'([\w/+.-]+\.m)', s)
+              if m:
+                  p = os.path.join('Natives', m.group(1))
+                  if os.path.isfile(p) and p != 'Natives/main_hook.m':
+                      out.append(p)
+          print('\n'.join(sorted(out)))
+          PYEOF
+          )
+          COUNT=$(echo "$FILES" | grep -c .)
+          echo "[tier-full-compile] $COUNT files"
+          [ "$COUNT" -gt 100 ] || { echo "[tier-full-compile] suspiciously few files"; exit 1; }
+          cat > /tmp/tfc/one.sh <<'EOF'
+          #!/bin/bash
+          f="$1"; out="/tmp/tfc_logs/$(echo "$f" | tr '/' '_').log"
+          mkdir -p /tmp/tfc_logs
+          clang -fsyntax-only -x objective-c @/tmp/tfc/flags.rsp "$f" >"$out" 2>&1 || echo "FAILED: $f"
+          EOF
+          chmod +x /tmp/tfc/one.sh
+          JOBS=$(sysctl -n hw.ncpu)
+          FAILS=$(echo "$FILES" | xargs -P "$JOBS" /tmp/tfc/one.sh)
+          if [ -n "$FAILS" ]; then
+            echo "$FAILS"
+            echo "$FAILS" | head -n 3 | while read -r line; do
+              ff=$(echo "$line" | sed 's/FAILED: //')
+              echo "--- $ff"; grep -m3 "error:" "/tmp/tfc_logs/$(echo "$ff" | tr '/' '_').log" || true
+            done
+            echo "[tier-full-compile] FAILED files above"; exit 1
+          fi
+          echo "[tier-full-compile] all $COUNT files parsed"
