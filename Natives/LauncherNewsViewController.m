@@ -1,4 +1,5 @@
 #import "LauncherNewsViewController.h"
+#import "LauncherRouter.h"
 #import "HomeCustomizeViewController.h"
 #import "authenticator/BaseAuthenticator.h"
 #import "LauncherPreferences.h"
@@ -1148,13 +1149,13 @@ static NSString *festivalGreeting(void) {
 - (void)handleShortcutAction:(NSString *)action {
     if ([action isEqualToString:kShortcutActionMods]) {
         // 切到中间内容区版本管理页并直接展开模组管理（参照 FCL 安卓，不再 FormSheet 弹窗）
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowModsManager" object:nil];
+        RouterPost(kRouterShowModsManager, nil, nil);
 
     } else if ([action isEqualToString:kShortcutActionShaders]) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowShadersManager" object:nil];
+        RouterPost(kRouterShowShadersManager, nil, nil);
 
     } else if ([action isEqualToString:kShortcutActionModpack]) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowModpackImport" object:nil];
+        RouterPost(kRouterShowModpackImport, nil, nil);
 
     } else if ([action isEqualToString:kShortcutActionBackground]) {
         BackgroundSettingsViewController *vc = [[BackgroundSettingsViewController alloc] init];
@@ -1163,7 +1164,7 @@ static NSString *festivalGreeting(void) {
         [self presentViewController:nav animated:YES completion:nil];
 
     } else if ([action isEqualToString:kShortcutActionVersions]) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowVersionManager" object:nil];
+        RouterPost(kRouterShowVersionManager, nil, nil);
     }
 }
 

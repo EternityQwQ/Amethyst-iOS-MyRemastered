@@ -1,4 +1,5 @@
 #import "LauncherRightPanelViewController.h"
+#import "LauncherRouter.h"
 #import "authenticator/BaseAuthenticator.h"
 #import "AccountListViewController.h"
 #import "SurfaceViewController.h"
@@ -451,7 +452,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     // 避免登录后意外自动启动游戏。
     self.pendingLaunchAfterLogin = NO;
     // FCL 风格：账户管理在中间内容区显示，发送通知让 LauncherRootViewController 切换内容
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowAccountManager" object:nil];
+    RouterPost(kRouterShowAccountManager, nil, nil);
 }
 
 #pragma mark - 下载中心（参照 FCL/ZL2/HMCL 下载进度弹窗）
@@ -790,7 +791,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     
     [alert addAction:[UIAlertAction actionWithTitle:localize(@"i18n_str_426", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
         // 跳转到版本管理页面
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowVersionManager" object:nil];
+        RouterPost(kRouterShowVersionManager, nil, nil);
     }]];
     
     [alert addAction:[UIAlertAction actionWithTitle:localize(@"resman.common.cancel", nil) style:UIAlertActionStyleCancel handler:nil]];
@@ -810,7 +811,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 
 - (void)showVersionManager {
     // 兼容旧调用方：跳转到版本管理页面
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowVersionManager" object:nil];
+    RouterPost(kRouterShowVersionManager, nil, nil);
 }
 
 - (void)executeJar {
@@ -961,7 +962,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
         // 体验不友好。改为设置 pendingLaunchAfterLogin 标记后发送 ShowAccountManager 通知，
         // 账号添加成功后 UpdateAccountInfo 通知回到此处时自动触发 launchGame 继续启动。
         self.pendingLaunchAfterLogin = YES;
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowAccountManager" object:nil];
+        RouterPost(kRouterShowAccountManager, nil, nil);
         return;
     }
 
@@ -1012,7 +1013,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
         }
     };
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"FindVersionInRemoteList" object:nil userInfo:userInfo];
+    RouterPost(kRouterFindVersionInRemoteList, nil, userInfo);
 }
 
 - (void)startDownloadWithVersion:(NSDictionary *)versionObject profileName:(NSString *)profileName {
@@ -1192,7 +1193,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
             self.task = nil;
             [self setInteractionEnabled:YES];
             // 通知刷新版本列表
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
+            RouterPost(kRouterReloadProfileList, nil, nil);
         }
     });
 }

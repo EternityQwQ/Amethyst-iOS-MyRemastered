@@ -1,4 +1,5 @@
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#import "LauncherRouter.h"
 #import "authenticator/BaseAuthenticator.h"
 #import "AFNetworking.h"
 #import "ALTServerConnection.h"
@@ -751,7 +752,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
     // 发送通知更新账户信息
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"UpdateAccountInfo" object:nil];
+    RouterPost(kRouterUpdateAccountInfo, nil, nil);
 }
 
 @end

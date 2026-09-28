@@ -65,3 +65,51 @@ jobs:
         run: |
           set -e
           python3 -m py_compile Natives/patch_sfpew_ios.py Natives/patch_mobilegl_ios.py 2>/dev/null || echo '[tier0] patch scripts optional check skipped'
+
+      - name: Shell senders use Router (no direct Show* posts in shell)
+        run: |
+          set -e
+          # Phase1/2 约定：外壳 5 文件只许 RouterPost；直接字面量即回退
+          hits=$(grep -rn 'postNotificationName:@"Show' \
+            Natives/LauncherMenuViewController.m \
+            Natives/LauncherRightPanelViewController.m \
+            Natives/LauncherNewsViewController.m \
+            Natives/LauncherCardLayoutViewController.m \
+            Natives/LauncherNavigationController.m 2>/dev/null || true)
+          if [ -n "$hits" ]; then echo "$hits"; echo '[tier0] shell must use RouterPost'; exit 1; fi
+          echo '[tier0] shell Router gate passed'
+
+      - name: New headers acyclic (Router/UITheme not in import cycles)
+        run: |
+          set -e
+          python3 - <<'PYEOF'
+          import re, glob, sys
+          graph = {}
+          for h in glob.glob('Natives/*.h'):
+              txt = open(h, encoding='utf-8', errors='ignore').read()
+              graph[h] = set(re.findall(r'#import\s+"([^"]+)"', txt))
+          # 规范化：只保留仍指向 Natives/*.h 的边
+          names = {p.split('/')[-1]: p for p in graph}
+          adj = {p: {names[b] for b in imps if b in names} for p, imps in graph.items()}
+          guarded = ['Natives/LauncherRouter.h', 'Natives/UITheme.h']
+          # DFH 找环
+          WHITE, GRAY, BLACK = 0, 1, 2
+          color = dict.fromkeys(adj, WHITE)
+          stack = []
+          cycles = []
+          def dfs(u):
+              color[u] = GRAY; stack.append(u)
+              for v in adj.get(u, ()):
+                  if color[v] == GRAY:
+                      cycles.append(stack[stack.index(v):] + [v])
+                  elif color[v] == WHITE:
+                      dfs(v)
+              stack.pop(); color[u] = BLACK
+          for u in adj:
+              if color[u] == WHITE:
+                  dfs(u)
+          bad = [c for c in cycles if any(g in c for g in guarded)]
+          if bad:
+              print('[tier0] import cycle involving guarded headers:', bad); sys.exit(1)
+          print(f'[tier0] acyclic guard passed ({len(cycles)} pre-existing cycles elsewhere, untouched)')
+          PYEOF

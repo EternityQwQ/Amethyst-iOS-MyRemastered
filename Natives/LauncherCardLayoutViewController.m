@@ -1,4 +1,5 @@
 #import "LauncherCardLayoutViewController.h"
+#import "LauncherRouter.h"
 #import "UITheme.h"
 #import "LauncherMenuViewController.h"
 #import "LauncherNewsViewController.h"
@@ -559,7 +560,7 @@ static CGFloat LauncherCardLayoutRightPanelWidth(UITraitCollection *trait) {
     if (self.isShowingProfileEditor) {
         NSString *currentProfile = PLProfiles.current.selectedProfileName;
         if (currentProfile) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowProfileEditor" object:currentProfile];
+            RouterPost(kRouterShowProfileEditor, currentProfile, nil);
         }
     }
 }
@@ -609,10 +610,10 @@ static CGFloat LauncherCardLayoutRightPanelWidth(UITraitCollection *trait) {
     // 使用 insetGrouped 样式让账户列表呈现圆角分组卡片（原默认 plain 为直角行）。
     AccountListViewController *vc = [[AccountListViewController alloc] initWithStyle:UITableViewStyleInsetGrouped];
     vc.whenItemSelected = ^void() {
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"UpdateAccountInfo" object:nil];
+        RouterPost(kRouterUpdateAccountInfo, nil, nil);
     };
     vc.whenDelete = ^void(NSString *name) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"UpdateAccountInfo" object:nil];
+        RouterPost(kRouterUpdateAccountInfo, nil, nil);
     };
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.navigationBar.prefersLargeTitles = NO;
