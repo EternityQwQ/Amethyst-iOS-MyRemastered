@@ -23,6 +23,12 @@ endif()
 include_directories(
   "."
   "UI/Shell"
+  "UI/Settings"
+  "UI/Resources"
+  "UI/Download"
+  "UI/Account"
+  "UI/Game"
+  "UI/Common"
   "external/AFNetworking/AFNetworking"
   "external/AFNetworking/UIKit+AFNetworking"
   "external/DBNumberedSlider/Classes"
@@ -330,26 +336,26 @@ add_executable(AngelAuraAmethyst
   input/GyroInput.m
   input/KeyboardInput.m
 
-  AccountListViewController.m
-  AccountLoginViewController.m
-  ThirdPartyLoginViewController.m
-  GameMenuOverlayView.m
-  InlineMessageView.m
+  UI/Account/AccountListViewController.m
+  UI/Account/AccountLoginViewController.m
+  UI/Account/ThirdPartyLoginViewController.m
+  UI/Common/GameMenuOverlayView.m
+  UI/Common/InlineMessageView.m
   DownloadTaskItem.m
   DownloadTaskManager.m
   PLTaskStage.m
-  PLTaskProgressViewController.m
-  DownloadTasksViewController.m
-  DownloadHistoryViewController.m
+  UI/Download/PLTaskProgressViewController.m
+  UI/Download/DownloadTasksViewController.m
+  UI/Download/DownloadHistoryViewController.m
   DownloadHistoryStore.m
   PLDownloadClient.m
   PLMirrorCenter.m
   AppDelegate.m
-  CustomControlsViewController.m
-  CustomControlsViewController+UndoManager.m
-  FileListViewController.m
-  GameSurfaceView.m
-  JavaGUIViewController.m
+  UI/Game/CustomControlsViewController.m
+  UI/Game/CustomControlsViewController+UndoManager.m
+  UI/Common/FileListViewController.m
+  UI/Game/GameSurfaceView.m
+  UI/Game/JavaGUIViewController.m
   # ZeroTier 联机暂时移除（排查启动崩溃）
   # MultiplayerManager.m
   # MultiplayerViewController.m
@@ -360,37 +366,37 @@ add_executable(AngelAuraAmethyst
   UI/Shell/LauncherMenuViewController.m
   UI/Shell/LauncherNavigationController.m
   UI/Shell/LauncherNewsViewController.m
-  HomeCustomizeViewController.m
+  UI/Settings/HomeCustomizeViewController.m
   UI/Shell/LauncherRootViewController.m
   UI/Shell/LauncherCardLayoutViewController.m
   UI/Shell/UIViewController+LauncherShellRouting.m
   UI/Shell/LauncherRightPanelViewController.m
-  VersionManagerViewController.m
-  ProfileSettingsViewController.m
-  DownloadViewController.m
+  UI/Resources/VersionManagerViewController.m
+  UI/Resources/ProfileSettingsViewController.m
+  UI/Download/DownloadViewController.m
   LauncherPreferences.m
-  LauncherPreferencesViewController.m
-  LauncherPrefContCfgViewController.m
-  LauncherPrefGameDirViewController.m
-  LauncherPrefManageJREViewController.m
-  LauncherProfileEditorViewController.m
+  UI/Settings/LauncherPreferencesViewController.m
+  UI/Settings/LauncherPrefContCfgViewController.m
+  UI/Settings/LauncherPrefGameDirViewController.m
+  UI/Settings/LauncherPrefManageJREViewController.m
+  UI/Settings/LauncherProfileEditorViewController.m
   UI/Shell/LauncherSplitViewController.m
   MinecraftResourceDownloadTask.m
   MinecraftResourceUtils.m
-  PickTextField.m
-  PLLogOutputView.m
-  PLCrashView.m
-  PLPickerView.m
+  UI/Common/PickTextField.m
+  UI/Common/PLLogOutputView.m
+  UI/Common/PLCrashView.m
+  UI/Common/PLPickerView.m
   PLPreferences.m
-  PLPrefTableViewController.m
+  UI/Settings/PLPrefTableViewController.m
   PLProfiles.m
   SceneDelegate.m
   SceneExternalDelegate.m
-  SurfaceViewController.m
-  SurfaceViewController+ExternalDisplay.m
-  SurfaceViewController+LogView.m
-  SurfaceViewController+Navigation.m
-  TrackedTextField.m
+  UI/Game/SurfaceViewController.m
+  UI/Game/SurfaceViewController+ExternalDisplay.m
+  UI/Game/SurfaceViewController+LogView.m
+  UI/Game/SurfaceViewController+Navigation.m
+  UI/Common/TrackedTextField.m
   egl_bridge.m
   ZinkConfig.m
   input_bridge_v3.m
@@ -398,25 +404,25 @@ add_executable(AngelAuraAmethyst
   utils.m
 
   # Version card cell (used by DownloadViewController)
-  VersionCardCell.m
+  UI/Resources/VersionCardCell.m
 
   # Resource management shared base classes (card cell + list VC, shared by the 6 resource managers)
-  ResourceCardTableViewCell.m
-  ResourceListViewController.m
+  UI/Resources/ResourceCardTableViewCell.m
+  UI/Resources/ResourceListViewController.m
 
   # Mod-related sources (ensure implementations are compiled and linked)
-  MarqueeLabel.m
+  UI/Common/MarqueeLabel.m
   ModItem.m
   ModService.m
-  ModTableViewCell.m
-  ModTableViewController.m
-  ModsManagerViewController.m
+  UI/Resources/ModTableViewCell.m
+  UI/Resources/ModTableViewController.m
+  UI/Resources/ModsManagerViewController.m
   ModVersion.m
-  ModVersionViewController.m
-  ModVersionTableViewCell.m
+  UI/Resources/ModVersionViewController.m
+  UI/Resources/ModVersionTableViewCell.m
 
   # 通用资源详情页头部视图（Mod/Shader/Asset 版本页共用，展示项目封面图/信息/标签/描述）
-  AssetDetailHeaderView.m
+  UI/Resources/AssetDetailHeaderView.m
 
   # 模组加载器图标统一工具类（优先 bundle PNG，回退 SF Symbol，统一全项目加载器品牌色与图标）
   ModLoaderIconHelper.m
@@ -428,15 +434,15 @@ add_executable(AngelAuraAmethyst
   ShaderItem.m
   ShaderService.m
   ShaderVersion.m
-  ShaderVersionTableViewCell.m
-  ShaderVersionViewController.m
-  ShadersManagerViewController.m
+  UI/Resources/ShaderVersionTableViewCell.m
+  UI/Resources/ShaderVersionViewController.m
+  UI/Resources/ShadersManagerViewController.m
 
   # Modpack import/export sources
-  ModpackImportViewController.m
+  UI/Resources/ModpackImportViewController.m
   ModpackImportService.m
   ModpackExportService.m
-  ModpackExportViewController.m
+  UI/Resources/ModpackExportViewController.m
 
   # CurseForge MurmurHash2 fingerprint tool
   MurmurHash2.m
@@ -450,16 +456,16 @@ add_executable(AngelAuraAmethyst
   ResourcePackService.m
   DataPackService.m
   WorldService.m
-  AssetVersionViewController.m
-  ResourcePacksManagerViewController.m
-  DataPacksManagerViewController.m
-  WorldsManagerViewController.m
+  UI/Resources/AssetVersionViewController.m
+  UI/Resources/ResourcePacksManagerViewController.m
+  UI/Resources/DataPacksManagerViewController.m
+  UI/Resources/WorldsManagerViewController.m
 
   # Server projects (Modrinth Server Projects + CurseForge server packs)
   ServerItem.m
   ServerService.m
-  ServerListViewController.m
-  ServerDetailViewController.m
+  UI/Game/ServerListViewController.m
+  UI/Game/ServerDetailViewController.m
 
   # CurseForge API Key settings page
   installer/CurseForgeAPIKeyViewController.m
@@ -469,20 +475,20 @@ add_executable(AngelAuraAmethyst
 
   # Custom icon management sources
   CustomIconManager.m
-  ImageCropperViewController.m
+  UI/Common/ImageCropperViewController.m
 
   # Account custom avatar management sources
   AvatarManager.m
 
   # Background wallpaper sources
   BackgroundManager.m
-  BackgroundSettingsViewController.m
+  UI/Settings/BackgroundSettingsViewController.m
 
   # FCL-style interface is implemented in LauncherMenuViewController.m
 
   # TouchController bridge and preferences
   TouchControllerBridge.m
-  TouchControllerPreferencesViewController.m
+  UI/Settings/TouchControllerPreferencesViewController.m
 
   # Terracotta multiplayer（陶瓦联机）—— 暂时移除（排查启动崩溃）
   # TerracottaBridge.m
@@ -496,14 +502,14 @@ add_executable(AngelAuraAmethyst
   # Minecraft 新闻（参考 PCL-CE，调用 minecraft-services.net 官方新闻 API）
   MinecraftNewsItem.m
   MinecraftNewsService.m
-  MinecraftNewsViewController.m
+  UI/Common/MinecraftNewsViewController.m
 
   # 公告系统（从官网拉取 JSON，支持 Markdown 渲染）
   AnnouncementItem.m
   AnnouncementService.m
   MarkdownParser.m
-  AnnouncementListViewController.m
-  AnnouncementDetailViewController.m
+  UI/Common/AnnouncementListViewController.m
+  UI/Common/AnnouncementDetailViewController.m
 
   # Air AI Agent（OpenAI 兼容聊天助手）
   AI/AiProvider.m

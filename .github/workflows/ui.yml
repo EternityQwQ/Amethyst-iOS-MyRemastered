@@ -448,7 +448,7 @@ jobs:
           # （此前 find全目录法曾把 glsl_optimizer/c11/time.h 劫持进来导致 ctime 缺失）。
           # 目录名可能含空格，用 bash 数组逐个 -I。
           INCLUDES=()
-          for d in . UI/Shell external/AFNetworking/AFNetworking external/AFNetworking/UIKit+AFNetworking \
+          for d in . UI/Shell UI/Settings UI/Resources UI/Download UI/Account UI/Game UI/Common external/AFNetworking/AFNetworking external/AFNetworking/UIKit+AFNetworking \
                    external/DBNumberedSlider/Classes external/NRFileManager external/UnzipKit \
                    external/fishhook external/lzma external/mesa external/AltKit external/Apple \
                    external/ballpa1n external/ballpa1n/wrapped external/mach \
