@@ -1,0 +1,49 @@
+name: UI Tier2 sentinel
+
+# Tier2 失败签名哨兵：只观测、不触碰上游报错。
+# Development build 每次 completed 即触发：结论 success = 上游修好（Phase II 开工信号）；
+# failure 则要求错误签名恒等于已知上游签名（main_hook.m task132 未声明），
+# 签名变化 = 我方回归或上游有动作 → 本作业失败告警。
+#
+# 生效说明：workflow_run 触发器只读取默认分支的工作流文件，
+# 故本文件随分支合入 main 后才真正激活；合入前等价逻辑由人工（API 直查）执行验证过。
+on:
+  workflow_run:
+    workflows: ['Development build']
+    types: [completed]
+
+jobs:
+  sentinel:
+    name: Tier2 failure signature check
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - name: Check conclusion and failure signature
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RID: ${{ github.event.workflow_run.id }}
+          CONC: ${{ github.event.workflow_run.conclusion }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          if [ "$CONC" = "success" ]; then
+            echo '[sentinel] Tier2 GREEN — upstream fixed, Phase II gate opens'
+            exit 0
+          fi
+          if [ "$CONC" != "failure" ]; then
+            echo "[sentinel] unexpected conclusion: $CONC"; exit 1
+          fi
+          # 取首个失败 job 的日志，提取错误签名（文件名+符号+诊断各一行即判等）
+          JID=$(gh api "repos/$REPO/actions/runs/$RID/jobs?per_page=20" --paginate \
+            -q '.jobs[] | select(.conclusion=="failure") | .id' | head -n 1)
+          [ -n "$JID" ] || { echo '[sentinel] no failed job found'; exit 1; }
+          SIG=$(gh api "repos/$REPO/actions/jobs/$JID/logs" 2>/dev/null \
+            | grep -m3 -o "main_hook.m:[0-9]*:[0-9]*: error:.*" \
+            | sed 's/^[0-9TZ:.-]*Z //' | sort -u)
+          echo "$SIG"
+          echo "$SIG" | grep -q "main_hook.m" \
+            && echo "$SIG" | grep -q "amethyst_task132_rebind_jna_dlsym" \
+            && echo "$SIG" | grep -q "undeclared" \
+            && { echo '[sentinel] known upstream signature, no new breakage'; exit 0; }
+          echo '[sentinel] SIGNATURE CHANGED — investigate'; exit 1

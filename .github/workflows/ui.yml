@@ -247,9 +247,10 @@ jobs:
           python3 - <<'PYEOF'
           import re, glob, sys
           # 历史存量失衡（第三方头/个别老文件），仅冻结不再新增：
-          # 门禁 = 除例外表外 @interface/@implementation/@protocol 与 @end 配平
-          EXC = {'Natives/CurseForgeAPIKeyViewController.m',
-                 'Natives/installer/CurseForgeAPIKeyViewController.m',
+          # 门禁 = 除例外表外 @interface/@implementation/@protocol 与 @end 配平。
+          # P9 已删除顶层 CurseForgeAPIKeyViewController.m（构建外死文件），
+          # 例外表同步收紧；再删死文件时继续同步收紧。
+          EXC = {'Natives/installer/CurseForgeAPIKeyViewController.m',
                  'Natives/SurfaceViewController.m', 'Natives/PLDownloadClient.m',
                  'Natives/SSZipArchive.h'}
           bad = []
