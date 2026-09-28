@@ -126,6 +126,31 @@ jobs:
           print(f'[tier0] acyclic guard passed ({len(cycles)} pre-existing cycles elsewhere, untouched)')
           PYEOF
 
+      - name: i18n keys exist (typo'd key shows raw key to users)
+        run: |
+          set -e
+          # localize() 兜底链：en.strings → UIKit 系统包 → 原样返回 key。
+          # 打错 key 即用户可见裸 key。本门禁锁 1376 现有用键，新增缺失即红。
+          python3 - <<'PYEOF'
+          import re, glob, sys
+          code = set()
+          for f in glob.glob('Natives/**/*.m', recursive=True):
+              txt = open(f, encoding='utf-8', errors='ignore').read()
+              code |= set(re.findall(r'localize\(@"([^"]+)"', txt))
+              code |= set(re.findall(r'NSLocalizedString\(@"([^"]+)"', txt))
+          strs = open('Natives/resources/en.lproj/Localizable.strings', encoding='utf-8', errors='ignore').read()
+          have = set(re.findall(r'^"([^"]+)"\s*=', strs, re.M))
+          # UIKit 系统包自带翻译（utils.m 兜底链第二跳），非缺失
+          SYSTEM = {'Cancel', 'Delete', 'Done', 'Edit profile', 'Error', 'None',
+                    'OK', 'Release', 'Rename', 'Share', 'Sign in', 'Warning'}
+          # 存量缺口（冻结备忘）：英文下显示裸 key，修=改用户可见文案，需产品确认
+          KNOWN_GAPS = {'login.cancelled', 'login.title'}
+          missing = sorted(code - have - SYSTEM - KNOWN_GAPS)
+          if missing:
+              print('[tier0] i18n keys missing in en.strings:', missing); sys.exit(1)
+          print(f'[tier0] i18n keys covered ({len(code)} used, {len(KNOWN_GAPS)} known-gaps frozen)')
+          PYEOF
+
   tier1:
     name: UI Tier1 structural checks
     runs-on: ubuntu-latest
