@@ -1,4 +1,5 @@
 #import "VersionManagerViewController.h"
+#import "LauncherRouter.h"
 #import "BackgroundManager.h"
 #import "PLProfiles.h"
 #import "ProfileSettingsViewController.h"
@@ -847,7 +848,7 @@ static NSInteger const kSectionVersions    = 1;
 }
 
 - (void)createNewVersion {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowDownloadPage" object:nil];
+    RouterPost(kRouterShowDownloadPage, nil, nil);
 }
 
 #pragma mark - Empty State
@@ -1451,8 +1452,8 @@ static NSInteger const kSectionVersions    = 1;
     toggleIsolatedPref(NO);
     [PLProfiles updateCurrent];
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SelectedProfileChanged" object:nil];
+    RouterPost(kRouterReloadProfileList, nil, nil);
+    RouterPost(kRouterSelectedProfileChanged, nil, nil);
 
     [self loadGameDirList];
     [self loadProfiles];
@@ -1723,7 +1724,7 @@ static NSInteger const kSectionVersions    = 1;
         [alert addAction:[UIAlertAction actionWithTitle:localize(@"i18n_str_1090", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
             PLProfiles.current.selectedProfileName = profileName;
             [PLProfiles.current save];
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"SelectedProfileChanged" object:nil];
+            RouterPost(kRouterSelectedProfileChanged, nil, nil);
             [self loadProfiles];
             [self.collectionView reloadData];
         }]];
