@@ -302,8 +302,9 @@ jobs:
           refs = set()
           for f in glob.glob('Natives/**/*.m', recursive=True):
               txt = open(f, encoding='utf-8', errors='ignore').read()
-              refs |= set(re.findall(r'@selector\((ame_\w+)\)', txt))
-              refs |= set(re.findall(r'\[self (ame_\w+)', txt))
+              # 冒号形式（带参，如 ame_showProfileEditor:）一并捕获
+              refs |= set(re.findall(r'@selector\((ame_\w+):?\)', txt))
+              refs |= set(re.findall(r'\[self (ame_\w+)[\s\]]', txt))
           dangling = refs - defs
           if dangling:
               print('[tier1-deep] dangling ame_ selectors:', sorted(dangling)); sys.exit(1)
