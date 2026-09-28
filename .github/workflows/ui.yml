@@ -290,6 +290,26 @@ jobs:
           if [ -n "$hits" ]; then echo "$hits"; echo '[tier1-deep] secrets/vars in if:'; exit 1; fi
           echo '[tier1-deep] workflows self-lint passed'
 
+      - name: ame_ selector pairing (every ame_ selector resolves to category def)
+        run: |
+          set -e
+          # P5a 回归网：@selector(ame_X) 编译器不校验，漏改名运行时才炸（unrecognized selector）。
+          # 本门禁要求全仓所有 ame_ 引用 ⊆ 分类定义集。
+          python3 - <<'PYEOF'
+          import re, glob, sys
+          cat = open('Natives/UIViewController+LauncherShellRouting.m', encoding='utf-8').read()
+          defs = set(re.findall(r'- \(void\)(ame_\w+)', cat))
+          refs = set()
+          for f in glob.glob('Natives/**/*.m', recursive=True):
+              txt = open(f, encoding='utf-8', errors='ignore').read()
+              refs |= set(re.findall(r'@selector\((ame_\w+)\)', txt))
+              refs |= set(re.findall(r'\[self (ame_\w+)', txt))
+          dangling = refs - defs
+          if dangling:
+              print('[tier1-deep] dangling ame_ selectors:', sorted(dangling)); sys.exit(1)
+          print(f'[tier1-deep] ame_ paired ({len(defs)} defined, {len(refs)} referenced)')
+          PYEOF
+
   tier-apple:
     name: UI Tier Apple toolchain compile
     runs-on: macos-14
