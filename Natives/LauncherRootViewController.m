@@ -68,12 +68,16 @@ static CGFloat LauncherRootLayoutRightPanelWidth(UITraitCollection *trait) {
 // 约束叠加导致 contentContainer 内容区左右变宽。现持有当前约束并先 deactivate 再激活。
 @property(nonatomic, strong) NSArray<NSLayoutConstraint *> *currentContentConstraints;
 
-@property(nonatomic, assign) BOOL isShowingProfileEditor;
-@property(nonatomic, strong) ProfileSettingsViewController *profileEditorVC;
+// P5a: isShowingProfileEditor/profileEditorVC 改由 <LauncherShellContainer> 协议声明，
+// 本体用 @synthesize 显式合成（避免类扩展重声明协议属性触发 Clang 非法重声明诊断）。
 
 @end
 
 @implementation LauncherRootViewController
+
+// P5a: 显式合成协议属性（与原类扩展自动合成的 _isShowingProfileEditor/_profileEditorVC 同名，行为一致）。
+@synthesize isShowingProfileEditor = _isShowingProfileEditor;
+@synthesize profileEditorVC = _profileEditorVC;
 
 #pragma mark - Lifecycle
 
