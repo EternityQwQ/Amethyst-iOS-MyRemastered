@@ -28,10 +28,12 @@ jobs:
       - name: Router coverage (every @"Show*"/notify literal has a constant)
         run: |
           set -e
+          # 头文件随 P10 布局重构搬家，用 locate 而非硬编码（下同）
+          ROUTER_H=$(find Natives -name LauncherRouter.h | head -n 1)
           # 抽取通知字面量，与 LauncherRouter.h 常量值交叉核对
           grep -rho 'postNotificationName:@"[^"]*"\|name:@"[^"]*"' Natives --include='*.m' \
             | grep -o '@"[^"]*"' | tr -d '@"' | sort -u > /tmp/used.txt
-          grep -o '"Show[A-Za-z]*"\|"Background[A-Za-z]*"\|"LauncherAppearance[A-Za-z]*"\|"ReloadProfileList"\|"SelectedProfileChanged"\|"UpdateAccountInfo"\|"AccountChanged"\|"InstallModpack"\|"FindVersionInRemoteList"\|"DownloadCenterDidDismiss"\|"UIThemeChanged"\|"OpenCurseForgeAPIKeySettings"' Natives/LauncherRouter.h \
+          grep -o '"Show[A-Za-z]*"\|"Background[A-Za-z]*"\|"LauncherAppearance[A-Za-z]*"\|"ReloadProfileList"\|"SelectedProfileChanged"\|"UpdateAccountInfo"\|"AccountChanged"\|"InstallModpack"\|"FindVersionInRemoteList"\|"DownloadCenterDidDismiss"\|"UIThemeChanged"\|"OpenCurseForgeAPIKeySettings"' "$ROUTER_H" \
             | tr -d '"' | sort -u > /tmp/covered.txt
           missing=0
           while read -r n; do
@@ -97,13 +99,14 @@ jobs:
           python3 - <<'PYEOF'
           import re, glob, sys
           graph = {}
-          for h in glob.glob('Natives/*.h'):
+          for h in glob.glob('Natives/*.h') + glob.glob('Natives/UI/**/*.h', recursive=True):
               txt = open(h, encoding='utf-8', errors='ignore').read()
               graph[h] = set(re.findall(r'#import\s+"([^"]+)"', txt))
           # 规范化：只保留仍指向 Natives/*.h 的边
           names = {p.split('/')[-1]: p for p in graph}
           adj = {p: {names[b] for b in imps if b in names} for p, imps in graph.items()}
-          guarded = ['Natives/LauncherRouter.h', 'Natives/UITheme.h']
+          guarded = [g for g in glob.glob('Natives/**/LauncherRouter.h', recursive=True)
+                       + glob.glob('Natives/**/UITheme.h', recursive=True)]
           # DFH 找环
           WHITE, GRAY, BLACK = 0, 1, 2
           color = dict.fromkeys(adj, WHITE)
@@ -196,8 +199,13 @@ jobs:
           set -e
           python3 - <<'PYEOF'
           import re, glob, sys
+          def loc(n):
+              hits = glob.glob(f'Natives/**/{n}', recursive=True)
+              if not hits:
+                  print(f'[tier1] moved file not found: {n}'); sys.exit(1)
+              return hits[0]
           defs = set(re.findall(r'static NSString \* const (kRouter\w+)',
-                                open('Natives/LauncherRouter.h', encoding='utf-8').read()))
+                                open(loc('LauncherRouter.h'), encoding='utf-8').read()))
           used = set()
           for f in glob.glob('Natives/**/*.m', recursive=True):
               txt = open(f, encoding='utf-8', errors='ignore').read()
@@ -214,10 +222,15 @@ jobs:
         run: |
           set -e
           python3 - <<'PYEOF'
-          import re, sys
+          import re, glob, sys
+          def loc(n):
+              hits = glob.glob(f'Natives/**/{n}', recursive=True)
+              if not hits:
+                  print(f'[tier1] moved file not found: {n}'); sys.exit(1)
+              return hits[0]
           bad = []
-          for f in ['Natives/LauncherCardLayoutViewController.m',
-                    'Natives/LauncherPreferencesViewController.m']:
+          for f in [loc('LauncherCardLayoutViewController.m'),
+                    loc('LauncherPreferencesViewController.m')]:
               t = open(f, encoding='utf-8').read()
               m = re.search(r'-\s*\(.*?\)colorFromHexString[^{]*\{([^}]*)\}', t)
               body = m.group(1) if m else ''
@@ -275,8 +288,13 @@ jobs:
           set -e
           python3 - <<'PYEOF'
           import re, glob, sys
+          def loc(n):
+              hits = glob.glob(f'Natives/**/{n}', recursive=True)
+              if not hits:
+                  print(f'[tier1-deep] moved file not found: {n}'); sys.exit(1)
+              return hits[0]
           vals = dict(re.findall(r'static NSString \* const (kRouter\w+)\s*=\s*@"([^"]+)"',
-                                 open('Natives/LauncherRouter.h', encoding='utf-8').read()))
+                                 open(loc('LauncherRouter.h'), encoding='utf-8').read()))
           # 观察者：selector 式 + block 式，字面量与常量两态
           obs = set()
           obsv = set()
@@ -324,7 +342,12 @@ jobs:
           # 本门禁要求全仓所有 ame_ 引用 ⊆ 分类定义集。
           python3 - <<'PYEOF'
           import re, glob, sys
-          cat = open('Natives/UIViewController+LauncherShellRouting.m', encoding='utf-8').read()
+          def loc(n):
+              hits = glob.glob(f'Natives/**/{n}', recursive=True)
+              if not hits:
+                  print(f'[tier1-deep] moved file not found: {n}'); sys.exit(1)
+              return hits[0]
+          cat = open(loc('UIViewController+LauncherShellRouting.m'), encoding='utf-8').read()
           defs = set(re.findall(r'- \(void\)(ame_\w+)', cat))
           refs = set()
           for f in glob.glob('Natives/**/*.m', recursive=True):
@@ -359,9 +382,12 @@ jobs:
         run: |
           set -e -x
           SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+          ROUTER_H=$(find Natives -name LauncherRouter.h | head -n 1)
+          THEME_H=$(find Natives -name UITheme.h | head -n 1)
+          [ -n "$ROUTER_H" ] && [ -n "$THEME_H" ] || { echo '[tier-apple] headers moved?'; exit 1; }
           FLAGS=(-isysroot "$SDK" -miphoneos-version-min=14.0 -fobjc-arc -Wunguarded-availability -Werror=unguarded-availability)
-          clang -fsyntax-only -x objective-c-header "${FLAGS[@]}" Natives/LauncherRouter.h
-          clang -fsyntax-only -x objective-c-header "${FLAGS[@]}" Natives/UITheme.h
+          clang -fsyntax-only -x objective-c-header "${FLAGS[@]}" "$ROUTER_H"
+          clang -fsyntax-only -x objective-c-header "${FLAGS[@]}" "$THEME_H"
           cat > /tmp/ui_smoke.m <<'EOF'
           #import "LauncherRouter.h"
           #import "UITheme.h"
@@ -374,7 +400,7 @@ jobs:
               (void)d; (void)h;
           }
           EOF
-          clang -fsyntax-only -x objective-c "${FLAGS[@]}" -INatives /tmp/ui_smoke.m
+          clang -fsyntax-only -x objective-c "${FLAGS[@]}" -INatives -INatives/UI/Shell /tmp/ui_smoke.m
           echo '[tier-apple] headers + API smoke compile passed'
 
   tier-compile:
