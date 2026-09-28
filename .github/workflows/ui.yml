@@ -368,11 +368,19 @@ jobs:
         run: |
           set -e
           SDK=$(xcrun --sdk iphoneos --show-sdk-path)
-          # -I 覆盖 Natives 下所有含头文件目录（含 installer/modpack 等深层目录，
-          # 使构建外死文件也能解析；缺的只会是 submodule/生成头，按上两步已备齐）。
-          # 注意：部分第三方目录名含空格，必须用 bash 数组逐个 -I（字符串拼接会被拆散）。
+          # -I 与真实构建同源（Natives/CMakeLists.txt include_directories），
+          # 外加 installer/modpack + installer + AI：构建外死文件所需，
+          # 经核查三处均无 time.h/string.h 类通用名，不会劫持系统头
+          # （此前 find全目录法曾把 glsl_optimizer/c11/time.h 劫持进来导致 ctime 缺失）。
+          # 目录名可能含空格，用 bash 数组逐个 -I。
           INCLUDES=()
-          while IFS= read -r d; do INCLUDES+=("-I$d"); done < <(find Natives -type d)
+          for d in . external/AFNetworking/AFNetworking external/AFNetworking/UIKit+AFNetworking \
+                   external/DBNumberedSlider/Classes external/NRFileManager external/UnzipKit \
+                   external/fishhook external/lzma external/mesa external/AltKit external/Apple \
+                   external/ballpa1n external/ballpa1n/wrapped external/mach \
+                   installer installer/modpack AI; do
+            INCLUDES+=("-INatives/$d")
+          done
           FLAGS=(-isysroot "$SDK" -miphoneos-version-min=14.0 -fobjc-arc -target arm64-apple-ios -Wunguarded-availability)
           git fetch origin main --depth 1 --filter=blob:none 2>/dev/null || true
           base="origin/main"
