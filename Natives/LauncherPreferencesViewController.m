@@ -1,6 +1,7 @@
 #import <Foundation/Foundation.h>
 
 #import "DBNumberedSlider.h"
+#import "LauncherRouter.h"
 #import "UITheme.h"
 #import "HostManagerBridge.h"
 #import "LauncherNavigationController.h"
@@ -115,7 +116,7 @@
     UIColor *color = viewController.selectedColor;
     NSString *hex = [self hexStringFromColor:color];
     setPrefObject(key, hex);
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"LauncherAppearanceChanged" object:nil];
+    RouterPost(kRouterLauncherAppearanceChanged, nil, nil);
     [self.tableView reloadData];
 }
 
@@ -148,7 +149,7 @@
                 [NSFileManager.defaultManager createDirectoryAtPath:[path stringByDeletingLastPathComponent] withIntermediateDirectories:YES attributes:nil error:nil];
                 BOOL ok = [pngData writeToFile:path atomically:YES];
                 if (ok) {
-                    [NSNotificationCenter.defaultCenter postNotificationName:@"MousePointerUpdated" object:nil];
+                    RouterPost(kRouterMousePointerUpdated, nil, nil);
                     [self showSuccessMessage:localize(@"i18n_str_369", nil)];
                 } else {
                     [self showCustomIconError:localize(@"i18n_str_370", nil)];
@@ -396,7 +397,7 @@
                   // 实时应用主题，发通知由 SceneDelegate 处理。
                   // 不调用 loadPreferences(YES) 等会重置账号偏好的操作，
                   // 仅设置 window.overrideUserInterfaceStyle，账号数据不受影响。
-                  [[NSNotificationCenter defaultCenter] postNotificationName:@"UIThemeChanged" object:value];
+                  RouterPost(kRouterUIThemeChanged, value, nil);
               }
             },
             @{@"key": @"custom_accent_color",
@@ -438,7 +439,7 @@
                   setPrefObject(@"general.accent_color", @"");
                   setPrefObject(@"general.text_color", @"");
                   setPrefObject(@"general.card_color", @"");
-                  [[NSNotificationCenter defaultCenter] postNotificationName:@"LauncherAppearanceChanged" object:nil];
+                  RouterPost(kRouterLauncherAppearanceChanged, nil, nil);
                   [self.tableView reloadData];
               }
             },
@@ -926,7 +927,7 @@
                 @"action": ^void(){
                     NSString *path = [NSString stringWithFormat:@"%s/controlmap/mouse_pointer.png", getenv("POJAV_HOME")];
                     [NSFileManager.defaultManager removeItemAtPath:path error:nil];
-                    [NSNotificationCenter.defaultCenter postNotificationName:@"MousePointerUpdated" object:nil];
+                    RouterPost(kRouterMousePointerUpdated, nil, nil);
                     [self showSuccessMessage:localize(@"i18n_str_393", nil)];
                 }
             },
