@@ -1,4 +1,5 @@
 #import "utils.h"
+#import "LauncherRouter.h"
 //
 //  BackgroundSettingsViewController.m
 //  Amethyst
@@ -400,7 +401,7 @@
         manager.uiEffect = BackgroundUIEffectBlur;
         [manager refreshUIEffect];
         [self.tableView reloadData];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"BackgroundUIEffectChanged" object:nil];
+        RouterPost(kRouterBackgroundUIEffectChanged, nil, nil);
     }]];
     
     [alert addAction:[UIAlertAction actionWithTitle:localize(@"i18n_str_68", nil)
@@ -409,7 +410,7 @@
         manager.uiEffect = BackgroundUIEffectTranslucent;
         [manager refreshUIEffect];
         [self.tableView reloadData];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"BackgroundUIEffectChanged" object:nil];
+        RouterPost(kRouterBackgroundUIEffectChanged, nil, nil);
     }]];
     
     [alert addAction:[UIAlertAction actionWithTitle:localize(@"resman.common.cancel", nil)
@@ -515,7 +516,7 @@
         self.tableView.backgroundColor = [UIColor systemBackgroundColor];
         self.tableView.backgroundView = nil;
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"BackgroundChanged" object:nil];
+        RouterPost(kRouterBackgroundChanged, nil, nil);
     }]];
     
     [self presentViewController:alert animated:YES completion:nil];
@@ -541,7 +542,7 @@
         self.view.backgroundColor = [UIColor systemBackgroundColor];
         self.tableView.backgroundColor = [UIColor systemBackgroundColor];
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"BackgroundChanged" object:nil];
+        RouterPost(kRouterBackgroundChanged, nil, nil);
     }]];
     
     [self presentViewController:alert animated:YES completion:nil];
@@ -656,7 +657,7 @@
                 self.tableView.backgroundColor = [UIColor clearColor];
                 self.tableView.backgroundView = nil;
                 
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"BackgroundChanged" object:nil];
+                RouterPost(kRouterBackgroundChanged, nil, nil);
                 
                 UIAlertController *successAlert = [UIAlertController alertControllerWithTitle:localize(@"i18n_str_80", nil)
                                                                                       message:localize(@"i18n_str_81", nil)
@@ -693,7 +694,7 @@
                 self.tableView.backgroundColor = [UIColor clearColor];
                 self.tableView.backgroundView = nil;
                 
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"BackgroundChanged" object:nil];
+                RouterPost(kRouterBackgroundChanged, nil, nil);
                 
                 UIAlertController *successAlert = [UIAlertController alertControllerWithTitle:localize(@"i18n_str_80", nil)
                                                                                       message:localize(@"i18n_str_84", nil)

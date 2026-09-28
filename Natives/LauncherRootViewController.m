@@ -1,4 +1,5 @@
 #import "LauncherRootViewController.h"
+#import "LauncherRouter.h"
 #import "LauncherMenuViewController.h"
 #import "LauncherNewsViewController.h"
 #import "LauncherRightPanelViewController.h"
@@ -432,7 +433,7 @@ static CGFloat LauncherRootLayoutRightPanelWidth(UITraitCollection *trait) {
     // 重新加载版本列表
     [self initializeVersionLists];
     // 通知右侧面板刷新版本显示
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SelectedProfileChanged" object:nil];
+    RouterPost(kRouterSelectedProfileChanged, nil, nil);
 }
 
 - (void)showHomePage {
@@ -477,7 +478,7 @@ static CGFloat LauncherRootLayoutRightPanelWidth(UITraitCollection *trait) {
     if (self.isShowingProfileEditor) {
         NSString *currentProfile = PLProfiles.current.selectedProfileName;
         if (currentProfile) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowProfileEditor" object:currentProfile];
+            RouterPost(kRouterShowProfileEditor, currentProfile, nil);
         }
     }
 }
@@ -567,11 +568,11 @@ static CGFloat LauncherRootLayoutRightPanelWidth(UITraitCollection *trait) {
     AccountListViewController *vc = [[AccountListViewController alloc] initWithStyle:UITableViewStyleInsetGrouped];
     // 账户选择后通知右侧面板刷新（使用已有的 UpdateAccountInfo 通知）
     vc.whenItemSelected = ^void() {
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"UpdateAccountInfo" object:nil];
+        RouterPost(kRouterUpdateAccountInfo, nil, nil);
     };
     // 账户删除后也通知右侧面板刷新
     vc.whenDelete = ^void(NSString *name) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"UpdateAccountInfo" object:nil];
+        RouterPost(kRouterUpdateAccountInfo, nil, nil);
     };
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.navigationBar.prefersLargeTitles = NO;
@@ -618,7 +619,7 @@ static CGFloat LauncherRootLayoutRightPanelWidth(UITraitCollection *trait) {
         [self restoreEffectToContainer:self.rightPanelContainer];
     }
     // 通知右侧面板、菜单等子 VC 同步刷新外观（text_color / card_color 联动）
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"LauncherAppearanceApplied" object:nil];
+    RouterPost(kRouterLauncherAppearanceApplied, nil, nil);
 }
 
 - (void)applySemiTransparentColor:(UIColor *)color toContainer:(UIView *)container {

@@ -1,4 +1,5 @@
 #include <CommonCrypto/CommonDigest.h>
+#import "LauncherRouter.h"
 #include <sys/time.h>
 
 #import "authenticator/BaseAuthenticator.h"
@@ -648,7 +649,7 @@ static const NSUInteger kMCStageIndexVerify = 5;
         [NSFileManager.defaultManager removeItemAtPath:packagePath error:nil];
         // 成功后刷新 profile 列表（与 Fabric/Forge 安装完成后的 ReloadProfileList 通知一致）
         if (success) {
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
+            RouterPost(kRouterReloadProfileList, nil, nil);
         }
     });
 }

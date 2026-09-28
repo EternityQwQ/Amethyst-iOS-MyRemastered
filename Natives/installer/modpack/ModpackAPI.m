@@ -1,4 +1,5 @@
 #import "AFNetworking.h"
+#import "LauncherRouter.h"
 #import "ModpackAPI.h"
 #import "utils.h"
 
@@ -46,9 +47,7 @@
         @"detail": modDetail,
         @"index": @(selectedVersion)
     };
-    [NSNotificationCenter.defaultCenter 
-        postNotificationName:@"InstallModpack" 
-        object:self userInfo:userInfo];
+    RouterPost(kRouterInstallModpack, self, userInfo);
 }
 
 @end

@@ -1,5 +1,6 @@
 #import "utils.h"
 #import "DownloadTasksViewController.h"
+#import "LauncherRouter.h"
 #import "DownloadTaskManager.h"
 #import "DownloadTaskItem.h"
 #import "LauncherPreferences.h"
@@ -993,9 +994,7 @@ static const CGFloat kSectionInset = 16.0;
     // 启动器（LauncherNavigationController / LauncherRightPanelViewController）收到此通知后，
     // 会设置 userDismissedDownloadCenter=YES，避免后续下载任务更新时反复自动弹出下载中心。
     // 用户可以通过点击启动器上的"下载中心"按钮重新打开。
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"DownloadCenterDidDismiss"
-                                                      object:nil
-                                                    userInfo:nil];
+    RouterPost(kRouterDownloadCenterDidDismiss, nil, nil);
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 

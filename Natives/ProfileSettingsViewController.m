@@ -1,4 +1,5 @@
 #import "ProfileSettingsViewController.h"
+#import "LauncherRouter.h"
 #import "ModsManagerViewController.h"
 #import "ShadersManagerViewController.h"
 #import "ResourcePacksManagerViewController.h"
@@ -1986,7 +1987,7 @@ static NSString * localizeProfileTitle(NSString *title) {
             [PLProfiles.current saveProfile:profile withName:versionId];
             PLProfiles.current.selectedProfileName = versionId;
 
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
+            RouterPost(kRouterReloadProfileList, nil, nil);
 
             [[DownloadTaskManager sharedManager] updateTaskWithId:taskId
                                                       stageAtIndex:0
@@ -2222,7 +2223,7 @@ static NSString * localizeProfileTitle(NSString *title) {
     [PLProfiles.current save];
 
     // 发送通知刷新配置文件列表
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SelectedProfileChanged" object:newName];
+    RouterPost(kRouterSelectedProfileChanged, newName, nil);
 
     // 关闭
     [self actionClose];

@@ -1,4 +1,5 @@
 #import "LauncherNavigationController.h"
+#import "LauncherRouter.h"
 #import "LauncherPreferences.h"
 #import "LauncherProfileEditorViewController.h"
 #import "MinecraftResourceUtils.h"
@@ -249,7 +250,7 @@
     [PLProfiles.current save];
     
     // 发送通知刷新配置文件列表
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SelectedProfileChanged" object:self.profile[@"name"]];
+    RouterPost(kRouterSelectedProfileChanged, self.profile[@"name"], nil);
     
     [self actionClose];
 }

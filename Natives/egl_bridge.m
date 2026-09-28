@@ -1,4 +1,5 @@
 #import "SurfaceViewController.h"
+#import "LauncherRouter.h"
 
 #include "jni.h"
 #include <assert.h>
@@ -49,7 +50,7 @@ void pojavIncrementFpsCounter() {
     if (!s_firstFrameRendered) {
         s_firstFrameRendered = YES;
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"PojavFirstFrameRendered" object:nil];
+            RouterPost(kRouterPojavFirstFrameRendered, nil, nil);
             NSLog(@"[egl_bridge] First frame rendered (Vulkan displayLink path), game is ready");
         });
     }
@@ -839,7 +840,7 @@ void pojavSwapBuffers() {
     if (!s_firstFrameRendered) {
         s_firstFrameRendered = YES;
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"PojavFirstFrameRendered" object:nil];
+            RouterPost(kRouterPojavFirstFrameRendered, nil, nil);
             NSLog(@"[egl_bridge] First frame rendered, game is ready");
         });
     }

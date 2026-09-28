@@ -1,4 +1,5 @@
 #import "DownloadViewController.h"
+#import "LauncherRouter.h"
 #import "BackgroundManager.h"
 // IconLoader：统一的项目图标加载器（双层缓存 + 降采样 + 并发控制 + CDN 镜像），
 // 替代 UIImageView+AFNetworking（仅内存缓存，无降采样，无镜像）
@@ -3504,7 +3505,7 @@ typedef NS_ENUM(NSInteger, ModernAssetType) {
         // 关键修复（issue #61）：Fabric/Forge/NeoForge/OptiFine 安装完成后未发送 ReloadProfileList 通知，
         // 导致"已安装的版本"列表不刷新、新版本卡片不显示、加载器图标也不显示。
         // 此处统一在安装完成后发通知，触发 LauncherRootViewController / VersionManagerViewController 等监听者重新加载版本列表。
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
+        RouterPost(kRouterReloadProfileList, nil, nil);
         // Forge/NeoForge 直装在本进程执行过 processors（headless JVM），进程内 JVM
         // 只能创建一次，直接启动游戏会崩溃，必须重启 app 释放后再玩。
         if ([ForgeProcessorExecutor jvmUsedThisProcess]) {
@@ -5488,7 +5489,7 @@ static NSString *PLSha1FromPrimaryFile(NSDictionary *primaryFile) {
         // downloadVanillaVersion: 中已 saveProfile + setSelectedProfileName（会发 SelectedProfileChanged），
         // 但版本卡片列表（LauncherRootViewController/VersionManagerViewController）监听的是 ReloadProfileList，
         // 不补发此通知则 UI 永远不刷新。
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
+        RouterPost(kRouterReloadProfileList, nil, nil);
     });
 }
 
@@ -5516,7 +5517,7 @@ static NSString *PLSha1FromPrimaryFile(NSDictionary *primaryFile) {
         s.vanillaPreinstallTask = nil;
         // 关键修复（issue #61）：原版前置安装完成后也需发送 ReloadProfileList 通知，
         // 让"已安装的版本"列表及时显示已就绪的原版版本。
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
+        RouterPost(kRouterReloadProfileList, nil, nil);
         void (^cb)(BOOL) = s.vanillaPreinstallCompletion;
         s.vanillaPreinstallCompletion = nil;
         if (cb) cb(YES);

@@ -1,4 +1,5 @@
 #import "LauncherNavigationController.h"
+#import "LauncherRouter.h"
 #import "LauncherPreferences.h"
 #import "LauncherPrefGameDirViewController.h"
 #import "BackgroundManager.h"
@@ -84,11 +85,11 @@
         [self.navigationController performSelector:@selector(reloadProfileList)];
     } else {
         // 否则发送通知
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
+        RouterPost(kRouterReloadProfileList, nil, nil);
     }
 
     // 发送通知刷新版本配置和编辑 profile 界面
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SelectedProfileChanged" object:nil];
+    RouterPost(kRouterSelectedProfileChanged, nil, nil);
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section

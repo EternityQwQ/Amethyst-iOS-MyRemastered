@@ -28,6 +28,7 @@
 //
 
 #import "AiAssetTools.h"
+#import "LauncherRouter.h"
 #import "PLProfiles.h"
 #import "LauncherPreferences.h"
 #import "ModService.h"
@@ -889,7 +890,7 @@ static BOOL aiIsLatestAlias(NSString *s) {
             prof[@"created"] = [NSDate date].description;
             [PLProfiles.current saveProfile:prof withName:versionId];
             PLProfiles.current.selectedProfileName = versionId;
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
+            RouterPost(kRouterReloadProfileList, nil, nil);
             [manager updateTaskWithId:task.taskId stageAtIndex:jsonStage status:PLTaskStageStatusCompleted];
 
             // Fabric 自动安装 Fabric API（独立 Mod 下载任务）；Quilt 用 QSL/QFAPI，跳过
@@ -1358,7 +1359,7 @@ static BOOL aiIsLatestAlias(NSString *s) {
 
 + (void)postShowDownloadPage {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ShowDownloadPage" object:nil];
+        RouterPost(kRouterShowDownloadPage, nil, nil);
     });
 }
 
@@ -1552,7 +1553,7 @@ static BOOL aiIsLatestAlias(NSString *s) {
                             profile[@"created"] = [NSDate date].description;
                             [PLProfiles.current saveProfile:profile withName:resolvedId];
                             PLProfiles.current.selectedProfileName = resolvedId;
-                            [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
+                            RouterPost(kRouterReloadProfileList, nil, nil);
                             if (completion) completion(YES, nil);
                         } else {
                             NSString *msg = errored ? @"下载出错（详见下载中心任务详情）"

@@ -4,6 +4,7 @@
 //
 
 #import "AiInstanceCreator.h"
+#import "LauncherRouter.h"
 #import "LauncherPreferences.h"
 #import "PLProfiles.h"
 
@@ -103,8 +104,8 @@
     [PLProfiles current].selectedProfileName = name;
 
     // 4. 广播刷新
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SelectedProfileChanged" object:nil];
+    RouterPost(kRouterReloadProfileList, nil, nil);
+    RouterPost(kRouterSelectedProfileChanged, nil, nil);
 
     NSString *note = @"";
     if (mcVersion.length > 0 || loader.length > 0) {

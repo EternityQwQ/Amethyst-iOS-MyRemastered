@@ -1,4 +1,5 @@
 #import "utils.h"
+#import "LauncherRouter.h"
 //
 //  BackgroundManager.m
 //  Amethyst
@@ -717,7 +718,7 @@ static const NSInteger kDefaultBackgroundTag = 99995;
     }
     
     // Post notification for other views to refresh
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"BackgroundUIEffectChanged" object:nil];
+    RouterPost(kRouterBackgroundUIEffectChanged, nil, nil);
 }
 
 #pragma mark - Unified View Effect Application

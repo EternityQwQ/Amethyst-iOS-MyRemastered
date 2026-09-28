@@ -79,6 +79,15 @@ jobs:
           if [ -n "$hits" ]; then echo "$hits"; echo '[tier0] shell must use RouterPost'; exit 1; fi
           echo '[tier0] shell Router gate passed'
 
+      - name: No direct posts of covered names anywhere (Router centralization complete)
+        run: |
+          set -e
+          # 最终态：31 个收敛通知名全仓只许 RouterPost；新增直发即失败
+          hits=$(grep -rn 'postNotificationName:@"\(Show[A-Za-z]*\|Background[A-Za-z]*\|LauncherAppearance[A-Za-z]*\|ReloadProfileList\|SelectedProfileChanged\|UpdateAccountInfo\|AccountChanged\|InstallModpack\|FindVersionInRemoteList\|DownloadCenterDidDismiss\|UIThemeChanged\|OpenCurseForgeAPIKeySettings\|PojavFirstFrameRendered\|PLLogOutputLineNotification\|MousePointerUpdated\|AiSessionMessagesDidChangeNotification\|UINavigationControllerDidShowViewControllerNotification\)"' \
+            Natives --include='*.m' 2>/dev/null || true)
+          if [ -n "$hits" ]; then echo "$hits"; echo '[tier0] use RouterPost instead'; exit 1; fi
+          echo '[tier0] global Router gate passed'
+
       - name: New headers acyclic (Router/UITheme not in import cycles)
         run: |
           set -e

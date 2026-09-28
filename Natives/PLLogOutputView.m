@@ -1,4 +1,5 @@
 #import "PLLogOutputView.h"
+#import "LauncherRouter.h"
 #import "PLCrashView.h"
 #import "SurfaceViewController.h"
 #import "utils.h"
@@ -156,9 +157,7 @@ static PLLogOutputView* current;
     // 通知 LanPortDetector 处理此日志行
     // LanPortDetector 会检测 MC "对局域网开放"日志中的端口号
     // 此通知是轻量的，即使 LanPortDetector 未启动也无副作用
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"PLLogOutputLineNotification"
-                                                        object:nil
-                                                      userInfo:@{@"line": line}];
+    RouterPost(kRouterPLLogOutputLineNotification, nil, @{@"line": line});
 
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:logLines.count inSection:0];
     [logLines addObject:line];

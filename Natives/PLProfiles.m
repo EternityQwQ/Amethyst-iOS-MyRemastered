@@ -6,6 +6,7 @@
 //
 
 #import "LauncherPreferences.h"
+#import "LauncherRouter.h"
 #import "PLProfiles.h"
 #import "utils.h"
 
@@ -115,7 +116,7 @@ static PLProfiles* current;
     self.profileDict[@"selectedProfile"] = (id)name;
     [self save];
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SelectedProfileChanged" object:name];
+    RouterPost(kRouterSelectedProfileChanged, name, nil);
 }
 
 /// 递归清理 NSDate 等非法 JSON 类型，确保保存不崩溃

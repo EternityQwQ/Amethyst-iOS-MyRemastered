@@ -515,7 +515,7 @@ static CGFloat LauncherCardLayoutRightPanelWidth(UITraitCollection *trait) {
     // 重新加载版本列表
     [self initializeVersionLists];
     // 通知右侧面板刷新版本显示
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"SelectedProfileChanged" object:nil];
+    RouterPost(kRouterSelectedProfileChanged, nil, nil);
 }
 
 - (void)showHomePage {

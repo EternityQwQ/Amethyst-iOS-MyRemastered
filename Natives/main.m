@@ -4,6 +4,7 @@
 #import <UIKit/UIKit.h>
 
 #import "AppDelegate.h"
+#import "LauncherRouter.h"
 #import "customcontrols/CustomControlsUtils.h"
 #import "HostManagerBridge.h"
 #import "JavaLauncher.h"
@@ -201,9 +202,7 @@ void init_redirectStdio() {
                     [NSCharacterSet newlineCharacterSet]];
                 for (NSString *line in lines) {
                     if (line.length > 0) {
-                        [[NSNotificationCenter defaultCenter] postNotificationName:@"PLLogOutputLineNotification"
-                                                                            object:nil
-                                                                          userInfo:@{@"line": line}];
+                        RouterPost(kRouterPLLogOutputLineNotification, nil, @{@"line": line});
                     }
                 }
             }

@@ -4,6 +4,7 @@
 //
 
 #import "AiSettingsTools.h"
+#import "LauncherRouter.h"
 #import "LauncherPreferences.h"
 #import "PLProfiles.h"
 #import "utils.h"
@@ -300,7 +301,7 @@
         mutable[profileField] = storageValue;
         [PLProfiles.current.profiles setObject:mutable forKey:profileName];
         [PLProfiles.current save];
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
+        RouterPost(kRouterReloadProfileList, nil, nil);
 
         NSString *display = storageValue;
         if ([key isEqualToString:@"video.renderer"]) {
@@ -334,7 +335,7 @@
         return;
     }
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"ReloadProfileList" object:nil];
+    RouterPost(kRouterReloadProfileList, nil, nil);
     completion([NSString stringWithFormat:@"已将全局 %@ 设置为 %@。", key, [AiSettingsTools stringFromValue:value]], nil);
 }
 
