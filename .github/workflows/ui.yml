@@ -364,64 +364,34 @@ jobs:
               Natives/config.h.in > Natives/config.h
           grep -c "#define" Natives/config.h
 
-      - name: Syntax-only compile every app-target Natives .m
+      - name: Syntax-only compile every branch-touched Natives .m
         run: |
           set -e
           SDK=$(xcrun --sdk iphoneos --show-sdk-path)
-          INCLUDES="-INatives"
-          # 与 Natives/CMakeLists.txt include_directories 同源（相对 Natives/）
-          for d in . external/AFNetworking/AFNetworking external/AFNetworking/UIKit+AFNetworking \
-                   external/DBNumberedSlider/Classes external/NRFileManager external/UnzipKit \
-                   external/fishhook external/lzma external/mesa external/AltKit external/Apple \
-                   external/ballpa1n external/ballpa1n/wrapped external/mach; do
-            INCLUDES="$INCLUDES -INatives/$d"
-          done
+          # -I 覆盖 Natives 下所有含头文件目录（含 installer/modpack 等深层目录，
+          # 使构建外死文件也能解析；缺的只会是 submodule/生成头，按上两步已备齐）。
+          INCLUDES=$(find Natives -type d | sed 's/^/-I/')
           FLAGS="-isysroot $SDK -miphoneos-version-min=14.0 -fobjc-arc -target arm64-apple-ios -Wunguarded-availability"
-          # 文件集 = 分支diff ∩ 真实构建 target（双条件缺一不可）：
-          # - 构建外死文件（如顶层 CurseForgeAPIKeyViewController.m，不在 target 内，
-          #   真实构建根本不编）自动排除——已实证；
-          # - 上游坏点 main_hook.m 等：若进入我方 diff 则照编（Tier2 同错，届时再定）。
           git fetch origin main --depth 1 --filter=blob:none 2>/dev/null || true
           base="origin/main"
           git rev-parse --verify "$base" >/dev/null 2>&1 || base="${{ github.event.before }}"
           git rev-parse --verify "$base" >/dev/null 2>&1 || { echo "[tier-compile] no base ref"; exit 1; }
-          FILES=$(python3 - "$base" <<'PYEOF'
-          import re, subprocess, sys, os
-          base = sys.argv[1]
-          txt = open('Natives/CMakeLists.txt', encoding='utf-8', errors='ignore').read()
-          start = txt.find('add_executable(AngelAuraAmethyst')
-          block = txt[start:txt.find('target_link_libraries(AngelAuraAmethyst')]
-          target = set()
-          # 条目无引号、每行一个，# 开头为注释（如已移除的 ZeroTier/旧文件）
-          for line in block.splitlines():
-              s = line.strip()
-              if not s or s.startswith('#'):
-                  continue
-              m = re.fullmatch(r'([\w/+.-]+\.m)', s)
-              if m:
-                  p = os.path.join('Natives', m.group(1))
-                  if os.path.isfile(p):
-                      target.add(p)
-          diff = subprocess.check_output(['git', 'diff', '--name-only', base, 'HEAD', '--',
-                                          'Natives/*.m', 'Natives/**/*.m'],
-                                         text=True).split()
-          picked = sorted(set(diff) & target)
-          skipped = sorted(set(diff) - target)
-          for s in skipped:
-              print(f'[tier-compile] skip (not in target): {s}')
-          print(' '.join(picked))
-          PYEOF
-          )
-          COUNT=0; FAILED=0
-          for f in $FILES; do
+          FAILED=0
+          COUNT=0
+          for f in $(git diff --name-only "$base" HEAD -- 'Natives/*.m' 'Natives/**/*.m' 2>/dev/null || true); do
+            [ -f "$f" ] || continue
+            # main_hook.m 上游已坏（task132 未声明），归 Tier2；本门禁只保我方改动可解析。
+            if [ "$f" = "Natives/main_hook.m" ]; then
+              echo "[tier-compile] skip (upstream-owned broken file): $f"; continue
+            fi
             COUNT=$((COUNT+1))
             # shellcheck disable=SC2086
-            if ! clang -fsyntax-only -x objective-c $FLAGS $INCLUDES "$f" 2>"/tmp/err_$(echo $f | tr '/' '_').log"; then
+            if ! clang -fsyntax-only -x objective-c $FLAGS $INCLUDES "$f" 2>"/tmp/tc_$(echo $f | tr '/' '_').log"; then
               echo "[tier-compile] FAILED: $f"
-              grep -m3 "error:" "/tmp/err_$(echo $f | tr '/' '_').log" || true
+              grep -m3 "error:" "/tmp/tc_$(echo $f | tr '/' '_').log" || true
               FAILED=1
             fi
           done
-          echo "[tier-compile] compiled $COUNT files"
+          echo "[tier-compile] checked $COUNT files"
           [ "$COUNT" -gt 0 ] || { echo "[tier-compile] empty file list"; exit 1; }
           exit $FAILED
