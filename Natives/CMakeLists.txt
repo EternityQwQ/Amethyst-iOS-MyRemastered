@@ -378,8 +378,7 @@ add_executable(AngelAuraAmethyst
   UI/Download/DownloadViewController+Tabs.m
   UI/Download/DownloadViewController+VersionList.m
   UI/Download/DownloadViewController+AssetLists.m
-  UI/Download/ModernAssetCell.m
-  UI/Download/DownloadViewController+Setup.m
+  UI/Download/DownloadViewController+Filters.m
   UI/Download/ModernAssetCell.m
   LauncherPreferences.m
   UI/Settings/LauncherPreferencesViewController.m
