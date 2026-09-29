@@ -86,16 +86,22 @@
     }
 }
 
-#pragma mark - 宿主启动性能（Apple 官方模板同款 metric）
+#pragma mark - 宿主 UI 性能（measureBlock，单元 bundle 内合法量法）
 
-- (void)testHostLaunchPerformance {
-    if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *)) {
-        [self measureWithMetrics:@[[[XCTApplicationLaunchMetric alloc] init]]
-                           block:^{
-            XCUIApplication *app = [[XCUIApplication alloc] init];
-            [app launch];
-        }];
-    }
+// 注意：XCUIApplication 只能在 UI-testing bundle 内使用，在此灰盒单元 bundle
+// 内 init 会直接抛 NSInternalInconsistencyException（已在 CI 验证）。
+// 真 App 的启动性能由 AmethystAppUITests.testLaunchPerformance
+//（XCTApplicationLaunchMetric，官方模板同款）在黑盒侧覆盖。
+// 这里量宿主进程内的主线程 UI 活：空白根视图 load + 主题色解析。
+- (void)testHostUIPerformance {
+    [self measureBlock:^{
+        UIViewController *root = [[UIViewController alloc] init];
+        root.view.backgroundColor = [UIColor systemBackgroundColor];
+        [root loadViewIfNeeded];
+        for (NSInteger i = 0; i < 100; i++) {
+            (void)UIThemeColorFromHex(kThemeAccentViolet);
+        }
+    }];
 }
 
 @end
