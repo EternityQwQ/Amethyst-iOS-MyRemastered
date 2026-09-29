@@ -165,33 +165,52 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Imports resolve (same-dir, Natives root, recursive, submodule/generated allowlist)
+      - name: Imports resolve like clang (target files, dirname + CMake -I, no guessing)
         run: |
           set -e
+          # 教训：P10b-e 漏网 `../SurfaceViewController.h`（Tier2 实证），
+          # 因旧门禁“递归按名兜底”与 clang 行为不一致。本门禁逐字镜像编译器：
+          # 仅检查 app target 内文件；含 / 的引用只按“同目录 + CMake -I 逐项拼接”解析。
           python3 - <<'PYEOF'
           import re, glob, os, sys
-          bybase = {}
-          for p in glob.glob('Natives/**/*', recursive=True):
-              if os.path.isfile(p):
-                  bybase.setdefault(os.path.basename(p), []).append(p)
-          # submodule / 生成头文件（源码树本就没有，需 allowlist）
-          ALLOW = {'AFNetworking.h','ALTServerConnection.h','DBNumberedSlider.h','HostManagerBridge.h',
-           'NSFileManager+NRFileManager.h','UIImageView+AFNetworking.h','UIKit+AFNetworking.h',
-           'UZKArchive.h','UnzipKit.h','config.h','mach_excServer.h','ZeroTierSockets.h'}
+          txt = open('Natives/CMakeLists.txt', encoding='utf-8', errors='ignore').read()
+          start = txt.find('add_executable(AngelAuraAmethyst')
+          block = txt[start:txt.find('target_link_libraries(AngelAuraAmethyst')]
+          target = set()
+          for line in block.splitlines():
+              s = line.strip()
+              if not s or s.startswith('#'):
+                  continue
+              m = re.fullmatch(r'([\w/+.-]+\.m)', s)
+              if m:
+                  p = os.path.join('Natives', m.group(1))
+                  if os.path.isfile(p):
+                      target.add(p)
+          ib = txt.find('include_directories(')
+          ie = txt.find(')', ib)
+          incs = ['Natives'] + ['Natives/' + l.strip().strip('"') for l in txt[ib:ie].splitlines()[1:]
+                  if l.strip() and not l.strip().startswith('#') and not l.strip().startswith(')')]
+          # submodule/生成头（源码树本就没有，由构建环境提供；Tier0/compile 侧覆盖其存在性）
+          ALLOW = {'AFNetworking.h', 'ALTServerConnection.h', 'DBNumberedSlider.h', 'HostManagerBridge.h',
+                   'fishhook.h',
+                   'NSFileManager+NRFileManager.h', 'UIImageView+AFNetworking.h', 'UIKit+AFNetworking.h',
+                   'UZKArchive.h', 'UnzipKit.h', 'config.h', 'mach_excServer.h', 'ZeroTierSockets.h'}
+          # submodule 生成前本地缺失的目录在 CI 由 submodule 步骤补齐；只校验 Natives 内已存在目录
           bad = {}
-          for f in glob.glob('Natives/**/*.m', recursive=True) + glob.glob('Natives/**/*.h', recursive=True):
-              lines = [l for l in open(f, encoding='utf-8', errors='ignore').read().splitlines()
-                       if not l.strip().startswith('//')]
-              for imp in re.findall(r'#import\s+"([^"]+)"', '\n'.join(lines)):
-                  base = imp.split('/')[-1]
-                  ok = (os.path.exists(os.path.join(os.path.dirname(f), imp))
-                        or os.path.exists(os.path.join('Natives', imp))
-                        or base in bybase or base in ALLOW)
-                  if not ok:
-                      bad.setdefault(imp, []).append(f)
+          for f in sorted(target):
+              for i, l in enumerate(open(f, encoding='utf-8', errors='ignore').read().splitlines()):
+                  if l.strip().startswith('//'):
+                      continue
+                  for imp in re.findall(r'#(?:import|include)\s+"([^"]+)"', l):
+                      if imp.split('/')[-1] in ALLOW:
+                          continue
+                      cands = [os.path.normpath(os.path.join(os.path.dirname(f), imp))]
+                      cands += [os.path.normpath(os.path.join(d, imp)) for d in incs]
+                      if not any(os.path.isfile(c) for c in cands):
+                          bad.setdefault(f + ':' + str(i + 1), []).append(imp)
           if bad:
-              print('[tier1] unresolvable imports:', bad); sys.exit(1)
-          print('[tier1] imports resolve')
+              print('[tier1] unresolvable imports (clang-mirror):', bad); sys.exit(1)
+          print(f'[tier1] imports resolve like clang ({len(target)} target files)')
           PYEOF
 
       - name: RouterPost constants valid (used ⊆ defined)

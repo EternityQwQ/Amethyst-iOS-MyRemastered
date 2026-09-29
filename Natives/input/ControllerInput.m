@@ -1,7 +1,7 @@
 #import "ControllerInput.h"
 #import "../LauncherPreferences.h"
 #import "../PLProfiles.h"
-#import "../SurfaceViewController.h"
+#import "SurfaceViewController.h"
 #import "../utils.h"
 
 #include "../glfw_keycodes.h"

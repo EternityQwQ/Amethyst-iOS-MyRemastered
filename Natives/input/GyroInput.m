@@ -1,7 +1,7 @@
 #import <CoreMotion/CoreMotion.h>
 #import <UIKit/UIKit.h>
 #import "GyroInput.h"
-#import "../SurfaceViewController.h"
+#import "SurfaceViewController.h"
 #import "../utils.h"
 
 @implementation GyroInput
