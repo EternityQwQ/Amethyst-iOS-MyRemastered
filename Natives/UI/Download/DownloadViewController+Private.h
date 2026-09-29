@@ -9,6 +9,10 @@
 #import "ResourcePackItem.h"
 #import "DataPackItem.h"
 #import "WorldItem.h"
+// 扩展声明的代理协议头（原主文件靠 import 顺序隐式可见，独立头必须显式引入）
+#import "ModVersionViewController.h"
+#import "ShaderVersionViewController.h"
+#import "AssetVersionViewController.h"
 
 @interface DownloadViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, ModVersionViewControllerDelegate, ShaderVersionViewControllerDelegate, AssetVersionViewControllerDelegate>
 
