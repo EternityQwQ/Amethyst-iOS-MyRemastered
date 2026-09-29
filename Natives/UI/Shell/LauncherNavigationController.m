@@ -662,6 +662,17 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 
     if (isJITEnabled(false)) {
         [ALTServerManager.sharedManager stopDiscovering];
+        // TXM 机型（议题 #133）：CS_DEBUGGED 置位只证明"曾经启用过"，调试器脱离后
+        // 直接启动会在 launchJVM 的 brk #0x69 上闪退。探针全无时先重附加脚本。
+        if (DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED | JIT_FLAG_HAS_TXM) &&
+            !JIT26IsLikelyDebuggerKeepAttached() &&
+            !getPrefBool(@"debug.jit26_script_disable")) {
+            NSLog(@"[JIT] [NavCtrl] CS_DEBUGGED set but no live JIT26 debugger (ppid=%d traced=%d exn=%d) -- re-attaching",
+                  getppid(), JIT26DebuggerAttachedViaPtrace(), JIT26DebuggerViaExceptionPorts());
+            [self jit_reattachJIT26ThenLaunch:handler];
+            return;
+        }
+        NSLog(@"[JIT] [NavCtrl] JIT enabled with live JIT26 debugger, launching directly");
         handler();
         return;
     } else if (hasTrollStoreJIT) {
@@ -678,7 +689,14 @@ static void *ProgressObserverContext = &ProgressObserverContext;
             NSData *scriptData = [NSData dataWithContentsOfFile:[NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"UniversalJIT26.js"]];
             scriptDataString = [@"&script-data=" stringByAppendingString:[scriptData base64EncodedStringWithOptions:0]];
         }
-        [UIApplication.sharedApplication openURL:[NSURL URLWithString:[NSString stringWithFormat:@"stikjit://enable-jit?bundle-id=%@&pid=%d%@", NSBundle.mainBundle.bundleIdentifier, getpid(), scriptDataString]] options:@{} completionHandler:nil];
+        [UIApplication.sharedApplication openURL:[NSURL URLWithString:[NSString stringWithFormat:@"stikjit://enable-jit?bundle-id=%@&pid=%d%@", NSBundle.mainBundle.bundleIdentifier, getpid(), scriptDataString]] options:@{} completionHandler:^(BOOL urlOK) {
+            NSLog(@"[JIT] [NavCtrl] openURL stikjit:// -> %d", urlOK);
+            if (!urlOK) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    showDialog(localize(@"Error", nil), @"stikjit:// 无响应（未安装 StikDebug？）。请安装 StikDebug 后重试，或换用其它 JIT 开启方式。\nstikjit:// was not handled (StikDebug not installed?). Install StikDebug and retry.");
+                });
+            }
+        }];
     } else {
         // Assuming 16.7-17.3.1. SideStore still lacks this URL scheme at the time of writing, so it only jumps to SideStore.
         [UIApplication.sharedApplication openURL:[NSURL URLWithString:[NSString stringWithFormat:@"sidestore://sidejit-enable?pid=%d", getpid()]] options:@{} completionHandler:nil];
@@ -689,21 +707,113 @@ static void *ProgressObserverContext = &ProgressObserverContext;
         preferredStyle:UIAlertControllerStyleAlert];
 /* TODO:
     UIAlertAction *cancel = [UIAlertAction actionWithTitle:localize(@"Cancel", nil) style:UIAlertActionStyleCancel handler:^{
-        
+
     }];
     [alert addAction:cancel];
 */
     [self presentViewController:alert animated:YES completion:nil];
 
+    // 后台任务断言：stikjit:// 切后台后防 iOS 立即挂起冻结等待循环。
+    __block UIBackgroundTaskIdentifier jit_bgt = [UIApplication.sharedApplication beginBackgroundTaskWithName:@"jit-wait" expirationHandler:^{}];
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        while (!isJITEnabled(false)) {
-            // Perform check for every 200ms
-            usleep(1000*200);
-        }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [alert dismissViewControllerAnimated:YES completion:handler];
-        });
+        // 有界等待 120s + 心跳日志，超时走重试弹窗。
+        BOOL ok = ame169_waitForJITCondition(^{ return isJITEnabled(false); }, 120.0, @"isJITEnabled");
+        // 自愈式派发：防后台楔死主队列吞掉续接块。
+        ame185_dispatchToMainSelfHealing(^{
+            if (jit_bgt != UIBackgroundTaskInvalid) {
+                [UIApplication.sharedApplication endBackgroundTask:jit_bgt];
+                jit_bgt = UIBackgroundTaskInvalid;
+            }
+            if (ok) {
+                [alert dismissViewControllerAnimated:YES completion:nil];
+                if (DeviceHasJITFlags(JIT_FLAG_FORCE_MIRRORED | JIT_FLAG_HAS_TXM) &&
+                    !JIT26IsLikelyDebuggerKeepAttached() &&
+                    !getPrefBool(@"debug.jit26_script_disable")) {
+                    NSLog(@"[JIT] [NavCtrl] wait satisfied but JIT26 debugger is gone -- re-attaching before launch");
+                    [self jit_reattachJIT26ThenLaunch:handler];
+                } else {
+                    handler();
+                }
+            } else {
+                [alert dismissViewControllerAnimated:YES completion:nil];
+                [self jit_showTimeoutRetryAlert:handler];
+            }
+        }, @"NavCtrl main wait");
     });
+}
+
+// JIT26 调试器重挂统一助手：stikjit://（附 UniversalJIT26.js）+ 前台等待 +
+// 后台断言 + 有界等调试器存活，超时走重试弹窗。
+- (void)jit_reattachJIT26ThenLaunch:(void(^)(void))handler {
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:localize(@"launcher.wait_jit.title", nil)
+        message:localize(@"launcher.wait_jit.message", nil)
+        preferredStyle:UIAlertControllerStyleAlert];
+    [self presentViewController:alert animated:YES completion:nil];
+
+    __block UIBackgroundTaskIdentifier jit_bgt = [UIApplication.sharedApplication beginBackgroundTaskWithName:@"jit26-reattach" expirationHandler:^{}];
+
+    void (^fireURL)(void) = ^{
+        NSString *scriptDataString = @"";
+        NSData *scriptData = [NSData dataWithContentsOfFile:[NSBundle.mainBundle.bundlePath stringByAppendingPathComponent:@"UniversalJIT26.js"]];
+        if (scriptData) {
+            scriptDataString = [@"&script-data=" stringByAppendingString:[scriptData base64EncodedStringWithOptions:0]];
+        }
+        [UIApplication.sharedApplication openURL:[NSURL URLWithString:[NSString stringWithFormat:@"stikjit://enable-jit?bundle-id=%@&pid=%d%@", NSBundle.mainBundle.bundleIdentifier, getpid(), scriptDataString]] options:@{} completionHandler:^(BOOL urlOK) {
+            NSLog(@"[JIT] [NavCtrl] re-attach stikjit:// -> %d (script=%lu bytes)", urlOK, (unsigned long)scriptData.length);
+        }];
+    };
+
+    if (UIApplication.sharedApplication.applicationState != UIApplicationStateActive) {
+        __block id obs = nil;
+        obs = [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *n) {
+            [[NSNotificationCenter defaultCenter] removeObserver:obs];
+            obs = nil;
+            fireURL();
+        }];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (obs) {
+                [[NSNotificationCenter defaultCenter] removeObserver:obs];
+                obs = nil;
+                fireURL();
+            }
+        });
+    } else {
+        fireURL();
+    }
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        BOOL ok = ame169_waitForJITCondition(^{ return JIT26IsLikelyDebuggerKeepAttached(); }, 120.0, @"JIT26 debugger attach");
+        ame185_dispatchToMainSelfHealing(^{
+            if (jit_bgt != UIBackgroundTaskInvalid) {
+                [UIApplication.sharedApplication endBackgroundTask:jit_bgt];
+                jit_bgt = UIBackgroundTaskInvalid;
+            }
+            [alert dismissViewControllerAnimated:YES completion:nil];
+            if (ok) {
+                if (handler) handler();
+            } else {
+                [self jit_showTimeoutRetryAlert:handler];
+            }
+        }, @"NavCtrl reattach wait");
+    });
+}
+
+// JIT 等待超时后的出路弹窗：重试 = 重走一轮 invokeAfterJITEnabled。
+- (void)jit_showTimeoutRetryAlert:(void(^)(void))handler {
+    NSLog(@"[JIT] [NavCtrl] JIT wait timed out, showing retry alert");
+    UIAlertController *retry = [UIAlertController alertControllerWithTitle:localize(@"launcher.wait_jit.title", nil)
+                                                                   message:localize(@"jit.timeout_retry_msg", nil)
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    [retry addAction:[UIAlertAction actionWithTitle:localize(@"resman.common.cancel", nil) style:UIAlertActionStyleCancel handler:nil]];
+    [retry addAction:[UIAlertAction actionWithTitle:localize(@"jit.retry", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        [self invokeAfterJITEnabled:handler];
+    }]];
+    if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+        retry.popoverPresentationController.sourceView = self.view;
+        retry.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 0, 0);
+    }
+    [self presentViewController:retry animated:YES completion:nil];
 }
 
 #pragma mark - UIPopoverPresentationControllerDelegate

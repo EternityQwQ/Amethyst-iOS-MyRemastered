@@ -1024,9 +1024,16 @@ int launchJVM(NSString *accountId, id launchTarget, int width, int height, int m
     BOOL requiresDebugJITMapping = DeviceNeedsDebugJITMapping();
     BOOL jit26AlwaysAttached = getPrefBool(@"debug.debug_always_attached_jit");
     if (requiresDebugJITMapping) {
-        // 检测是否在使用 legacy JIT script（brk #0x69 由 UniversalJIT26.js 处理）
+        // 检测是否在使用 legacy JIT script（brk #0x69 由 UniversalJIT26.js 处理）。
+        // Safe 版：调试器无人应答时返回 NULL 而不是 EXC_BREAKPOINT 闪退（议题 #133）。
         static void *result;
-        if(!result) result = JIT26CreateRegionLegacy(getpagesize());
+        if(!result) result = JIT26CreateRegionLegacySafe(getpagesize());
+        if (result == NULL) {
+            NSLog(@"[JIT26] JIT26CreateRegionLegacy returned NULL -- JIT26 debugger not servicing brk; aborting launch gracefully");
+            showDialog(localize(@"Error", nil), @"JIT 调试器未响应（brk 无人服务）。请确认已用带 UniversalJIT26 脚本的方式启用 JIT 后再启动。\nJIT debugger is not responding. Enable JIT with the UniversalJIT26 script and try again.");
+            [PLLogOutputView handleExitCode:1];
+            return 1;
+        }
         if ((uint32_t)result != 0x690000E0) {
             munmap(result, getpagesize());
             // legacy script 只允许调用一次 breakpoint，必须切换到 UniversalJIT26
@@ -2141,7 +2148,14 @@ int launchHeadlessJVM(NSString *mainClass, NSArray<NSString *> *args, int minJav
     BOOL jit26AlwaysAttached = getPrefBool(@"debug.debug_always_attached_jit");
     if (requiresDebugJITMapping) {
         static void *result;
-        if (!result) result = JIT26CreateRegionLegacy(getpagesize());
+        if (!result) result = JIT26CreateRegionLegacySafe(getpagesize());
+        if (result == NULL) {
+            NSLog(@"[JavaLauncher] launchHeadlessJVM: JIT26 debugger not servicing brk, cannot run processors");
+            showDialog(localize(@"Error", nil),
+                @"JIT 调试器未响应，安装器无法运行。请先用带 UniversalJIT26 脚本的方式启用 JIT 后重试。\n"
+                @"JIT debugger is not responding. Enable JIT with the UniversalJIT26 script and try again.");
+            return -1;
+        }
         if ((uint32_t)result != 0x690000E0) {
             munmap(result, getpagesize());
             NSString *inBundleScriptPath = [NSBundle.mainBundle pathForResource:@"UniversalJIT26" ofType:@"js"];

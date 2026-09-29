@@ -137,6 +137,22 @@ int csops(pid_t pid, unsigned int ops, void *useraddr, size_t usersize);
 BOOL isJITEnabled(BOOL checkCSOps);
 // legacy method used to check if we're using universal script
 void* JIT26CreateRegionLegacy(size_t len);
+// JIT26 调试器存活探针（议题 #133）：CS_DEBUGGED 只是"曾经启用过"的持久标志，
+// 外部工具瞬时附加后退出会残留置位；TXM 机型上 launchJVM 的 brk #0x69 必须由
+// 活的调试器现场服务，否则 EXC_BREAKPOINT 秒闪退。状态显示继续用 isJITEnabled，
+// 启动决策用这组探针（三探针任一命中即在岗：ppid!=1 / P_TRACED / 任务异常端口）。
+BOOL JIT26IsLikelyDebuggerKeepAttached(void);
+BOOL JIT26DebuggerAttachedViaPtrace(void);
+BOOL JIT26DebuggerViaExceptionPorts(void);
+// brk #0x69 的 SIGTRAP 安全网包装：无人应答时返回 NULL 而不是致死崩溃，
+// 由调用方走优雅报错路径；调试器正常应答时行为与裸函数完全一致。
+void* JIT26CreateRegionLegacySafe(size_t len);
+// JIT 等待轮询的有界版本（最长 timeout 秒，每 10s 心跳日志，挂起间隙不计入
+// 超时预算，超时返回 NO）。替代裸 while(!isJITEnabled) 死循环。
+BOOL ame169_waitForJITCondition(BOOL (^condition)(void), NSTimeInterval timeout, NSString *label);
+// JIT 等待成功后的自愈式主队列派发（三道防线：常规派发 / 前台激活重派 /
+// 后台看门狗重派并钉死未送达锚点），防主队列续接块丢失导致启动卡死。
+void ame185_dispatchToMainSelfHealing(dispatch_block_t block, NSString *label);
 // used for large memory regions
 void* JIT26PrepareRegion(void *addr, size_t len);
 // same as JIT26PrepareRegion, but used for smaller memory regions

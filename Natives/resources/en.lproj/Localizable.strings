@@ -1961,3 +1961,7 @@
 
 "preference.auto" = "Auto";
 "preference.auto_select" = "Auto";
+
+"i18n_str_jit26_pending" = "JIT: Enabled (attaches on launch)";
+"jit.timeout_retry_msg" = "Timed out waiting for JIT (120s). The JIT tool may not have responded. Tap Retry to try again, or attach a debugger manually and retry.";
+"jit.retry" = "Retry";

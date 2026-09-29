@@ -65,6 +65,23 @@ void *hooked_dlsym(void *handle, const char *name);
 // hooked_dlopen（JVM/JNA 相关路径加载后）与 hooked_dlsym（入口）驱动。
 void amethyst_task133_ensure_jvm_chain(void);
 
+// Task 132/133 构建修复桩：b9b31590b 只移植了调用点与注释，
+// amethyst_task132_rebind_jna_dlsym 与 amethyst_task133_ensure_jvm_chain
+// 的真实实现从未进仓库（sdl3_hook.m 内无此二函数），导致 C99 隐式声明
+// error 整停 native 编译。此处以 no-op 桩恢复构建，行为等同此前所有
+// 成功构建（重绑定从未执行过）；hooked_dlsym 热路径调用的 133 桩保持
+// 零开销（不打日志，避免高频刷屏）。
+// TODO(port): 从 Air-Minecraft-iOS-Launcher 的 sdl3_hook.m 移植二者完整
+// 实现时，删除下方桩函数（留声明），否则链接期 duplicate symbol。
+void amethyst_task132_rebind_jna_dlsym(void *handle, void *hook) {
+    (void)handle; (void)hook;
+    NSLog(@"[Task132] stub: JNA dlsym rebind not yet ported, skipping");
+}
+
+void amethyst_task133_ensure_jvm_chain(void) {
+    // no-op 桩，见上方说明。
+}
+
 static bool (*g_real_SDL_SetWindowRelativeMouseMode)(void *window, bool enabled) = NULL;
 
 static bool amethyst_SDL_SetWindowRelativeMouseMode(void *window, bool enabled) {
@@ -461,7 +478,7 @@ void* hooked_dlopen(const char* path, int mode) {
         NSLog(@"[ZinkStrideFix] libOSMesa loaded via dlopen, re-rebinding Vulkan symbols");
         rebindZinkStrideFixForNewImage();
     }
-    // Task 132：libjnidispatch 的 _dlsym 槽位重绑定（见 sdl3_hook.m）。
+    // Task 132：libjnidispatch 的 _dlsym 槽位重绑定（实现待移植，当前为本文件桩）。
     // 幂等（重复加载安全）；失败仅记日志不阻断加载。
     if (handle && needsJnaDlsymRebind) {
         amethyst_task132_rebind_jna_dlsym(handle, (void *)hooked_dlsym);
