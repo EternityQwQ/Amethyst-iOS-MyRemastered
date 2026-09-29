@@ -13,6 +13,14 @@
 #import "ModVersionViewController.h"
 #import "ShaderVersionViewController.h"
 #import "AssetVersionViewController.h"
+// 前向声明区用到的模型/服务类型头（同理必须显式引入，否则 unknown type name）
+#import "PLTaskStages.h"
+#import "LauncherNavigationController.h"
+#import "ModVersion.h"
+#import "ShaderVersion.h"
+#import "ModItem.h"
+#import "ShaderItem.h"
+#import "ModpackImportService.h"
 
 @interface DownloadViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate, ModVersionViewControllerDelegate, ShaderVersionViewControllerDelegate, AssetVersionViewControllerDelegate>
 
