@@ -54,6 +54,14 @@ jobs:
           fi
           echo '[tier0] no token leak'
 
+      - name: DownloadVC size budget (P6a ratchet, only shrinks)
+        run: |
+          set -e
+          # P6a 拆分成果锁定：主文件只许缩小不许膨胀（2026-09-28 基线 352 行，预算 400）。
+          LINES=$(wc -l < Natives/UI/Download/DownloadViewController.m)
+          echo "[tier0] DownloadViewController.m lines: $LINES"
+          [ "$LINES" -le 400 ] || { echo '[tier0] DownloadVC budget exceeded'; exit 1; }
+
       - name: Header-only guard (no new .m without CMake entry)
         run: |
           set -e
