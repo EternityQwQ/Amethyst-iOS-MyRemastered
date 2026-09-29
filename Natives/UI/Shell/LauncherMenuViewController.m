@@ -118,6 +118,8 @@
     UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
     btn.translatesAutoresizingMaskIntoConstraints = NO;
     btn.tag = index;
+    // UI Testing 可测性（加法，无行为变化）：XCUITest 按 identifier 定位菜单项
+    btn.accessibilityIdentifier = [NSString stringWithFormat:@"launcher-menu-%ld", (long)index];
 
     // 设置图标
     UIImage *icon = [UIImage systemImageNamed:item[@"icon"]];

@@ -1,8 +1,19 @@
 name: UI layered tests
 
-# UI 分层测试合集（单文件多作业）：Tier0 grep 层 + Tier1 结构层 + Tier Apple 真编译。
+# UI 分层测试合集（单文件多作业）：Tier0 grep 层 + Tier1 结构层 + Tier Apple 真编译
+# + Tier Compile/Full（真 SDK 语法编译）+ XCTest 运行时层（模拟器）。
 # 由 ui-tier0/tier1/tier-apple 三个单作业工作流合并而来，减少文件数、一次推送一次全量信号。
 # 上游 development.yml（全量构建）保持独立冻结，不在此合并，避免与其后续修复冲突。
+# XCTest 运行时层（Apple 官方框架，macos-14 + Xcode 15.4 + iOS 模拟器）：
+# - xctest-shell（阻塞）：灰盒 bundle，运行时断言 Phase0 护栏
+#   （LauncherRouter.h / UITheme.h，header-only，零链接依赖），必须绿。
+# - xcuitest-app（非阻塞脚手架）：黑盒 XCUITest 直连真 App 包体
+#   （bundle id com.air-devs.air）。执行被 Xcode 链现状阻塞——
+#   Makefile 的 native/cmake 硬编码 iphoneos SDK + 拉设备版 JRE，
+#   PLATFORM=7 产出的是设备二进制，装不上模拟器。
+#   移植落地前只证明：两个 .xctest 可编、destination 链路通、
+#   执行失败以预期方式被隔离（continue-on-error + summary 留痕）。
+#   落地后：加 simctl install 步骤并去掉 continue-on-error 即转阻塞。
 on:
   pull_request:
     branches-ignore:
@@ -599,3 +610,162 @@ jobs:
             echo "[tier-full-compile] FAILED files above"; exit 1
           fi
           echo "[tier-full-compile] all $COUNT files parsed"
+
+  xctest-shell:
+    name: XCTest shell-contracts (blocking)
+    runs-on: macos-14
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout (no submodules needed)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Select Xcode 15.4
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          xcodebuild -version || true
+
+      - name: Resolve simulator
+        run: |
+          set -e
+          UDID=$(xcrun simctl list devices available -j | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)['devices']
+          best = ''
+          for rt, devs in d.items():
+              for x in devs:
+                  if not x.get('isAvailable', True):
+                      continue
+                  if 'iPhone 15' in x['name'] and ('17.' in rt or '18.' in rt):
+                      best = x['udid']
+          if not best:
+              for rt, devs in d.items():
+                  for x in devs:
+                      if x.get('isAvailable', True) and x['name'].startswith('iPhone'):
+                          best = x['udid']; break
+                  if best: break
+          print(best)
+          ")
+          test -n "$UDID"
+          xcrun simctl boot "$UDID" 2>/dev/null || true
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+          echo "[ui-tests] simulator: $UDID"
+
+      - name: Build for testing (retry with generic destination)
+        run: |
+          set -o pipefail
+          DEST="platform=iOS Simulator,id=${SIM_UDID}"
+          xcodebuild build-for-testing \
+            -project UITests/AmethystUITests.xcodeproj \
+            -scheme AmethystUITests \
+            -configuration Debug \
+            -destination "$DEST" \
+            CODE_SIGNING_ALLOWED=NO \
+            -resultBundlePath TestResults/build-for-testing.xcresult \
+          || xcodebuild build-for-testing \
+            -project UITests/AmethystUITests.xcodeproj \
+            -scheme AmethystUITests \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,name=iPhone 15" \
+            CODE_SIGNING_ALLOWED=NO \
+            -resultBundlePath TestResults/build-for-testing.xcresult
+
+      - name: Run gray-box tests (blocking)
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building \
+            -xctestrun "$(find . -name '*.xctestrun' -path '*Debug*' | head -n 1)" \
+            -destination "platform=iOS Simulator,id=${SIM_UDID}" \
+            -only-testing:AmethystXCTests \
+            -resultBundlePath TestResults/gray-box.xcresult
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uitests-gray-box.xcresult
+          path: TestResults/gray-box.xcresult
+          if-no-files-found: warn
+
+  xcuitest-app:
+    name: XCUITest real-app (scaffold, non-blocking)
+    runs-on: macos-14
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout (no submodules needed)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Select Xcode 15.4
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          xcodebuild -version || true
+
+      - name: Resolve simulator
+        run: |
+          set -e
+          UDID=$(xcrun simctl list devices available -j | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)['devices']
+          best = ''
+          for rt, devs in d.items():
+              for x in devs:
+                  if x.get('isAvailable', True) and x['name'].startswith('iPhone'):
+                      best = x['udid']; break
+              if best: break
+          print(best)
+          ")
+          test -n "$UDID"
+          xcrun simctl boot "$UDID" 2>/dev/null || true
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+
+      - name: Build for testing (proves both .xctest compile)
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing \
+            -project UITests/AmethystUITests.xcodeproj \
+            -scheme AmethystUITests \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,id=${SIM_UDID}" \
+            CODE_SIGNING_ALLOWED=NO \
+            -resultBundlePath TestResults/build-for-testing.xcresult
+
+      - name: Install simulator app if present (absent until sim-port)
+        run: |
+          if [ -d "Payload/AngelAuraAmethyst.app" ]; then
+            xcrun simctl install "${SIM_UDID}" "Payload/AngelAuraAmethyst.app"
+          else
+            echo '[ui-tests] no simulator .app in tree (expected until simulator-build port lands)'
+          fi
+
+      - name: Run black-box tests (expected fail until sim-port)
+        id: xcuitest
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building \
+            -xctestrun "$(find . -name '*.xctestrun' -path '*Debug*' | head -n 1)" \
+            -destination "platform=iOS Simulator,id=${SIM_UDID}" \
+            -only-testing:AmethystXCUITests \
+            -resultBundlePath TestResults/black-box.xcresult
+
+      - name: Record scaffold status
+        if: always()
+        run: |
+          echo "## XCUITest scaffold: ${{ steps.xcuitest.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo '转阻塞检查单：Makefile 切 iphonesimulator SDK（SDKPATH 按 PLATFORM=7/8/12 分流）→ dep 链模拟器可编 → UITEST=1 跳过设备版 jre → 工作流加 simctl install → 去掉本作业 test 步骤的 continue-on-error。' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uitests-black-box.xcresult
+          path: TestResults/black-box.xcresult
+          if-no-files-found: warn

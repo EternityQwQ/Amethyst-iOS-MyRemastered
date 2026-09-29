@@ -41,6 +41,9 @@ extern NSMutableDictionary *prefDict;
 
     self.viewControllers = @[masterVc, detailVc];
 
+    // UI Testing 可测性（加法，无行为变化）：XCUITest 按 identifier 断言启动落点
+    self.view.accessibilityIdentifier = @"launcher-root";
+
     // FCL Style: Fixed sidebar width
     self.preferredDisplayMode = UISplitViewControllerDisplayModeOneBesideSecondary;
     self.preferredSplitBehavior = UISplitViewControllerSplitBehaviorTile;
