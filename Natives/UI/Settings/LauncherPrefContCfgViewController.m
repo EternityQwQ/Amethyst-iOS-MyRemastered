@@ -56,7 +56,9 @@ typedef void(^CreateView)(UITableViewCell *, NSString *, NSDictionary *);
     self.prefSections = @[@"config_files", @"game_mappings", @"menu_mappings", @"controller_style"];
     
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(actionMenuSave)];
+    self.navigationItem.leftBarButtonItem.accessibilityIdentifier = @"nav-ContCfg-left";
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose target:self action:@selector(exitButtonSelector)];
+    self.navigationItem.rightBarButtonItem.accessibilityIdentifier = @"nav-ContCfg-right";
     
     self.editPickMapping = [[UIPickerView alloc] init];
     self.editPickMapping.delegate = self;

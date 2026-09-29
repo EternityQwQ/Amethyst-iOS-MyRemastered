@@ -32,6 +32,7 @@ typedef NS_ENUM(NSInteger, TouchControllerCommMode) {
 
     // 添加关闭按钮
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose target:self action:@selector(actionClose)];
+    self.navigationItem.rightBarButtonItem.accessibilityIdentifier = @"nav-TouchPrefs-right";
 
     // 适配自定义启动器背景：将当前视图控制器透明化，让全局背景（图片/视频）能够透出显示。
     // 虽然父类 PLPrefTableViewController 的 viewDidLoad 已调用 makeViewControllerTransparent，

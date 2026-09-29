@@ -116,7 +116,9 @@ static NSString * localizeProfileTitle(NSString *title) {
 
     // 导航栏按钮
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(actionDone)];
+    self.navigationItem.leftBarButtonItem.accessibilityIdentifier = @"nav-ProfileSettings-left";
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose target:self action:@selector(actionClose)];
+    self.navigationItem.rightBarButtonItem.accessibilityIdentifier = @"nav-ProfileSettings-right";
 
     // 设置表格（双列布局：leftTableView 主表格，rightTableView 仅横屏时显示）
     // UIViewController 的 self.view 是容器视图，包含两个 tableView

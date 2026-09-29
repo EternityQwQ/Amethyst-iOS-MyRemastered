@@ -121,6 +121,7 @@ static PLLogOutputView* current;
         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:
             canAppendToLog ? UIBarButtonSystemItemPause : UIBarButtonSystemItemPlay
         target:self action:@selector(actionStartStopLogOutput)];
+    item.leftBarButtonItem.accessibilityIdentifier = @"nav-PLLog-left";
 }
 
 - (void)actionToggleLogOutput {
@@ -207,9 +208,11 @@ static PLLogOutputView* current;
         navigationBar.items[0].leftBarButtonItem = [[UIBarButtonItem alloc]
             initWithBarButtonSystemItem:UIBarButtonSystemItemAction
             target:current action:@selector(actionShareLatestlog)];
+        navigationBar.items[0].leftBarButtonItem.accessibilityIdentifier = @"nav-PLLog-share";
         UIBarButtonItem *exitItem = navigationBar.items[0].rightBarButtonItems[0];
         navigationBar.items[0].rightBarButtonItems = nil;
         navigationBar.items[0].rightBarButtonItem = exitItem;
+        exitItem.accessibilityIdentifier = @"nav-PLLog-right";
 
         if (canAppendToLog) {
             canAppendToLog = NO;

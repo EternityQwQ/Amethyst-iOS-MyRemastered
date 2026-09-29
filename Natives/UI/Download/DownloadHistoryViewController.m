@@ -168,6 +168,7 @@ static NSString * const kHistoryCellReuseIdentifier = @"DownloadHistoryCell";
         style:UIBarButtonItemStylePlain
         target:self
         action:@selector(clearTapped:)];
+    self.navigationItem.rightBarButtonItem.accessibilityIdentifier = @"nav-DownloadHistory-right";
 
     [self reloadEntries];
 }

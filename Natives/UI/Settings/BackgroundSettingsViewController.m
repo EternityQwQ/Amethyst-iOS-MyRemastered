@@ -48,6 +48,7 @@
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                                                                                            target:self
                                                                                            action:@selector(closeTapped)];
+    self.navigationItem.rightBarButtonItem.accessibilityIdentifier = @"nav-BackgroundSettings-right";
 
     // 适配自定义启动器背景：将当前视图控制器透明化，让全局背景（图片/视频）能够透出显示。
     // 即使本页是背景设置页本身，也需要透明化以实时预览背景效果。

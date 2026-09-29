@@ -51,6 +51,8 @@
 
     // Refresh button: rightmost
     UIBarButtonItem *refresh = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(refreshTapped)];
+    refresh.accessibilityIdentifier = @"nav-ModTable-right-refresh";
+    switchContainerItem.accessibilityIdentifier = @"nav-ModTable-right-switch";
 
     // Put refresh as rightmost, switch container to its left
     self.navigationItem.rightBarButtonItems = @[refresh, switchContainerItem];

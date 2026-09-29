@@ -95,6 +95,8 @@ static NSString *currentImportTaskId;
     [self setTitle:localize(@"preference.title.manage_runtime", nil)];
 
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage systemImageNamed:@"plus"] style:UIBarButtonItemStylePlain target:self action:@selector(actionImportRuntime)];
+    self.navigationItem.rightBarButtonItem.accessibilityIdentifier = @"nav-ManageJRE-right";
+    self.navigationItem.rightBarButtonItem.accessibilityLabel = @"导入运行时";
 
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleInsetGrouped];
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;

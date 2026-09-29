@@ -117,20 +117,25 @@ static NSString * const kShaderCardCellIdentifier = @"ShaderCardCell";
 - (void)setupNavigationButtons {
     // 左侧：关闭（兼容 push / present 两种容器）
     self.closeButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(closeTapped)];
+    self.closeButtonItem.accessibilityIdentifier = @"nav-ShadersManager-close";
 
     self.refreshButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh target:self action:@selector(handleRefresh:)];
+    self.refreshButton.accessibilityIdentifier = @"nav-ShadersManager-refresh";
 
     UIImage *importImage = [UIImage systemImageNamed:@"square.and.arrow.down"] ?: [UIImage systemImageNamed:@"plus"];
     self.importButton = [[UIBarButtonItem alloc] initWithImage:importImage style:UIBarButtonItemStylePlain target:self action:@selector(importShaderTapped)];
     self.importButton.accessibilityLabel = localize(@"resman.shaders.import", nil);
+    self.importButton.accessibilityIdentifier = @"nav-ShadersManager-import";
 
     // "选择"按钮：进入基类批量选择模式（编辑勾选 + 底部工具栏）
     UIImage *selectImage = [UIImage systemImageNamed:@"checklist"] ?: [UIImage systemImageNamed:@"checkmark.circle"];
     self.selectButtonItem = [[UIBarButtonItem alloc] initWithImage:selectImage style:UIBarButtonItemStylePlain target:self action:@selector(toggleSelectMode)];
     self.selectButtonItem.accessibilityLabel = localize(@"resman.common.select", nil);
+    self.selectButtonItem.accessibilityIdentifier = @"nav-ShadersManager-select";
 
     self.doneButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(exitSelectMode)];
     self.doneButtonItem.accessibilityLabel = localize(@"resman.common.done", nil);
+    self.doneButtonItem.accessibilityIdentifier = @"nav-ShadersManager-done";
 
     [self updateNavigationButtons];
 }

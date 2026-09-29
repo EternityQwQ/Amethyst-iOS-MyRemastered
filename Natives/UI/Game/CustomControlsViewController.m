@@ -59,7 +59,9 @@
     [self loadSafeAreaSelectionFor:segmentedControl];
     navigationItem.titleView = segmentedControl;
     navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(actionMenuSafeAreaCancel)];
+    navigationItem.leftBarButtonItem.accessibilityIdentifier = @"nav-CustomControls-left";
     navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(actionMenuSafeAreaDone)];
+    navigationItem.rightBarButtonItem.accessibilityIdentifier = @"nav-CustomControls-right";
     self.navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 44.0)];
     self.navigationBar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
     self.navigationBar.hidden = YES;

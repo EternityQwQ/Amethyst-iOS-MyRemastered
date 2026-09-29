@@ -173,6 +173,27 @@ jobs:
           print(f'[tier0] i18n keys covered ({len(code)} used, {len(KNOWN_GAPS)} known-gaps frozen)')
           PYEOF
 
+      - name: UI testability contract (XCUITest identifiers present, only grows)
+        run: |
+          set -e
+          # P8 无障碍/可测性回归网：XCUITest 按 identifier 定位元素，删 identifier
+          # 即黑盒用例失明。本门禁锁契约只增不减（2026-09-29 基线：root 1 + menu 5 + nav 40）。
+          python3 - <<'PYEOF'
+          import re, glob, sys
+          ids = set()
+          fmts = set()
+          for f in glob.glob('Natives/**/*.m', recursive=True):
+              txt = open(f, encoding='utf-8', errors='ignore').read()
+              ids |= set(re.findall(r'accessibilityIdentifier\s*=\s*@"([^"]+)"', txt))
+              fmts |= set(re.findall(r'@"([^"]*launcher-menu-[^"]*)"', txt))
+          assert 'launcher-root' in ids, '[tier0] missing testability id: launcher-root'
+          assert any('launcher-menu-' in f for f in fmts), '[tier0] missing menu id format'
+          nav = sorted(i for i in ids if i.startswith('nav-'))
+          assert len(nav) >= 40, f'[tier0] nav ids shrank: {len(nav)}'
+          assert len(nav) == len(set(nav)), '[tier0] duplicate nav ids'
+          print(f'[tier0] testability contract OK ({len(nav)} nav + root + 5 menu)')
+          PYEOF
+
   tier1:
     name: UI Tier1 structural checks
     runs-on: ubuntu-latest

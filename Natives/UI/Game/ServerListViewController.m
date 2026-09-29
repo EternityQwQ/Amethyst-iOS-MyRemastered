@@ -65,10 +65,12 @@
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose
                                                                                           target:self
                                                                                           action:@selector(actionClose)];
+    self.navigationItem.leftBarButtonItem.accessibilityIdentifier = @"nav-ServerList-left";
 
     // 加载指示器（导航栏右侧）
     self.loadingIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.loadingIndicator];
+    self.navigationItem.rightBarButtonItem.accessibilityIdentifier = @"nav-ServerList-right-loading";
 
     self.currentAPI = [ServerService currentAPI];
     [self.sourceSegment setSelectedSegmentIndex:(self.currentAPI == ServerDownloadAPICurseForge) ? 1 : 0];

@@ -169,12 +169,14 @@ static const CGFloat kAnnHighPriorityBarWidth = 4.0;
     UIBarButtonItem *closeItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose
                                                                                 target:self
                                                                                 action:@selector(closeAction)];
+    closeItem.accessibilityIdentifier = @"nav-AnnouncementList-left";
     self.navigationItem.leftBarButtonItem = closeItem;
 
     // 右上角刷新按钮
     UIBarButtonItem *refreshItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh
                                                                                   target:self
                                                                                   action:@selector(forceRefreshAction)];
+    refreshItem.accessibilityIdentifier = @"nav-AnnouncementList-right";
     self.navigationItem.rightBarButtonItem = refreshItem;
 }
 

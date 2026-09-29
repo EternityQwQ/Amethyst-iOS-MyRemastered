@@ -30,9 +30,11 @@
     
     // 添加导航栏按钮
     UIBarButtonItem *cancelButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelTapped)];
+    cancelButton.accessibilityIdentifier = @"nav-ImageCropper-left";
     self.navigationItem.leftBarButtonItem = cancelButton;
     
     UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(doneTapped)];
+    doneButton.accessibilityIdentifier = @"nav-ImageCropper-right";
     self.navigationItem.rightBarButtonItem = doneButton;
     
     // 计算缩放比例和裁剪区域

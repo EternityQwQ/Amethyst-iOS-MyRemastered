@@ -26,7 +26,9 @@
     // Setup navigation bar & appearance
     self.title = localize(@"Edit profile", nil);
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(actionDone)];
+    self.navigationItem.leftBarButtonItem.accessibilityIdentifier = @"nav-ProfileEditor-left";
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemClose target:self action:@selector(actionClose)];
+    self.navigationItem.rightBarButtonItem.accessibilityIdentifier = @"nav-ProfileEditor-right";
     self.navigationController.modalInPresentation = YES;
     self.prefSectionsVisible = YES;
     

@@ -192,11 +192,13 @@ static UIColor *hexColor(NSString *hex) {
                                                                             style:UIBarButtonItemStylePlain
                                                                            target:self
                                                                            action:@selector(cancelTapped)];
+    self.navigationItem.leftBarButtonItem.accessibilityIdentifier = @"nav-HomeCustomize-left";
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:localize(@"i18n_str_88", nil)
                                                                              style:UIBarButtonItemStyleDone
                                                                             target:self
                                                                             action:@selector(saveTapped)];
+    self.navigationItem.rightBarButtonItem.accessibilityIdentifier = @"nav-HomeCustomize-right";
     
     // 工具栏按钮
     UIBarButtonItem *addBtn = [[UIBarButtonItem alloc] initWithTitle:localize(@"i18n_str_293", nil)

@@ -41,6 +41,8 @@
                                                                   style:UIBarButtonItemStylePlain
                                                                  target:self
                                                                  action:@selector(backAction)];
+    backItem.accessibilityIdentifier = @"nav-AnnouncementDetail-left";
+    backItem.accessibilityLabel = @"返回";
     self.navigationItem.leftBarButtonItem = backItem;
 
     [self setupUI];

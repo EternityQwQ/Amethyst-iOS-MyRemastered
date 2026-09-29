@@ -169,11 +169,13 @@ static NSString *ModsManagerSHA1ForFile(NSString *path) {
                                                                          target:self
                                                                          action:@selector(closeTapped)];
     self.closeButtonItem.accessibilityLabel = localize(@"resman.common.close", nil);
+    self.closeButtonItem.accessibilityIdentifier = @"nav-ModsManager-close";
 
     self.refreshButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemRefresh
                                                                        target:self
                                                                        action:@selector(handleRefresh:)];
     self.refreshButton.accessibilityLabel = localize(@"resman.common.refresh", nil);
+    self.refreshButton.accessibilityIdentifier = @"nav-ModsManager-refresh";
 
     UIImage *checkImage = [UIImage systemImageNamed:@"arrow.triangle.2.circlepath"];
     self.checkUpdateButton = [[UIBarButtonItem alloc] initWithImage:checkImage
@@ -181,6 +183,7 @@ static NSString *ModsManagerSHA1ForFile(NSString *path) {
                                                              target:self
                                                              action:@selector(checkForUpdates)];
     self.checkUpdateButton.accessibilityLabel = localize(@"resman.mods.check_update", nil);
+    self.checkUpdateButton.accessibilityIdentifier = @"nav-ModsManager-checkUpdate";
 
     UIImage *importImage = [UIImage systemImageNamed:@"square.and.arrow.down"] ?: [UIImage systemImageNamed:@"plus"];
     self.importButton = [[UIBarButtonItem alloc] initWithImage:importImage
@@ -188,6 +191,7 @@ static NSString *ModsManagerSHA1ForFile(NSString *path) {
                                                         target:self
                                                         action:@selector(importModTapped)];
     self.importButton.accessibilityLabel = localize(@"resman.mods.import", nil);
+    self.importButton.accessibilityIdentifier = @"nav-ModsManager-import";
 
     UIImage *selectImage = [UIImage systemImageNamed:@"checklist"] ?: [UIImage systemImageNamed:@"checkmark.circle"];
     self.selectButtonItem = [[UIBarButtonItem alloc] initWithImage:selectImage
@@ -195,11 +199,13 @@ static NSString *ModsManagerSHA1ForFile(NSString *path) {
                                                             target:self
                                                             action:@selector(enterSelectMode)];
     self.selectButtonItem.accessibilityLabel = localize(@"resman.common.select", nil);
+    self.selectButtonItem.accessibilityIdentifier = @"nav-ModsManager-select";
 
     self.doneButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                                                                         target:self
                                                                         action:@selector(exitSelectMode)];
     self.doneButtonItem.accessibilityLabel = localize(@"resman.common.done", nil);
+    self.doneButtonItem.accessibilityIdentifier = @"nav-ModsManager-done";
 
     // 更新流程忙态的导航栏转圈指示
     self.navSpinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
