@@ -374,6 +374,8 @@ add_executable(AngelAuraAmethyst
   UI/Resources/VersionManagerViewController.m
   UI/Resources/ProfileSettingsViewController.m
   UI/Download/DownloadViewController.m
+  UI/Download/DownloadViewController+Setup.m
+  UI/Download/ModernAssetCell.m
   LauncherPreferences.m
   UI/Settings/LauncherPreferencesViewController.m
   UI/Settings/LauncherPrefContCfgViewController.m
