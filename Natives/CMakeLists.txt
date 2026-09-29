@@ -375,6 +375,7 @@ add_executable(AngelAuraAmethyst
   UI/Resources/ProfileSettingsViewController.m
   UI/Download/DownloadViewController.m
   UI/Download/DownloadViewController+InstallerCore.m
+  UI/Download/DownloadViewController+InstallerFabric.m
   UI/Download/DownloadViewController+Setup.m
   UI/Download/DownloadViewController+Tabs.m
   UI/Download/DownloadViewController+VersionList.m
