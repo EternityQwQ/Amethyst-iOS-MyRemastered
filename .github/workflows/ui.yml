@@ -213,7 +213,7 @@ jobs:
           ALLOW = {'AFNetworking.h', 'ALTServerConnection.h', 'DBNumberedSlider.h', 'HostManagerBridge.h',
                    'fishhook.h',
                    'NSFileManager+NRFileManager.h', 'UIImageView+AFNetworking.h', 'UIKit+AFNetworking.h',
-                   'UZKArchive.h', 'UnzipKit.h', 'config.h', 'mach_excServer.h', 'ZeroTierSockets.h'}
+                   'UZKArchive.h', 'UnzipKit.h', 'config.h', 'mach_excServer.h'}
           # submodule 生成前本地缺失的目录在 CI 由 submodule 步骤补齐；只校验 Natives 内已存在目录
           bad = {}
           for f in sorted(target):
@@ -355,8 +355,9 @@ jobs:
           pubvals = {vals[k] for k in pub if k in vals}
           # 存量死端（冻结备忘，非本次引入）：
           # - LauncherAppearanceApplied：Root 投稿，树内零订阅
-          # - PLLogOutputLineNotification：唯一订阅者在 LanPortDetector.m，
-          #   该文件在 Natives/CMakeLists.txt 被注释排除编译（ZeroTier 移除）
+          # - PLLogOutputLineNotification：投稿在 PLLogOutputView.m/main.m（保留，
+          #   删 posting=行为变更）；唯一订阅者曾在 LanPortDetector.m，
+          #   该文件 P9-2 已删（本就不在 target 内），现树内零订阅
           DEAD = {'LauncherAppearanceApplied', 'PLLogOutputLineNotification'}
           orphan = [v for v in sorted(pubvals) if v not in obs and v not in DEAD]
           if orphan:
