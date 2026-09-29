@@ -662,6 +662,7 @@ jobs:
             -project UITests/AmethystUITests.xcodeproj \
             -scheme AmethystUITests \
             -configuration Debug \
+            -derivedDataPath "$PWD/TestDD" \
             -destination "$DEST" \
             CODE_SIGNING_ALLOWED=NO \
             -resultBundlePath TestResults/build-for-testing.xcresult \
@@ -669,6 +670,7 @@ jobs:
             -project UITests/AmethystUITests.xcodeproj \
             -scheme AmethystUITests \
             -configuration Debug \
+            -derivedDataPath "$PWD/TestDD" \
             -destination "platform=iOS Simulator,name=iPhone 15" \
             CODE_SIGNING_ALLOWED=NO \
             -resultBundlePath TestResults/build-for-testing.xcresult
@@ -676,8 +678,11 @@ jobs:
       - name: Run gray-box tests (blocking)
         run: |
           set -o pipefail
+          XCRUN=$(find TestDD -name '*.xctestrun' | head -n 1)
+          test -n "$XCRUN" || { echo '[ui-tests] no .xctestrun under TestDD'; exit 1; }
+          echo "[ui-tests] xctestrun: $XCRUN"
           xcodebuild test-without-building \
-            -xctestrun "$(find . -name '*.xctestrun' -path '*Debug*' | head -n 1)" \
+            -xctestrun "$XCRUN" \
             -destination "platform=iOS Simulator,id=${SIM_UDID}" \
             -only-testing:AmethystXCTests \
             -resultBundlePath TestResults/gray-box.xcresult
@@ -732,6 +737,7 @@ jobs:
             -project UITests/AmethystUITests.xcodeproj \
             -scheme AmethystUITests \
             -configuration Debug \
+            -derivedDataPath "$PWD/TestDD" \
             -destination "platform=iOS Simulator,id=${SIM_UDID}" \
             CODE_SIGNING_ALLOWED=NO \
             -resultBundlePath TestResults/build-for-testing.xcresult
@@ -749,8 +755,11 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
+          XCRUN=$(find TestDD -name '*.xctestrun' | head -n 1)
+          test -n "$XCRUN" || { echo '[ui-tests] no .xctestrun under TestDD'; exit 1; }
+          echo "[ui-tests] xctestrun: $XCRUN"
           xcodebuild test-without-building \
-            -xctestrun "$(find . -name '*.xctestrun' -path '*Debug*' | head -n 1)" \
+            -xctestrun "$XCRUN" \
             -destination "platform=iOS Simulator,id=${SIM_UDID}" \
             -only-testing:AmethystXCUITests \
             -resultBundlePath TestResults/black-box.xcresult
