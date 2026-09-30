@@ -10,13 +10,10 @@ name: UI layered tests
 # XCTest 运行时层（Apple 官方框架，macos-14 + Xcode 15.4 + iOS 模拟器）：
 # - xctest-shell（阻塞）：灰盒 bundle，运行时断言 Phase0 护栏
 #   （LauncherRouter.h / UITheme.h，header-only，零链接依赖），必须绿。
-# - xcuitest-app（非阻塞脚手架）：黑盒 XCUITest 直连真 App 包体
-#   （bundle id com.air-devs.air）。执行被 Xcode 链现状阻塞——
-#   Makefile 的 native/cmake 硬编码 iphoneos SDK + 拉设备版 JRE，
-#   PLATFORM=7 产出的是设备二进制，装不上模拟器。
-#   移植落地前只证明：两个 .xctest 可编、destination 链路通、
-#   执行失败以预期方式被隔离（continue-on-error + summary 留痕）。
-#   落地后：加 simctl install 步骤并去掉 continue-on-error 即转阻塞。
+# - xcuitest-app（阻塞）：黑盒 XCUITest 直连真 App 包体
+#   （bundle id com.air-devs.air，sim-probe-payload 产出并上传 sim-app，
+#   本作业下载安装后真跑）。用例失败即红；每关键帧存真 PNG 到 mac /tmp，
+#   收集为 uitests-app-previews artifact（App UI 预览图）。
 on:
   pull_request:
     branches-ignore:
@@ -810,11 +807,12 @@ jobs:
           if-no-files-found: warn
 
   xcuitest-app:
-    name: XCUITest real-app (scaffold, non-blocking)
+    name: XCUITest real-app (blocking, runs against sim build)
     runs-on: macos-14
     timeout-minutes: 45
     permissions:
       contents: read
+    needs: [sim-probe-payload]
     steps:
       - name: Checkout (no submodules needed)
         uses: actions/checkout@v4
@@ -856,17 +854,23 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             -resultBundlePath TestResults/build-for-testing.xcresult
 
-      - name: Install simulator app if present (absent until sim-port)
-        run: |
-          if [ -d "Payload/AngelAuraAmethyst.app" ]; then
-            xcrun simctl install "${SIM_UDID}" "Payload/AngelAuraAmethyst.app"
-          else
-            echo '[ui-tests] no simulator .app in tree (expected until simulator-build port lands)'
-          fi
+      - name: Download simulator app from probe
+        uses: actions/download-artifact@v4
+        with:
+          name: sim-app
+          path: sim-app/
 
-      - name: Run black-box tests (expected fail until sim-port)
+      - name: Install simulator app
+        run: |
+          set -e
+          APP="sim-app/AngelAuraAmethyst.app"
+          test -d "$APP"
+          codesign --force --sign - "$APP"
+          xcrun simctl install "${SIM_UDID}" "$APP"
+          echo '[ui-tests] sim app installed'
+
+      - name: Run black-box tests (blocking)
         id: xcuitest
-        continue-on-error: true
         run: |
           set -o pipefail
           XCRUN=$(find TestDD -name '*.xctestrun' | head -n 1)
@@ -881,9 +885,25 @@ jobs:
       - name: Record scaffold status
         if: always()
         run: |
-          echo "## XCUITest scaffold: ${{ steps.xcuitest.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "## XCUITest real-app: ${{ steps.xcuitest.outcome }}" >> "$GITHUB_STEP_SUMMARY"
           echo '' >> "$GITHUB_STEP_SUMMARY"
-          echo '转阻塞检查单：Makefile 切 iphonesimulator SDK（SDKPATH 按 PLATFORM=7/8/12 分流）→ dep 链模拟器可编 → UITEST=1 跳过设备版 jre → 工作流加 simctl install → 去掉本作业 test 步骤的 continue-on-error。' >> "$GITHUB_STEP_SUMMARY"
+          echo '真 App 上模拟器已通（sim-probe-payload 安装+启动验证），本作业转阻塞。' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Collect App UI previews (viewable PNGs)
+        if: always()
+        run: |
+          # 黑盒用例在 mac 宿主 /tmp 落真 PNG（AMEshot-*.png），捞出来做样式画廊
+          mkdir -p AppPreviews
+          find /tmp -maxdepth 1 -name "AMEshot-*.png" 2>/dev/null -exec cp {} AppPreviews/ \; || true
+          ls AppPreviews/ || true
+
+      - name: Upload App UI previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uitests-app-previews
+          path: AppPreviews/
+          if-no-files-found: warn
 
       - name: Upload test results
         if: always()
@@ -974,3 +994,11 @@ jobs:
           name: sim-payload-probe.log
           path: sim-payload.log
           if-no-files-found: warn
+
+      - name: Upload simulator app (for black-box tests)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sim-app
+          path: artifacts/Payload/AngelAuraAmethyst.app
+          if-no-files-found: error

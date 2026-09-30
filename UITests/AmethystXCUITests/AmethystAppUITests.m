@@ -1,15 +1,19 @@
 // AmethystAppUITests —— 真 App 的黑盒 UI Testing（Apple XCUITest，官方框架）。
 // 以 bundleIdentifier 直连安装好的 AngelAuraAmethyst（com.air-devs.air），
 // 按 accessibilityIdentifier（launcher-root / launcher-menu-0..4，见 App 侧加法注释）
-// 断言启动落点与侧栏冒烟。
-//
-// 运行前提（当前阻塞项，见 ui-tests.yml 的 xcuitest-app 作业说明）：
-//   1. Makefile 的 native/cmake 链切到 iphonesimulator SDK 产出模拟器 .app；
-//   2. 该 .app 经 simctl 安装进目标模拟器。
-// 前提满足前，此 target 只编译（build-for-testing），不阻塞合并。
+// 断言启动落点与侧栏冒烟。每关键帧存真 PNG 到 mac 宿主 /tmp（AMEshot-<name>.png），
+// CI 收集为 uitests-app-screenshots artifact，即“App UI 预览图”。
 @import XCTest;
 
 static NSString * const kAmethystBundleID = @"com.air-devs.air";
+
+static void AMESaveScreen(NSString *name) {
+    NSData *png = [[XCUIScreen mainScreen].screenshot PNGRepresentation];
+    if (!png) return;
+    NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:
+                      [NSString stringWithFormat:@"AMEshot-%@.png", name]];
+    [png writeToFile:path atomically:YES];
+}
 
 @interface AmethystAppUITests : XCTestCase
 @end
@@ -38,6 +42,7 @@ static NSString * const kAmethystBundleID = @"com.air-devs.air";
         shot.lifetime = XCTAttachmentLifetimeKeepAlways;
         [activity addAttachment:shot];
     }];
+    AMESaveScreen(@"app-home");
     [app terminate];
 }
 
@@ -49,6 +54,7 @@ static NSString * const kAmethystBundleID = @"com.air-devs.air";
         XCUIElement *item = app.buttons[identifier];
         if ([item waitForExistenceWithTimeout:10.0]) {
             [item tap];
+            AMESaveScreen([NSString stringWithFormat:@"app-menu-%ld", (long)i]);
         }
         XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning,
                            @"点菜单项 %@ 后 App 死亡", identifier);
