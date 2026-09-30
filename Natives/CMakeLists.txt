@@ -132,13 +132,30 @@ set(TOUCHCONTROLLER_LIB_DIR "${CMAKE_CURRENT_LIST_DIR}/TouchController")
 set(TOUCHCONTROLLER_XCFW "${TOUCHCONTROLLER_LIB_DIR}/TouchController.xcframework")
 set(TOUCHCONTROLLER_LIB "")
 
+# P-sim: 模拟器构建时优先 sim 切片（sysroot 含 Simulator 即判定）。
+# device 时 _AME_TC_SIM 为假，整条链求值与历史逐字一致。
+if("${CMAKE_OSX_SYSROOT}" MATCHES "Simulator")
+  set(_AME_TC_SIM TRUE)
+else()
+  set(_AME_TC_SIM FALSE)
+endif()
+
 # Level 1: 预编译 XCFramework（最高优先级）
-if(EXISTS "${TOUCHCONTROLLER_XCFW}/ios-arm64/libproxy_server_ios.a")
+if(_AME_TC_SIM AND EXISTS "${TOUCHCONTROLLER_XCFW}/ios-arm64_x86_64-simulator/libproxy_server_ios_simulator.a")
+  set(_TC_LIB_PATH "${TOUCHCONTROLLER_XCFW}/ios-arm64_x86_64-simulator/libproxy_server_ios_simulator.a")
+  message(STATUS "Found TouchController XCFramework simulator slice (Level 1-sim) at ${_TC_LIB_PATH}")
+  # 强制加载整个静态库，确保 dlsym 能找到所有 touchcontroller_ios_* 符号
+  set(TOUCHCONTROLLER_LIB "-Wl,-force_load,${_TC_LIB_PATH}")
+elseif(EXISTS "${TOUCHCONTROLLER_XCFW}/ios-arm64/libproxy_server_ios.a")
   set(_TC_LIB_PATH "${TOUCHCONTROLLER_XCFW}/ios-arm64/libproxy_server_ios.a")
   message(STATUS "Found TouchController XCFramework (Level 1: prebuilt xcframework) at ${_TC_LIB_PATH}")
   # 强制加载整个静态库，确保 dlsym 能找到所有 touchcontroller_ios_* 符号
   set(TOUCHCONTROLLER_LIB "-Wl,-force_load,${_TC_LIB_PATH}")
-# Level 2: 预编译独立 .a（保持兼容）
+# Level 2: 预编译独立 .a（保持兼容；sim 构建优先 sim 版）
+elseif(_AME_TC_SIM AND EXISTS "${TOUCHCONTROLLER_LIB_DIR}/libproxy_server_ios_simulator.a")
+  set(_TC_LIB_PATH "${TOUCHCONTROLLER_LIB_DIR}/libproxy_server_ios_simulator.a")
+  message(STATUS "Found TouchController simulator library (Level 2-sim: prebuilt .a) at ${_TC_LIB_PATH}")
+  set(TOUCHCONTROLLER_LIB "-Wl,-force_load,${_TC_LIB_PATH}")
 elseif(EXISTS "${TOUCHCONTROLLER_LIB_DIR}/libproxy_server_ios.a")
   set(_TC_LIB_PATH "${TOUCHCONTROLLER_LIB_DIR}/libproxy_server_ios.a")
   message(STATUS "Found TouchController device library (Level 2: prebuilt .a) at ${_TC_LIB_PATH}")
