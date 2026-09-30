@@ -1001,9 +1001,10 @@ jobs:
         if: success()
         run: |
           set -e
-          # .app 是 bundle 目录：ditto 必须站在父目录打包相对路径，否则 zip 里
-          # 只有散内容、丢 .app 壳（simctl install 认壳）。--sequesterRsrc 保 symlink。
-          cd artifacts/Payload && ditto -c -k --sequesterRsrc AngelAuraAmethyst.app "$GITHUB_WORKSPACE/sim-app.zip"
+          # .app 是 bundle 目录：ditto 必须站在父目录打包相对路径，且加 --keepParent
+          # 否则 zip 里只有散内容、丢 .app 壳（simctl install 认壳）。
+          # --sequesterRsrc 保 symlink。
+          cd artifacts/Payload && ditto -c -k --sequesterRsrc --keepParent AngelAuraAmethyst.app "$GITHUB_WORKSPACE/sim-app.zip"
           unzip -l "$GITHUB_WORKSPACE/sim-app.zip" | head -n 6
 
       - name: Upload sim-app.zip
