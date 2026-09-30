@@ -857,17 +857,15 @@ jobs:
       - name: Download simulator app from probe
         uses: actions/download-artifact@v4
         with:
-          name: sim-app
-          path: sim-app/
+          name: sim-app-zip
+          path: sim-dl/
 
       - name: Install simulator app
         run: |
           set -e
-          # download-artifact 的目录展平语义不稳定（是否保留顶层目录名），
-          # 用 find 定位 .app，不硬编码层级
-          ls sim-app/ || true
-          APP=$(find sim-app -maxdepth 3 -name "AngelAuraAmethyst.app" | head -n 1)
-          test -n "$APP" || { echo '[ui-tests] sim .app not found under sim-app/'; exit 1; }
+          unzip -q sim-dl/sim-app.zip -d sim-app/
+          APP=$(find sim-app -maxdepth 2 -name "*.app" | head -n 1)
+          test -n "$APP" || { echo '[ui-tests] sim .app not found after unzip:'; ls -R sim-app | head -n 30; exit 1; }
           echo "[ui-tests] sim app at: $APP"
           codesign --force --sign - "$APP"
           xcrun simctl install "${SIM_UDID}" "$APP"
@@ -1001,8 +999,17 @@ jobs:
 
       - name: Upload simulator app (for black-box tests)
         if: success()
+        run: |
+          set -e
+          # .app 是 bundle 目录（含 symlink），artifact 的目录语义会丢 .app 后缀；
+          # 用 ditto 打 zip（保 symlink），下游解开即原样。
+          ditto -c -k --sequesterRsrc artifacts/Payload/AngelAuraAmethyst.app sim-app.zip
+          ls -la sim-app.zip
+
+      - name: Upload sim-app.zip
+        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: sim-app
-          path: artifacts/Payload/AngelAuraAmethyst.app
+          name: sim-app-zip
+          path: sim-app.zip
           if-no-files-found: error
