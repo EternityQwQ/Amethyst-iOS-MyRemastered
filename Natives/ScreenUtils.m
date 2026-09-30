@@ -184,4 +184,17 @@ static dispatch_once_t _nativeOnceToken;
     return [UIApplication sharedApplication].keyWindow;
 }
 
++ (NSArray<UIWindow *> *)ame_allWindows {
+    if (@available(iOS 13.0, *)) {
+        NSMutableArray<UIWindow *> *out = [NSMutableArray array];
+        for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
+            if ([scene isKindOfClass:[UIWindowScene class]]) {
+                [out addObjectsFromArray:((UIWindowScene *)scene).windows];
+            }
+        }
+        return [out copy];
+    }
+    return [UIApplication sharedApplication].windows;
+}
+
 @end

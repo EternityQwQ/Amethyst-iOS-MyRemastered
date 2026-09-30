@@ -9,6 +9,7 @@
 //
 
 #import "AiSafetyManager.h"
+#import "ScreenUtils.h"
 #import <UIKit/UIKit.h>
 
 // 说明：AiSafetyMode 在 AiSettings.h 与 AiTool.h 中均有定义（契约约定两处一致），
@@ -64,7 +65,7 @@ static NSString * const kAiSafetyModeKey = @"ai.safety_mode";
         }
     }
     if (!keyWindow) {
-        keyWindow = [[UIApplication sharedApplication] windows].firstObject;
+        keyWindow = [ScreenUtils keyWindow];
     }
     if (!keyWindow) {
         keyWindow = [UIApplication sharedApplication].keyWindow;

@@ -1,4 +1,5 @@
 #import "utils.h"
+#import "ScreenUtils.h"
 // VersionCardCell.m
 // 参照 FCL (item_remote_version.xml) 与 ZL2 (VersionItemLayout) 的单列横向列表行设计：
 // - 左侧：类型图标容器（40x40 圆角方块，类型色背景 + 白色 SF Symbol）
@@ -31,14 +32,14 @@
     return self;
 }
 - (CGRect)textRectForBounds:(CGRect)bounds limitedToNumberOfLines:(NSInteger)numberOfLines {
-    CGRect insetRect = UIEdgeInsetsInsetRect(bounds, self.textInsets);
+    CGRect insetRect = AMEEdgeInsetsInsetRect(bounds, self.textInsets);
     CGRect textRect = [super textRectForBounds:insetRect limitedToNumberOfLines:numberOfLines];
     textRect.origin.x -= self.textInsets.left;
     textRect.origin.y -= self.textInsets.top;
     return textRect;
 }
 - (void)drawTextInRect:(CGRect)rect {
-    [super drawTextInRect:UIEdgeInsetsInsetRect(rect, self.textInsets)];
+    [super drawTextInRect:AMEEdgeInsetsInsetRect(rect, self.textInsets)];
 }
 @end
 

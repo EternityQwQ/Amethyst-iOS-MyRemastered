@@ -194,6 +194,30 @@ jobs:
           print(f'[tier0] testability contract OK ({len(nav)} nav + root + 5 menu)')
           PYEOF
 
+      - name: No deprecated windows/rect APIs (P7 safe subset, only ScreenUtils fallback)
+        run: |
+          set -e
+          # P7 安全子集收敛：窗口一律走 ScreenUtils scene 封装（keyWindow/ame_allWindows），
+          # 矩形 inset 走 AMEEdgeInsetsInsetRect。唯一例外是 ScreenUtils.m 内的兼容 fallback。
+          python3 - <<'PYEOF'
+          import re, glob, sys
+          pat = re.compile(r'sharedApplication\]?\s*\.\s*windows|\[UIApplication\s+sharedApplication\]\s*windows')
+          bad = []
+          for f in glob.glob('Natives/**/*.m', recursive=True) + glob.glob('Natives/**/*.h', recursive=True):
+              if f.endswith('ScreenUtils.m'):
+                  continue
+              for i, l in enumerate(open(f, encoding='utf-8', errors='ignore').read().splitlines(), 1):
+                  if l.strip().startswith('//'):
+                      continue
+                  if 'UIEdgeInsetsInsetRect(' in l and 'AMEEdgeInsetsInsetRect' not in l:
+                      bad.append(f'{f}:{i}')
+                  if pat.search(l):
+                      bad.append(f'{f}:{i}')
+          if bad:
+              print('[tier0] deprecated API residue:', bad); sys.exit(1)
+          print('[tier0] deprecated windows/rect APIs at zero')
+          PYEOF
+
   tier1:
     name: UI Tier1 structural checks
     runs-on: ubuntu-latest

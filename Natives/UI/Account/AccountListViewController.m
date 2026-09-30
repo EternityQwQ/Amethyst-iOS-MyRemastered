@@ -1,5 +1,6 @@
 #import <AuthenticationServices/AuthenticationServices.h>
 #import "LauncherRouter.h"
+#import "ScreenUtils.h"
 
 #import "authenticator/BaseAuthenticator.h"
 #import "authenticator/ThirdPartyAuthenticator.h"
@@ -617,7 +618,7 @@
 
 #pragma mark - ASWebAuthenticationPresentationContextProviding
 - (ASPresentationAnchor)presentationAnchorForWebAuthenticationSession:(ASWebAuthenticationSession *)session {
-    return UIApplication.sharedApplication.windows.firstObject;
+    return [ScreenUtils keyWindow];
 }
 
 @end

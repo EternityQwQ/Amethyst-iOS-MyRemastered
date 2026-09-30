@@ -1,4 +1,5 @@
 #import "config.h"
+#import "ScreenUtils.h"
 #import "utils.h"
 #import "LauncherPreferences.h"
 #import "PLPreferences.h"
@@ -221,7 +222,7 @@ CGRect getSafeArea(CGRect screenBounds) {
     if (screenBounds.size.width < screenBounds.size.height) {
         safeArea = UIEdgeInsetsMake(safeArea.right, safeArea.top, safeArea.left, safeArea.bottom);
     }
-    return UIEdgeInsetsInsetRect(screenBounds, safeArea);
+    return AMEEdgeInsetsInsetRect(screenBounds, safeArea);
 }
 
 void setSafeArea(CGSize screenSize, CGRect frame) {
@@ -244,7 +245,7 @@ void setSafeArea(CGSize screenSize, CGRect frame) {
 }
 
 UIEdgeInsets getDefaultSafeArea() {
-    UIEdgeInsets safeArea = UIApplication.sharedApplication.windows.firstObject.safeAreaInsets;
+    UIEdgeInsets safeArea = [ScreenUtils keyWindow].safeAreaInsets;
     CGSize screenSize = UIScreen.mainScreen.bounds.size;
     if (screenSize.width < screenSize.height) {
         safeArea.left = safeArea.top;

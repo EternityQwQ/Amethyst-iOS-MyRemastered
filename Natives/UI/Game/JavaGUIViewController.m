@@ -1,4 +1,5 @@
 #import "customcontrols/ControlLayout.h"
+#import "ScreenUtils.h"
 #import "LauncherRouter.h"
 #import "customcontrols/CustomControlsUtils.h"
 #import "JavaGUIViewController.h"
@@ -318,7 +319,7 @@ void AWTInputBridge_sendKey(int keycode) {
     [surfaceView addGestureRecognizer:tapGesture];
 
     // Borrowing custom controls, might be useful later (full-blown jar launcher with control support?)
-    self.ctrlView = [[ControlLayout alloc] initWithFrame:UIEdgeInsetsInsetRect(self.view.frame, self.view.safeAreaInsets)];
+    self.ctrlView = [[ControlLayout alloc] initWithFrame:AMEEdgeInsetsInsetRect(self.view.frame, self.view.safeAreaInsets)];
     [self.view addSubview:self.ctrlView];
     [self loadCustomControls];
 
@@ -644,7 +645,7 @@ dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
-        self.ctrlView.frame = UIEdgeInsetsInsetRect(self.view.frame, self.view.safeAreaInsets);
+        self.ctrlView.frame = AMEEdgeInsetsInsetRect(self.view.frame, self.view.safeAreaInsets);
         [self.ctrlView.subviews makeObjectsPerformSelector:@selector(update)];
     } completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
         self.surfaceScrollView.virtualMouseFrame = self.surfaceScrollView.mousePointerView.frame;

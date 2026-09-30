@@ -2,6 +2,7 @@
 
 #import "DBNumberedSlider.h"
 #import "LauncherRouter.h"
+#import "ScreenUtils.h"
 #import "UITheme.h"
 #import "HostManagerBridge.h"
 #import "LauncherNavigationController.h"
@@ -50,17 +51,15 @@
 }
 
 - (void)openImagePicker {
-    // 检查是否已经显示了图片选择器
-    for (UIWindow *window in UIApplication.sharedApplication.windows) {
-        for (UIWindowScene *scene in UIApplication.sharedApplication.connectedScenes) {
-            if ([scene isKindOfClass:[UIWindowScene class]]) {
-                for (UIWindow *window in scene.windows) {
-                    for (UIView *view in window.subviews) {
-                        if ([view isKindOfClass:[UIAlertController class]] || 
-                            [view isKindOfClass:[UIImagePickerController class]]) {
-                            // 如果已经显示了相关控制器，直接返回
-                            return;
-                        }
+    // 检查是否已经显示了图片选择器（scene 展平；旧外层 app.windows 循环是冗余重复）
+    for (UIWindowScene *scene in UIApplication.sharedApplication.connectedScenes) {
+        if ([scene isKindOfClass:[UIWindowScene class]]) {
+            for (UIWindow *window in scene.windows) {
+                for (UIView *view in window.subviews) {
+                    if ([view isKindOfClass:[UIAlertController class]] ||
+                        [view isKindOfClass:[UIImagePickerController class]]) {
+                        // 如果已经显示了相关控制器，直接返回
+                        return;
                     }
                 }
             }

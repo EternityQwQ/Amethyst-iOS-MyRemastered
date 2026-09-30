@@ -1,6 +1,7 @@
 #import <CoreMotion/CoreMotion.h>
 #import <UIKit/UIKit.h>
 #import "GyroInput.h"
+#import "ScreenUtils.h"
 #import "SurfaceViewController.h"
 #import "../utils.h"
 
@@ -13,7 +14,7 @@ static BOOL gyroInvertAxis, gyroSwapAxis;
 static CMMotionManager* cmInstance;
 
 + (void)updateOrientation {
-    UIInterfaceOrientation orientation = UIApplication.sharedApplication.windows[0].windowScene.interfaceOrientation;
+    UIInterfaceOrientation orientation = [ScreenUtils keyWindow].windowScene.interfaceOrientation;
     gyroInvertAxis =
         orientation==UIInterfaceOrientationPortraitUpsideDown ||
         orientation==UIInterfaceOrientationLandscapeLeft;

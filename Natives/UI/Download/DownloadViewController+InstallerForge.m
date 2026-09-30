@@ -1,5 +1,6 @@
 // DownloadViewController+InstallerForge.m —— Forge/OptiFine 安装与导航查找（P6a 从主文件逐字搬移）。
 #import "DownloadViewController+Private.h"
+#import "ScreenUtils.h"
 #import "ModernAssetCell.h"
 #import "DownloadViewController.h"
 #import "LauncherRouter.h"
@@ -100,7 +101,7 @@
         }
     }
     if (!keyWindow) {
-        keyWindow = [[UIApplication sharedApplication] windows].firstObject;
+        keyWindow = [ScreenUtils keyWindow];
     }
 
     UIViewController *rootVC = keyWindow.rootViewController;

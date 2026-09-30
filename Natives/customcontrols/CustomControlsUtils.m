@@ -1,4 +1,5 @@
 #import "ControlDrawer.h"
+#import "ScreenUtils.h"
 #import "ControlJoystick.h"
 #import "ControlSubButton.h"
 #import "CustomControlsUtils.h"
@@ -84,7 +85,7 @@ void convertV3_4Layout(NSMutableDictionary* dict) {
 void convertV2Layout(NSMutableDictionary* dict) {
     CGRect screenBounds = [[UIScreen mainScreen] bounds];
     CGFloat screenScale = [[UIScreen mainScreen] scale];
-    UIEdgeInsets insets = UIApplication.sharedApplication.windows.firstObject.safeAreaInsets;
+    UIEdgeInsets insets = [ScreenUtils keyWindow].safeAreaInsets;
 
     // width: offset the notch parts
     CGFloat screenWidth = (screenBounds.size.width - insets.left - insets.right) * screenScale;

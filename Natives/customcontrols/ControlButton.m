@@ -1,4 +1,5 @@
 #import "ControlButton.h"
+#import "ScreenUtils.h"
 #import "ControlLayout.h"
 #import "CustomControlsUtils.h"
 #import "NSPredicateUtilitiesExternal.h"
@@ -43,7 +44,7 @@
 /*
 - (id)initWithName:(NSString *)name keycode:(int)keycode rect:(CGRect)rect transparency:(float)transparency {
     CGRect screenBounds = [[UIScreen mainScreen] bounds];
-    UIEdgeInsets insets = UIApplication.sharedApplication.windows.firstObject.safeAreaInsets;
+    UIEdgeInsets insets = [ScreenUtils keyWindow].safeAreaInsets;
 
     NSMutableDictionary *localProp = [[NSMutableDictionary alloc] init];
     localProp[@"name"] = name;

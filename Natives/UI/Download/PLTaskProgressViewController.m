@@ -1,4 +1,5 @@
 #import "utils.h"
+#import "ScreenUtils.h"
 #import "PLTaskProgressViewController.h"
 #import "DownloadTaskItem.h"
 #import "DownloadTaskManager.h"
@@ -816,7 +817,7 @@ static __weak PLTaskProgressViewController *PLTaskProgressActiveInstance = nil;
         }
     }
     if (!keyWindow) {
-        keyWindow = [[UIApplication sharedApplication] windows].firstObject;
+        keyWindow = [ScreenUtils keyWindow];
     }
     UIViewController *top = keyWindow.rootViewController;
     while (top.presentedViewController) {

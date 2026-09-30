@@ -1,4 +1,5 @@
 #import "CustomControlsViewController.h"
+#import "ScreenUtils.h"
 #import "DBNumberedSlider.h"
 #import "FileListViewController.h"
 #import "LauncherPreferences.h"
@@ -37,7 +38,7 @@
     [self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
     [self setNeedsUpdateOfHomeIndicatorAutoHidden];
 
-    UIEdgeInsets insets = UIApplication.sharedApplication.windows.firstObject.safeAreaInsets;
+    UIEdgeInsets insets = [ScreenUtils keyWindow].safeAreaInsets;
 
     UILabel *guideLabel = [[UILabel alloc] initWithFrame:self.view.frame];
     guideLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -191,7 +192,7 @@
             self.ctrlView.frame = self.view.frame;
             break;
         case 1:
-            self.ctrlView.frame = UIEdgeInsetsInsetRect(self.view.frame, getDefaultSafeArea());
+            self.ctrlView.frame = AMEEdgeInsetsInsetRect(self.view.frame, getDefaultSafeArea());
             break;
         case 2:
             self.ctrlView.frame = getSafeArea(self.view.frame);
@@ -205,7 +206,7 @@
     if (CGRectEqualToRect(self.ctrlView.frame, UIScreen.mainScreen.bounds)) {
         control.selectedSegmentIndex = 0;
     } else {
-        control.selectedSegmentIndex = !CGRectEqualToRect(self.ctrlView.frame, UIEdgeInsetsInsetRect(self.view.frame, getDefaultSafeArea())) + 1;
+        control.selectedSegmentIndex = !CGRectEqualToRect(self.ctrlView.frame, AMEEdgeInsetsInsetRect(self.view.frame, getDefaultSafeArea())) + 1;
     }
 }
 

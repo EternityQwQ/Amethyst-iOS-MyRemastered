@@ -1,4 +1,5 @@
 #import "utils.h"
+#import "ScreenUtils.h"
 //
 //  ModpackImportService.m
 //  Amethyst
@@ -1065,7 +1066,7 @@ static NSString * const kImportedModpacksKey = @"ImportedModpacks";
                 }
             }
             if (!keyWindow) {
-                keyWindow = [[UIApplication sharedApplication] windows].firstObject;
+                keyWindow = [ScreenUtils keyWindow];
             }
             UIViewController *rootVC = keyWindow.rootViewController;
             if (!rootVC) return;

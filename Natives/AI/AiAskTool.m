@@ -4,6 +4,7 @@
 //
 
 #import "AiAskTool.h"
+#import "ScreenUtils.h"
 #import <UIKit/UIKit.h>
 
 @implementation AiAskTool
@@ -39,7 +40,7 @@
             }
         }
     }
-    if (!keyWindow) keyWindow = [[UIApplication sharedApplication] windows].firstObject;
+    if (!keyWindow) keyWindow = [ScreenUtils keyWindow];
     if (!keyWindow) keyWindow = [UIApplication sharedApplication].keyWindow;
     UIViewController *top = keyWindow.rootViewController;
     while (top.presentedViewController) {

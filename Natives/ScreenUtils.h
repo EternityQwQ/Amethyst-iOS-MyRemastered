@@ -69,4 +69,15 @@
 /// 当前 keyWindow（兼容 iOS 13+ 和旧版）
 + (UIWindow *)keyWindow;
 
+/// 全量窗口（各 scene.windows 展平；等价于旧 UIApplication.sharedApplication.windows）
++ (NSArray<UIWindow *> *)ame_allWindows;
+
 @end
+
+/// UIEdgeInsetsInsetRect 的等价实现（纯函数，逐值一致；废弃 API 替代）。
+/// 用法与原函数同：AMEEdgeInsetsInsetRect(rect, insets)。
+static inline CGRect AMEEdgeInsetsInsetRect(CGRect rect, UIEdgeInsets insets) {
+    return CGRectMake(rect.origin.x + insets.left, rect.origin.y + insets.top,
+                      rect.size.width - insets.left - insets.right,
+                      rect.size.height - insets.top - insets.bottom);
+}

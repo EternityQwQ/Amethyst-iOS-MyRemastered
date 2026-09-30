@@ -1,5 +1,6 @@
 #import <AVFoundation/AVFoundation.h>
 #import "LauncherRouter.h"
+#import "ScreenUtils.h"
 #import <GameController/GameController.h>
 #import <objc/runtime.h>
 #import "authenticator/BaseAuthenticator.h"
@@ -2470,7 +2471,7 @@ static void ame_dumpPresentationState(const char *reason) {
     NSMutableString *m = [NSMutableString string];
     [m appendFormat:@"[Amethyst][diag] presentation dump (%s)\n", reason];
 
-    NSArray *wins = [UIApplication sharedApplication].windows;
+    NSArray *wins = [ScreenUtils ame_allWindows];
     [m appendFormat:@"  windows=%lu\n", (unsigned long)wins.count];
     for (UIWindow *w in wins) {
         [m appendFormat:@"    win=%@ rc=%@ hidden=%d level=%.0f key=%d frame=%@\n",
@@ -2558,7 +2559,7 @@ BOOL Amethyst_EnforceSDL3Presentation(void) {
 
         // 1) SDL 自建 UIWindow 永远隐藏，并把 key window 还给宿主。
         //    安全条件：必须存在另一个可见的、非 SDL 的 window 才动手。
-        NSArray *allWindows = [UIApplication sharedApplication].windows;
+        NSArray *allWindows = [ScreenUtils ame_allWindows];
         for (UIWindow *w in allWindows) {
             UIViewController *rc = w.rootViewController;
             if (rc == nil) continue;
