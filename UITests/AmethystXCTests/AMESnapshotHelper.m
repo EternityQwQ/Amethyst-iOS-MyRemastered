@@ -70,6 +70,21 @@ void AMEAssertSnapshotImage(UIView *view, NSString *name, XCTestCase *test, doub
     }
 }
 
+void AMEWritePreviewPNG(UIView *view, NSString *name) {
+    CGSize size = view.bounds.size;
+    if (size.width < 1 || size.height < 1) return;
+    [view layoutIfNeeded];
+    UIGraphicsBeginImageContextWithOptions(size, NO, 2.0);
+    [view drawViewHierarchyInRect:(CGRect){CGPointZero, size} afterScreenUpdates:YES];
+    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    NSData *png = img ? UIImagePNGRepresentation(img) : nil;
+    if (!png) return;
+    NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:
+                      [NSString stringWithFormat:@"AMEpreview-%@.png", name]];
+    [png writeToFile:path atomically:YES];
+}
+
 void AMEAssertSnapshotDescription(UIView *view, NSString *name, XCTestCase *test) {
     NSString *ref = AMESnapshotRefPath(test, name, @"txt");
     NSString *raw = [view performSelector:@selector(recursiveDescription)];

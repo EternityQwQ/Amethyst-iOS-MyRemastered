@@ -21,3 +21,8 @@
 // 容差单位：差异字节数 / 总字节数（RGBA 每像素 4 字节），默认 0.01。
 void AMEAssertSnapshotImage(UIView *view, NSString *name, XCTestCase *test, double tolerance);
 void AMEAssertSnapshotDescription(UIView *view, NSString *name, XCTestCase *test);
+
+// UI 预览（常绿，只出图不断言）：把视图渲染成真 PNG（@2x），写入 simulator
+// tmp（AMEpreview-<name>.png），CI 捞出来上传 artifact，直接看图审样式。
+// 与快照回归的区别：预览无基准、不失败，纯展示。
+void AMEWritePreviewPNG(UIView *view, NSString *name);

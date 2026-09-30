@@ -782,6 +782,22 @@ jobs:
           path: RecordedSnapshots/
           if-no-files-found: ignore
 
+      - name: Collect UI previews (viewable PNG gallery)
+        if: always()
+        run: |
+          # 预览用例常绿出图（AMEpreview-*.png 真 PNG），捞出来做样式画廊 artifact
+          mkdir -p UIpreviews
+          find ~/Library/Developer/CoreSimulator/Devices/${SIM_UDID} -name "AMEpreview-*.png" 2>/dev/null -exec cp {} UIpreviews/ \; || true
+          ls UIpreviews/ || true
+
+      - name: Upload UI previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uitests-ui-previews
+          path: UIpreviews/
+          if-no-files-found: warn
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
