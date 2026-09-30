@@ -227,6 +227,28 @@ jobs:
           print('[tier0] deprecated windows/rect APIs at zero')
           PYEOF
 
+      - name: P7 Frame migration ratchet (CGRectMake only shrinks)
+        run: |
+          set -e
+          # P7（CustomControls Frame→约束）验证先行：手算 CGRectMake 只许减少不许增加。
+          # 2026-09-30 基线（实测）：ControlButton 1 + ControlJoystick 5 + CustomControlsVC 33 = 39。
+          # 每消一处都应是约束等价替换；新增即方向错误。布局正确性仍需像素验证
+          # （真机/sim，见 P7 计划），本门禁只锁数量；文件改名/删除即响亮失败，
+          # 避免基线静默失效。
+          python3 - <<'PYEOF'
+          import re, os, sys
+          BASE = {'Natives/customcontrols/ControlButton.m': 1,
+                  'Natives/customcontrols/ControlJoystick.m': 5,
+                  'Natives/UI/Game/CustomControlsViewController.m': 33}
+          total = 0
+          for f, base in BASE.items():
+              assert os.path.isfile(f), f'[tier0] P7 baseline file gone: {f}'
+              n = len(re.findall(r'CGRectMake\s*\(', open(f, encoding='utf-8', errors='ignore').read()))
+              assert n <= base, f'[tier0] CGRectMake grew in {f}: {n} > {base}'
+              total += n
+          print(f'[tier0] P7 Frame ratchet OK ({total}/39 remaining)')
+          PYEOF
+
   tier1:
     name: UI Tier1 structural checks
     runs-on: ubuntu-latest
