@@ -11,8 +11,19 @@ endif()
 
 configure_file(${CMAKE_CURRENT_LIST_DIR}/config.h.in ${CMAKE_CURRENT_LIST_DIR}/config.h)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -target arm64-apple-ios -mcpu=apple-a8 -fcommon -fobjc-arc -ObjC -F'${CMAKE_OSX_SYSROOT}/System/Cryptexes/OS/System/Library/Frameworks'")
 set(CMAKE_C_FLAGS_DEBUG "-funwind-tables -g")
+
+# P-sim: 模拟器构建时切 sim triple。Makefile 经 -DSIMULATOR_TRIPLE="..." 传入
+# （内容即 SIM_TARGET_FLAGS；device 时传空串）。
+# 必须在此分流：本行硬编码 -target 会覆盖 Makefile -D CMAKE_C_FLAGS 里的一切
+# （cmake set() 追加在后，后者赢），只改 Makefile 侧永远掰不过来。
+# device 默认分支与历史逐字一致。
+if(DEFINED SIMULATOR_TRIPLE AND NOT "${SIMULATOR_TRIPLE}" STREQUAL "")
+  set(_AME_TARGET_FLAG "${SIMULATOR_TRIPLE}")
+else()
+  set(_AME_TARGET_FLAG "-target arm64-apple-ios")
+endif()
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${_AME_TARGET_FLAG} -mcpu=apple-a8 -fcommon -fobjc-arc -ObjC -F'${CMAKE_OSX_SYSROOT}/System/Cryptexes/OS/System/Library/Frameworks'")
 
 if("${CMAKE_HOST_SYSTEM_NAME}" MATCHES "Linux|^GNU$|Android")
   set(GLOBAL_LDFLAGS "-isysroot ${CMAKE_OSX_SYSROOT} -Wl,-syslibroot,${CMAKE_OSX_SYSROOT} -fuse-ld=lld")

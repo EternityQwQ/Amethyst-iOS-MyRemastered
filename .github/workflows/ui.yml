@@ -3,7 +3,10 @@ name: UI layered tests
 # UI 分层测试合集（单文件多作业）：Tier0 grep 层 + Tier1 结构层 + Tier Apple 真编译
 # + Tier Compile/Full（真 SDK 语法编译）+ XCTest 运行时层（模拟器）。
 # 由 ui-tier0/tier1/tier-apple 三个单作业工作流合并而来，减少文件数、一次推送一次全量信号。
-# 上游 development.yml（全量构建）保持独立冻结，不在此合并，避免与其后续修复冲突。
+# 模拟器构建移植探针（P-sim，多作业并入本文件）：UITEST 裁剪路线——
+# 主程序纯 dlopen 渲染库，sim 包跳过 MobileGlues/SFPEW/shim 全家 + 设备版 jre，
+# 直组 native+java+assets。成功标准：Payload 出 sim 包 → ad-hoc 重签 →
+# simctl 安装 → 启动出 PID。
 # XCTest 运行时层（Apple 官方框架，macos-14 + Xcode 15.4 + iOS 模拟器）：
 # - xctest-shell（阻塞）：灰盒 bundle，运行时断言 Phase0 护栏
 #   （LauncherRouter.h / UITheme.h，header-only，零链接依赖），必须绿。
@@ -888,4 +891,85 @@ jobs:
         with:
           name: uitests-black-box.xcresult
           path: TestResults/black-box.xcresult
+          if-no-files-found: warn
+
+  sim-probe-payload:
+    name: Sim port probe payload+install+launch
+    runs-on: macos-14
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    steps:
+      - name: Select Xcode 15.4
+        run: |
+          sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          xcodebuild -version || true
+
+      - name: Install GNU Make
+        run: |
+          brew update
+          brew install make
+
+      - name: Install Java 8 (Temurin) via Homebrew
+        run: |
+          brew install --cask temurin@8 || true
+
+      - name: Install ldid
+        run: |
+          brew install ldid || true
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout repository submodules
+        env:
+          GIT_LFS_SKIP_SMUDGE: "1"
+        run: git submodule update --init --recursive
+
+      - name: Resolve simulator
+        run: |
+          set -e
+          UDID=$(xcrun simctl list devices available -j | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)['devices']
+          best = ''
+          for rt, devs in d.items():
+              for x in devs:
+                  if x.get('isAvailable', True) and x['name'].startswith('iPhone'):
+                      best = x['udid']; break
+              if best: break
+          print(best)
+          ")
+          test -n "$UDID"
+          xcrun simctl boot "$UDID" 2>/dev/null || true
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+          echo "[sim-port] simulator: $UDID"
+
+      - name: Probe gmake payload PLATFORM=7 UITEST=1
+        run: |
+          set -o pipefail
+          export PATH=/opt/homebrew/bin:$PATH
+          export IPHONEOS_DEPLOYMENT_TARGET=14.0
+          gmake payload PLATFORM=7 UITEST=1 SLIMMED=1 2>&1 | tee sim-payload.log
+
+      - name: Ad-hoc sign, install, launch
+        run: |
+          set -e
+          APP="Payload/AngelAuraAmethyst.app"
+          test -d "$APP"
+          # 覆盖 Makefile 的 ldid 假签名：模拟器认 ad-hoc（codesign -s -）
+          codesign --force --sign - "$APP"
+          xcrun simctl install "${SIM_UDID}" "$APP"
+          PID=$(xcrun simctl launch "${SIM_UDID}" com.air-devs.air)
+          echo "[sim-port] launched PID: $PID"
+          sleep 15
+          xcrun simctl terminate "${SIM_UDID}" com.air-devs.air || true
+          echo "[sim-port] launch+terminate OK"
+
+      - name: Upload probe log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sim-payload-probe.log
+          path: sim-payload.log
           if-no-files-found: warn

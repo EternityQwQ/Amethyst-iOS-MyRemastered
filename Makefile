@@ -14,6 +14,46 @@ BRANCH      := $(shell git branch --show-current)
 COMMIT      := $(shell git log --oneline | sed '2,10000000d' | cut -b 1-7)
 PLATFORM    ?= 2
 
+# Simulator port (P-sim): 按目标平台分流 SDK。
+# PLATFORM=2 时 SIMSDK=iphoneos，与历史行为逐字一致；
+# 7=iphonesimulator、8=appletvsimulator、12=xrsimulator。
+# 下游 $(SDKPATH)/xcrun -sdk/actool --platform 统一吃此变量。
+ifeq ($(PLATFORM),7)
+SIMSDK := iphonesimulator
+else ifeq ($(PLATFORM),8)
+SIMSDK := appletvsimulator
+else ifeq ($(PLATFORM),12)
+SIMSDK := xrsimulator
+else
+SIMSDK := iphoneos
+endif
+
+# P-sim: simulator clang target triple（device 为空，行为不变）。
+# 仅切 SYSROOT 不够：clang 默认 target 仍是 device（实测 ld: building for 'iOS'），
+# 必须显式 -target + -m*-simulator-version-min（编译+链接，cmake 会带入 link.txt）。
+ifeq ($(PLATFORM),7)
+SIM_TARGET_FLAGS := -target arm64-apple-ios-simulator -mios-simulator-version-min=14.0
+else ifeq ($(PLATFORM),8)
+SIM_TARGET_FLAGS := -target arm64-apple-tvos-simulator -mtvos-simulator-version-min=14.0
+else ifeq ($(PLATFORM),12)
+SIM_TARGET_FLAGS := -target arm64-apple-xros-simulator
+else
+SIM_TARGET_FLAGS :=
+endif
+
+# UITEST=1（模拟器 UI 测试裁剪）：渲染依赖（MobileGlues/SFPEW/shim 全家）
+# 与设备版 jre 全部跳过——主程序 target_link_libraries 实证无渲染链接
+# （见 Natives/CMakeLists:589，主程序仅 dlopen，不 LC_LOAD）。
+# payload 只组 native+java+assets；PLATFORM=2/UITEST=0 时展开与历史逐字一致。
+UITEST ?= 0
+ifeq ($(UITEST),1)
+NATIVE_DEPS :=
+PAYLOAD_DEPS := native java assets
+else
+NATIVE_DEPS := dep_mg
+PAYLOAD_DEPS := native dep_mg dep_shader_shims dep_openal_shim dep_angle_freeze dep_sdl3_guard java jre assets
+endif
+
 # Release vs Debug
 RELEASE ?= 0
 
@@ -50,7 +90,7 @@ ifeq ($(DETECTPLAT),Darwin)
 OSVER       := $(shell sw_vers -productVersion | cut -b 1-2)
 ifeq ($(shell sw_vers -productName),macOS)
 IOS         := 0
-SDKPATH     ?= $(shell xcrun --sdk iphoneos --show-sdk-path)
+SDKPATH     ?= $(shell xcrun --sdk $(SIMSDK) --show-sdk-path)
 BOOTJDK     ?= $(shell /usr/libexec/java_home -v 1.8)/bin
 $(warning Building on macOS.)
 else
@@ -270,7 +310,7 @@ check:
 		$(info $(shell printf "%-20s" "$(v)") = $(value $(v)))) \
 	)
 
-native: dep_mg
+native: $(NATIVE_DEPS)
 	echo '[Amethyst v$(VERSION)] native - start'
 	mkdir -p $(WORKINGDIR)
 	cd $(WORKINGDIR) && cmake \
@@ -281,10 +321,12 @@ native: dep_mg
 		-DCMAKE_OSX_SYSROOT="$(SDKPATH)" \
 		-DCMAKE_OSX_ARCHITECTURES=arm64 \
 		-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
-		-DCMAKE_C_FLAGS="-arch arm64" \
+		-DCMAKE_C_FLAGS="-arch arm64 $(SIM_TARGET_FLAGS)" \
+		-DCMAKE_CXX_FLAGS="-arch arm64 $(SIM_TARGET_FLAGS)" \
 		-DCONFIG_BRANCH="$(BRANCH)" \
 		-DCONFIG_COMMIT="$(COMMIT)" \
 		-DCONFIG_RELEASE=$(RELEASE) \
+		-DSIMULATOR_TRIPLE="$(SIM_TARGET_FLAGS)" \
 		..
 
 	cmake --build $(WORKINGDIR) --config $(CMAKE_BUILD_TYPE) -j$(JOBS)
@@ -426,7 +468,8 @@ dep_mg:
 		-DCMAKE_OSX_SYSROOT="$(SDKPATH)" \
 		-DCMAKE_OSX_ARCHITECTURES=arm64 \
 		-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
-		-DCMAKE_C_FLAGS="-arch arm64" \
+		-DCMAKE_C_FLAGS="-arch arm64 $(SIM_TARGET_FLAGS)" \
+		-DCMAKE_CXX_FLAGS="-arch arm64 $(SIM_TARGET_FLAGS)" \
 		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
 		$(SOURCEDIR)/Natives/external/MobileGlues/MobileGlues-cpp/
 
@@ -506,7 +549,7 @@ dep_shaderc_impl: dep_mg
 	done; \
 	echo "[shaderc-impl] linking from-source impl (spirv=$$mg_spirv_a glslang=$$mg_glslang_a rl=$$mg_rl_a extra libs:$$extra_glslang_libs)"; \
 	printf '_shaderc_*\n' > $(WORKINGDIR)/shaderc_impl.exports; \
-	xcrun -sdk iphoneos clang -arch arm64 -dynamiclib \
+	xcrun -sdk $(SIMSDK) clang -arch arm64 $(SIM_TARGET_FLAGS) -dynamiclib \
 		-install_name @rpath/libshaderc_impl.dylib \
 		$(FENCE_IMPL) \
 		-I$(SOURCEDIR)/Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/glslang \
@@ -571,7 +614,7 @@ dep_shader_shims: dep_shaderc_impl dep_mg
 	cp $(SOURCEDIR)/Natives/resources/Frameworks/libspirv-cross-c-shared.0.dylib $(WORKINGDIR)/libspirv-cross-c-shared.0.impl.dylib || exit 1
 	install_name_tool -id @rpath/libspirv-cross-c-shared.0.impl.dylib $(WORKINGDIR)/libspirv-cross-c-shared.0.impl.dylib || exit 1
 	printf '_shaderc_*\n_ame_*\n' > $(WORKINGDIR)/shaderc.exports; \
-	xcrun -sdk iphoneos clang -arch arm64 -dynamiclib \
+	xcrun -sdk $(SIMSDK) clang -arch arm64 $(SIM_TARGET_FLAGS) -dynamiclib \
 		-install_name @rpath/libshaderc.dylib \
 		$(FENCE_SHADERC) \
 		-Wl,-reexport_library,$(WORKINGDIR)/libshaderc_impl.dylib \
@@ -580,7 +623,7 @@ dep_shader_shims: dep_shaderc_impl dep_mg
 		$(SOURCEDIR)/Natives/shaderc_include.c \
 		$(SOURCEDIR)/Natives/shaderc_sandbox.m || exit 1
 	printf '_spvc_*\n_ame_*\n' > $(WORKINGDIR)/spvc.exports; \
-	xcrun -sdk iphoneos clang -arch arm64 -dynamiclib \
+	xcrun -sdk $(SIMSDK) clang -arch arm64 $(SIM_TARGET_FLAGS) -dynamiclib \
 		-install_name @rpath/libspirv-cross-c-shared.0.dylib \
 		$(FENCE_SPVC) \
 		-Wl,-reexport_library,$(WORKINGDIR)/libspirv-cross-c-shared.0.impl.dylib \
@@ -653,7 +696,7 @@ dep_openal_shim:
 	mkdir -p $(WORKINGDIR)
 	cp $(SOURCEDIR)/Natives/resources/Frameworks/libopenal_impl.dylib $(WORKINGDIR)/ || exit 1
 	install_name_tool -id @rpath/libopenal_impl.dylib $(WORKINGDIR)/libopenal_impl.dylib || exit 1
-	xcrun -sdk iphoneos clang -arch arm64 -dynamiclib \
+	xcrun -sdk $(SIMSDK) clang -arch arm64 $(SIM_TARGET_FLAGS) -dynamiclib \
 		-install_name @rpath/libopenal.dylib \
 		-Wl,-reexport_library,$(WORKINGDIR)/libopenal_impl.dylib \
 		-o $(WORKINGDIR)/libopenal.dylib \
@@ -736,8 +779,8 @@ dep_sfpew: dep_mg
 		-DCMAKE_OSX_SYSROOT="$(SDKPATH)" \
 		-DCMAKE_OSX_ARCHITECTURES=arm64 \
 		-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
-		-DCMAKE_C_FLAGS="-arch arm64" \
-		-DCMAKE_CXX_FLAGS="-arch arm64" \
+		-DCMAKE_C_FLAGS="-arch arm64 $(SIM_TARGET_FLAGS)" \
+		-DCMAKE_CXX_FLAGS="-arch arm64 $(SIM_TARGET_FLAGS)" \
 		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
 		-DSFPEW_MG_3RDPARTY="$(SOURCEDIR)/Natives/external/MobileGlues/src/main/cpp/3rdparty" \
 		$(SOURCEDIR)/Natives/external/SimpleFPEWrapper/ > $(WORKINGDIR)/sfpew_build.log 2>&1 \
@@ -839,8 +882,8 @@ dep_mobilegl_build:
 		-DCMAKE_OSX_SYSROOT="$(SDKPATH)" \
 		-DCMAKE_OSX_ARCHITECTURES=arm64 \
 		-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
-		-DCMAKE_C_FLAGS="-arch arm64" \
-		-DCMAKE_CXX_FLAGS="-arch arm64" \
+		-DCMAKE_C_FLAGS="-arch arm64 $(SIM_TARGET_FLAGS)" \
+		-DCMAKE_CXX_FLAGS="-arch arm64 $(SIM_TARGET_FLAGS)" \
 		-DMOBILEGL_IOS=ON \
 		-DMOBILEGL_BUILD_TEST=OFF \
 		-DMOBILEGL_BUILD_BENCHMARK=OFF \
@@ -894,7 +937,7 @@ assets:
 		mkdir -p $(WORKINGDIR)/AngelAuraAmethyst.app/Base.lproj; \
 		xcrun actool $(SOURCEDIR)/Natives/Assets.xcassets \
 			--compile $(SOURCEDIR)/Natives/resources \
-			--platform iphoneos \
+			--platform $(SIMSDK) \
 			--minimum-deployment-target 14.0 \
 			--app-icon AppIcon-Light \
 			--output-partial-info-plist /dev/null || exit 1; \
@@ -903,7 +946,7 @@ assets:
 	fi
 	echo '[Amethyst v$(VERSION)] assets - end'
 
-payload: native dep_mg dep_shader_shims dep_openal_shim dep_angle_freeze dep_sdl3_guard java jre assets
+payload: $(PAYLOAD_DEPS)
 	echo '[Amethyst v$(VERSION)] payload - start'
 	# Mithril / MobileGL 都是可选渲染器：这里用 - 前缀，任一失败都不阻断主构建。
 	# 缺库时对应渲染器会在设置里自动隐藏（见 LauncherPreferences.m 的存在性过滤）。
@@ -934,7 +977,7 @@ payload: native dep_mg dep_shader_shims dep_openal_shim dep_angle_freeze dep_sdl
 	# 它导出 ame_master_compile_lock, spvc_shim/shaderc_shim 靠 dlopen+dlsym 拿这个符号做跨库编译总锁;
 	# 换成真库会拿不到锁 -> MG/shaderc 并发进 glslang -> SIGSEGV(glslang::TParseContext::lValueErrorCheck)。
 	# 真实现放在 libshaderc_impl.dylib(垫片按 @loader_path 解析), 不受影响。
-	for f in libspirv-cross-c-shared.0.dylib libspirv-cross.dylib; do 		if [ -f "$(SOURCEDIR)/Natives/resources/Frameworks/$$f" ]; then 			cp -f "$(SOURCEDIR)/Natives/resources/Frameworks/$$f" "$(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/$$f" || exit 1; 		fi; 		sz=$$(stat -f%z "$(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/$$f" 2>/dev/null || echo 0); 		if [ "$$sz" -lt 1048576 ]; then echo "ERROR: $$f is only $$sz bytes after restore"; exit 1; fi; 	done
+	if [ '$(UITEST)' != '1' ]; then for f in libspirv-cross-c-shared.0.dylib libspirv-cross.dylib; do 		if [ -f "$(SOURCEDIR)/Natives/resources/Frameworks/$$f" ]; then 			cp -f "$(SOURCEDIR)/Natives/resources/Frameworks/$$f" "$(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/$$f" || exit 1; 		fi; 		sz=$$(stat -f%z "$(WORKINGDIR)/AngelAuraAmethyst.app/Frameworks/$$f" 2>/dev/null || echo 0); 		if [ "$$sz" -lt 1048576 ]; then echo "ERROR: $$f is only $$sz bytes after restore"; exit 1; fi; 	done; fi
 		cp -R $(SOURCEDIR)/JavaApp/libs/others/* $(WORKINGDIR)/AngelAuraAmethyst.app/libs/ || exit 1
 	cp $(SOURCEDIR)/JavaApp/build/launcher.jar $(SOURCEDIR)/JavaApp/build/patchjna_agent.jar $(SOURCEDIR)/JavaApp/build/patchsvc.jar $(SOURCEDIR)/JavaApp/build/mojang-stubs.jar $(WORKINGDIR)/AngelAuraAmethyst.app/libs/ || exit 1
 	# LWJGL 以双版本 jar 发布，由启动器按 MC 版本在运行时选择其一。
@@ -959,7 +1002,7 @@ payload: native dep_mg dep_shader_shims dep_openal_shim dep_angle_freeze dep_sdl
 	fi
 	$(call METHOD_DIRCHECK,$(OUTPUTDIR)/Payload)
 	cp -R $(WORKINGDIR)/AngelAuraAmethyst.app $(OUTPUTDIR)/Payload
-	if [ '$(SLIMMED_ONLY)' != '1' ]; then \
+	if [ '$(SLIMMED_ONLY)' != '1' ] && [ '$(UITEST)' != '1' ]; then \
 		cp -R $(OUTPUTDIR)/java_runtimes $(OUTPUTDIR)/Payload/AngelAuraAmethyst.app; \
 	fi
 	ldid -S $(OUTPUTDIR)/Payload/AngelAuraAmethyst.app; \
