@@ -111,7 +111,7 @@
 				B11000000000000000000004 /* MarqueeLabel.h */,
 				B11000000000000000000005 /* MarqueeLabel.m */,
 			);
-			path = ../../Natives;
+			path = ../Natives;
 			sourceTree = "<group>";
 		};
 		A10000000000000000000005 /* AmethystXCUITests */ = {
