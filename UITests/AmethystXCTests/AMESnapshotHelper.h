@@ -7,7 +7,8 @@
 // - UIView image：裸 RGBA 字节（扩展名 .rgba，名副其实），逐字节差异比 / 总字节
 //   ≤ tolerance 即过（抗跨 runtime 抗锯齿漂移）。
 // - recursiveDescription：地址归一化（0x…→0x0）后文本精确比对。
-// 基准位：测试 bundle 内 __Snapshots__/<Class>/<test>.rgba|.txt。
+// 基准位：测试 bundle 根（pathForResource 定位；Xcode 会把 Resources 拍平，
+// __Snapshots__ 目录只做仓库侧组织）。
 // 缺基准或 AME_SNAPSHOT_RECORD=1：写入 simulator tmp（AMEsnap-<test>.rgba/txt）
 // 并 FAIL（pointfree 同款语义：先录后审）；CI 上传 artifact，合入仓库再跑即绿。
 //

@@ -1,9 +1,10 @@
 #import "AMESnapshotHelper.h"
 
-static NSString *AMESnapshotBundleDir(XCTestCase *test) {
-    NSBundle *b = [NSBundle bundleForClass:[test class]];
-    return [[b resourcePath] stringByAppendingPathComponent:
-            [NSString stringWithFormat:@"__Snapshots__/%@", NSStringFromClass([test class])]];
+static NSString *AMESnapshotRefPath(XCTestCase *test, NSString *name, NSString *ext) {
+    // 注意：PBXResourcesBuildPhase 把资源拍平拷进 bundle 根目录（无子目录结构），
+    // 故用 pathForResource:ofType: 定位，而非拼接 __Snapshots__ 路径。
+    // （__Snapshots__ 目录只做仓库侧组织，不进包。）
+    return [[NSBundle bundleForClass:[test class]] pathForResource:name ofType:ext];
 }
 
 static NSString *AMESnapshotRecordPath(NSString *name, NSString *ext) {
@@ -39,8 +40,7 @@ static NSData *AMERenderRGBA(UIView *view, CGSize *outSize) {
 void AMEAssertSnapshotImage(UIView *view, NSString *name, XCTestCase *test, double tolerance) {
     // 注：存的是裸 RGBA 字节（非 PNG 编码），扩展名 .rgba 名副其实；
     // 审图时按宽×高×4 解析即可。
-    NSString *ref = [[AMESnapshotBundleDir(test) stringByAppendingPathComponent:name]
-                     stringByAppendingPathExtension:@"rgba"];
+    NSString *ref = AMESnapshotRefPath(test, name, @"rgba");
     CGSize size = CGSizeZero;
     NSData *now = AMERenderRGBA(view, &size);
     XCTAssertNotNil(now, @"snapshot render failed: %@", name);
@@ -71,8 +71,7 @@ void AMEAssertSnapshotImage(UIView *view, NSString *name, XCTestCase *test, doub
 }
 
 void AMEAssertSnapshotDescription(UIView *view, NSString *name, XCTestCase *test) {
-    NSString *ref = [[AMESnapshotBundleDir(test) stringByAppendingPathComponent:name]
-                     stringByAppendingPathExtension:@"txt"];
+    NSString *ref = AMESnapshotRefPath(test, name, @"txt");
     NSString *raw = [view performSelector:@selector(recursiveDescription)];
     XCTAssertTrue([raw isKindOfClass:[NSString class]], @"recursiveDescription failed: %@", name);
     if (![raw isKindOfClass:[NSString class]]) return;
