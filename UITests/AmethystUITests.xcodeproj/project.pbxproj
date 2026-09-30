@@ -10,6 +10,8 @@
 		A13000000000000000000001 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A11000000000000000000001 /* main.m */; };
 		A13000000000000000000002 /* UITestHostAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A11000000000000000000003 /* UITestHostAppDelegate.m */; };
 		A13000000000000000000003 /* AmethystShellTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A11000000000000000000005 /* AmethystShellTests.m */; };
+		A13000000000000000000005 /* AMESnapshotHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = A1100000000000000000000D /* AMESnapshotHelper.m */; };
+		A13000000000000000000006 /* AmethystSnapshotTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A1100000000000000000000E /* AmethystSnapshotTests.m */; };
 		A13000000000000000000004 /* AmethystAppUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = A11000000000000000000007 /* AmethystAppUITests.m */; };
 /* End PBXBuildFile section */
 
@@ -29,6 +31,9 @@
 		A11000000000000000000003 /* UITestHostAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UITestHostAppDelegate.m; sourceTree = "<group>"; };
 		A11000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A11000000000000000000005 /* AmethystShellTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AmethystShellTests.m; sourceTree = "<group>"; };
+		A1100000000000000000000C /* AMESnapshotHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AMESnapshotHelper.h; sourceTree = "<group>"; };
+		A1100000000000000000000D /* AMESnapshotHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AMESnapshotHelper.m; sourceTree = "<group>"; };
+		A1100000000000000000000E /* AmethystSnapshotTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AmethystSnapshotTests.m; sourceTree = "<group>"; };
 		A11000000000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A11000000000000000000007 /* AmethystAppUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AmethystAppUITests.m; sourceTree = "<group>"; };
 		A11000000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -74,6 +79,9 @@
 			children = (
 				A11000000000000000000005 /* AmethystShellTests.m */,
 				A11000000000000000000006 /* Info.plist */,
+				A1100000000000000000000C /* AMESnapshotHelper.h */,
+				A1100000000000000000000D /* AMESnapshotHelper.m */,
+				A1100000000000000000000E /* AmethystSnapshotTests.m */,
 			);
 			path = AmethystXCTests;
 			sourceTree = "<group>";
@@ -190,6 +198,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				A13000000000000000000003 /* AmethystShellTests.m in Sources */,
+				A13000000000000000000005 /* AMESnapshotHelper.m in Sources */,
+				A13000000000000000000006 /* AmethystSnapshotTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

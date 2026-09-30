@@ -764,6 +764,24 @@ jobs:
             -only-testing:AmethystXCTests \
             -resultBundlePath TestResults/gray-box.xcresult
 
+      - name: Collect recorded snapshots (record-then-review flow)
+        if: always()
+        run: |
+          # 快照缺基准即 record+fail（自研 harness，pointfree 语义）；
+          # 录制物在模拟器 tmp 里，捞出来上传，审图后合入
+          # UITests/AmethystXCTests/__Snapshots__/ 再跑即绿。
+          mkdir -p RecordedSnapshots
+          find ~/Library/Developer/CoreSimulator/Devices/${SIM_UDID} -name "AMEsnap-*" 2>/dev/null -exec cp {} RecordedSnapshots/ \; || true
+          ls RecordedSnapshots/ || true
+
+      - name: Upload recorded snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uitests-recorded-snapshots
+          path: RecordedSnapshots/
+          if-no-files-found: ignore
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
