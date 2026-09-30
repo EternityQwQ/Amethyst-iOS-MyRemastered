@@ -37,14 +37,16 @@ static NSData *AMERenderRGBA(UIView *view, CGSize *outSize) {
 }
 
 void AMEAssertSnapshotImage(UIView *view, NSString *name, XCTestCase *test, double tolerance) {
+    // 注：存的是裸 RGBA 字节（非 PNG 编码），扩展名 .rgba 名副其实；
+    // 审图时按宽×高×4 解析即可。
     NSString *ref = [[AMESnapshotBundleDir(test) stringByAppendingPathComponent:name]
-                     stringByAppendingPathExtension:@"png"];
+                     stringByAppendingPathExtension:@"rgba"];
     CGSize size = CGSizeZero;
     NSData *now = AMERenderRGBA(view, &size);
     XCTAssertNotNil(now, @"snapshot render failed: %@", name);
     if (!now) return;
     NSData *want = [NSData dataWithContentsOfFile:ref];
-    NSString *rec = AMESnapshotRecordPath(name, @"png");
+    NSString *rec = AMESnapshotRecordPath(name, @"rgba");
     if (!want || AMEIsRecording()) {
         [now writeToFile:rec atomically:YES];
         XCTFail(@"snapshot recorded (not verified): %@ -> %@\n审图后合入 __Snapshots__ 再跑", name, rec);
@@ -71,9 +73,17 @@ void AMEAssertSnapshotImage(UIView *view, NSString *name, XCTestCase *test, doub
 void AMEAssertSnapshotDescription(UIView *view, NSString *name, XCTestCase *test) {
     NSString *ref = [[AMESnapshotBundleDir(test) stringByAppendingPathComponent:name]
                      stringByAppendingPathExtension:@"txt"];
-    NSString *now = [view performSelector:@selector(recursiveDescription)];
-    XCTAssertTrue([now isKindOfClass:[NSString class]], @"recursiveDescription failed: %@", name);
-    if (![now isKindOfClass:[NSString class]]) return;
+    NSString *raw = [view performSelector:@selector(recursiveDescription)];
+    XCTAssertTrue([raw isKindOfClass:[NSString class]], @"recursiveDescription failed: %@", name);
+    if (![raw isKindOfClass:[NSString class]]) return;
+    // 地址归一化：recursiveDescription 带内存地址（0x...），每次运行都变，
+    // 不归一则文本快照永红。此处归一后比对/录制。
+    NSError *rxErr = nil;
+    NSRegularExpression *rx = [NSRegularExpression regularExpressionWithPattern:@"0x[0-9a-fA-F]+"
+                                                                        options:0 error:&rxErr];
+    NSString *now = rx ? [rx stringByReplacingMatchesInString:raw options:0
+                                                       range:NSMakeRange(0, raw.length)
+                                                withTemplate:@"0x0"] : raw;
     NSString *want = [NSString stringWithContentsOfFile:ref encoding:NSUTF8StringEncoding error:NULL];
     NSString *rec = AMESnapshotRecordPath(name, @"txt");
     if (!want || AMEIsRecording()) {
