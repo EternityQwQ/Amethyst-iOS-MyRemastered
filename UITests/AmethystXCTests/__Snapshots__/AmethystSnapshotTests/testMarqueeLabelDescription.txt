@@ -1,0 +1,2 @@
+<MarqueeLabel: 0x0; baseClass = UILabel; frame = (0 0; 200 30); text = 'abc'; clipsToBounds = YES; userInteractionEnabled = NO; gestureRecognizers = <NSArray: 0x0>; backgroundColor = UIExtendedGrayColorSpace 0 0; layer = <_UILabelLayer: 0x0>>
+   | <UILabel: 0x0; frame = (100 15; 28.3333 20.3333); anchorPoint = (0, 0); text = 'abc'; userInteractionEnabled = NO; tag = 700; backgroundColor = UIExtendedGrayColorSpace 0 0; layer = <_UILabelLayer: 0x0>>

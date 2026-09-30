@@ -15,6 +15,13 @@
 		B13000000000000000000001 /* testThemeButtonImage.rgba in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000001 /* testThemeButtonImage.rgba */; };
 		B13000000000000000000002 /* testThemeButtonDescription.txt in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000002 /* testThemeButtonDescription.txt */; };
 		B13000000000000000000003 /* testHostRootDescription.txt in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000003 /* testHostRootDescription.txt */; };
+		B13000000000000000000005 /* testThemeAccent-Teal.rgba in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000006 /* testThemeAccent-Teal.rgba */; };
+		B13000000000000000000006 /* testThemeAccent-Orange.rgba in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000007 /* testThemeAccent-Orange.rgba */; };
+		B13000000000000000000007 /* testThemeAccent-Pink.rgba in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000008 /* testThemeAccent-Pink.rgba */; };
+		B13000000000000000000008 /* testThemeAccent-Indigo.rgba in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000009 /* testThemeAccent-Indigo.rgba */; };
+		B13000000000000000000009 /* testThemeAccent-Violet.rgba in Resources */ = {isa = PBXBuildFile; fileRef = B1100000000000000000000A /* testThemeAccent-Violet.rgba */; };
+		B1300000000000000000000A /* testMarqueeLabelImage.rgba in Resources */ = {isa = PBXBuildFile; fileRef = B1100000000000000000000B /* testMarqueeLabelImage.rgba */; };
+		B1300000000000000000000B /* testMarqueeLabelDescription.txt in Resources */ = {isa = PBXBuildFile; fileRef = B1100000000000000000000C /* testMarqueeLabelDescription.txt */; };
 		B13000000000000000000004 /* MarqueeLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000005 /* MarqueeLabel.m */; };
 		A13000000000000000000004 /* AmethystAppUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = A11000000000000000000007 /* AmethystAppUITests.m */; };
 /* End PBXBuildFile section */
@@ -41,6 +48,13 @@
 		B11000000000000000000001 /* testThemeButtonImage.rgba */ = {isa = PBXFileReference; lastKnownFileType = file; path = testThemeButtonImage.rgba; sourceTree = "<group>"; };
 		B11000000000000000000002 /* testThemeButtonDescription.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = testThemeButtonDescription.txt; sourceTree = "<group>"; };
 		B11000000000000000000003 /* testHostRootDescription.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = testHostRootDescription.txt; sourceTree = "<group>"; };
+		B11000000000000000000006 /* testThemeAccent-Teal.rgba */ = {isa = PBXFileReference; lastKnownFileType = file; path = testThemeAccent-Teal.rgba; sourceTree = "<group>"; };
+		B11000000000000000000007 /* testThemeAccent-Orange.rgba */ = {isa = PBXFileReference; lastKnownFileType = file; path = testThemeAccent-Orange.rgba; sourceTree = "<group>"; };
+		B11000000000000000000008 /* testThemeAccent-Pink.rgba */ = {isa = PBXFileReference; lastKnownFileType = file; path = testThemeAccent-Pink.rgba; sourceTree = "<group>"; };
+		B11000000000000000000009 /* testThemeAccent-Indigo.rgba */ = {isa = PBXFileReference; lastKnownFileType = file; path = testThemeAccent-Indigo.rgba; sourceTree = "<group>"; };
+		B1100000000000000000000A /* testThemeAccent-Violet.rgba */ = {isa = PBXFileReference; lastKnownFileType = file; path = testThemeAccent-Violet.rgba; sourceTree = "<group>"; };
+		B1100000000000000000000B /* testMarqueeLabelImage.rgba */ = {isa = PBXFileReference; lastKnownFileType = file; path = testMarqueeLabelImage.rgba; sourceTree = "<group>"; };
+		B1100000000000000000000C /* testMarqueeLabelDescription.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = testMarqueeLabelDescription.txt; sourceTree = "<group>"; };
 		B11000000000000000000004 /* MarqueeLabel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UI/Common/MarqueeLabel.h"; sourceTree = "<group>"; };
 		B11000000000000000000005 /* MarqueeLabel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UI/Common/MarqueeLabel.m"; sourceTree = "<group>"; };
 		A11000000000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -101,6 +115,13 @@
 				B11000000000000000000001 /* testThemeButtonImage.rgba */,
 				B11000000000000000000002 /* testThemeButtonDescription.txt */,
 				B11000000000000000000003 /* testHostRootDescription.txt */,
+				B11000000000000000000006 /* testThemeAccent-Teal.rgba */,
+				B11000000000000000000007 /* testThemeAccent-Orange.rgba */,
+				B11000000000000000000008 /* testThemeAccent-Pink.rgba */,
+				B11000000000000000000009 /* testThemeAccent-Indigo.rgba */,
+				B1100000000000000000000A /* testThemeAccent-Violet.rgba */,
+				B1100000000000000000000B /* testMarqueeLabelImage.rgba */,
+				B1100000000000000000000C /* testMarqueeLabelDescription.txt */,
 			);
 			path = AmethystSnapshotTests;
 			sourceTree = "<group>";
@@ -220,6 +241,13 @@
 				B13000000000000000000001 /* testThemeButtonImage.rgba in Resources */,
 				B13000000000000000000002 /* testThemeButtonDescription.txt in Resources */,
 				B13000000000000000000003 /* testHostRootDescription.txt in Resources */,
+				B13000000000000000000005 /* testThemeAccent-Teal.rgba in Resources */,
+				B13000000000000000000006 /* testThemeAccent-Orange.rgba in Resources */,
+				B13000000000000000000007 /* testThemeAccent-Pink.rgba in Resources */,
+				B13000000000000000000008 /* testThemeAccent-Indigo.rgba in Resources */,
+				B13000000000000000000009 /* testThemeAccent-Violet.rgba in Resources */,
+				B1300000000000000000000A /* testMarqueeLabelImage.rgba in Resources */,
+				B1300000000000000000000B /* testMarqueeLabelDescription.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
