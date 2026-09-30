@@ -49,9 +49,11 @@ UITEST ?= 0
 ifeq ($(UITEST),1)
 NATIVE_DEPS :=
 PAYLOAD_DEPS := native java assets
+NATIVE_BUILD_TARGET := --target AngelAuraAmethyst
 else
 NATIVE_DEPS := dep_mg
 PAYLOAD_DEPS := native dep_mg dep_shader_shims dep_openal_shim dep_angle_freeze dep_sdl3_guard java jre assets
+NATIVE_BUILD_TARGET :=
 endif
 
 # Release vs Debug
@@ -313,6 +315,16 @@ check:
 native: $(NATIVE_DEPS)
 	echo '[Amethyst v$(VERSION)] native - start'
 	mkdir -p $(WORKINGDIR)
+	# P-sim/UITEST：vendored AltKit 系是设备切片，主程序链接要 sim 平台。
+	# 拷到 WORKINGDIR（cmake -F 搜索顺序先于 resources/Frameworks）并重打标为
+	# platform 7（手法同 METHOD_CHANGE_PLAT，不碰仓库内原文件）。
+	if [ '$(UITEST)' = '1' ]; then \
+		for f in AltKit CAltKit UnzipKit; do \
+			cp -R $(SOURCEDIR)/Natives/resources/Frameworks/$$f.framework $(WORKINGDIR)/ || exit 1; \
+			vtool -arch arm64 -set-build-version 7 14.0 16.0 -replace -output $(WORKINGDIR)/$$f.framework/$$f $(WORKINGDIR)/$$f.framework/$$f || exit 1; \
+			ldid -S -M $(WORKINGDIR)/$$f.framework/$$f || exit 1; \
+		done; \
+	fi
 	cd $(WORKINGDIR) && cmake \
 		-DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
 		-DCMAKE_CROSSCOMPILING=true \
@@ -327,11 +339,12 @@ native: $(NATIVE_DEPS)
 		-DCONFIG_COMMIT="$(COMMIT)" \
 		-DCONFIG_RELEASE=$(RELEASE) \
 		-DSIMULATOR_TRIPLE="$(SIM_TARGET_FLAGS)" \
+		-DUITEST_BUILD=$(UITEST) \
 		..
 
-	cmake --build $(WORKINGDIR) --config $(CMAKE_BUILD_TYPE) -j$(JOBS)
+	cmake --build $(WORKINGDIR) --config $(CMAKE_BUILD_TYPE) -j$(JOBS) $(NATIVE_BUILD_TARGET)
 	#	--target awt_headless awt_xawt libOSMesaOverride.dylib tinygl4angle AngelAuraAmethyst
-	rm $(WORKINGDIR)/libawt_headless.dylib
+	if [ '$(UITEST)' != '1' ]; then rm $(WORKINGDIR)/libawt_headless.dylib; fi
 	echo '[Amethyst v$(VERSION)] native - end'
 
 java:

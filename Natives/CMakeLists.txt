@@ -597,16 +597,26 @@ if("${CMAKE_HOST_SYSTEM_NAME}" MATCHES "Linux|^GNU$|Android")
   target_sources(AngelAuraAmethyst PUBLIC non_darwin_utils.m)
 endif()
 
+# P-sim/UITEST：AltKit 系弱链接——sim 上 sideload/JIT 路径永不走到，
+# 弱链接使启动器 UI 在框架无法加载时仍能启动；device 保持强链接不变。
+# （UnzipKit 保持强链接：纯 zip 实现，整合包 UI 可能用到。）
+if(UITEST_BUILD)
+  set(_AME_ALTKIT_LINK "-weak_framework AltKit")
+  set(_AME_CALTKIT_LINK "-weak_framework CAltKit")
+else()
+  set(_AME_ALTKIT_LINK "-framework AltKit")
+  set(_AME_CALTKIT_LINK "-framework CAltKit")
+endif()
 target_link_libraries(AngelAuraAmethyst
   PUBLIC AFNetworking
   lzma
   "-F'${CMAKE_CURRENT_LIST_DIR}/build'"
   "-F'${CMAKE_CURRENT_LIST_DIR}/resources/Frameworks'"
   # ZeroTier 暂时移除："${ZT_FRAMEWORK_SEARCH_PATH}" "${ZT_FRAMEWORK_LINK}" "${ZT_CXX_LIB}"
-  "-framework AltKit"
+  "${_AME_ALTKIT_LINK}"
   "-framework AuthenticationServices"
   "-framework AVFoundation"
-  "-framework CAltKit"
+  "${_AME_CALTKIT_LINK}"
   "-framework CoreFoundation"
   "-framework CoreGraphics"
   "-framework CoreImage"
