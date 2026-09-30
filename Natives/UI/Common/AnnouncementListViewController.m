@@ -210,6 +210,7 @@ static const CGFloat kAnnHighPriorityBarWidth = 4.0;
     [self.view addSubview:self.errorLabel];
 
     self.retryButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.retryButton.accessibilityIdentifier = @"btn-AnnouncementList-retry";
     self.retryButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.retryButton setTitle:localize(@"i18n_str_21", nil) forState:UIControlStateNormal];
     self.retryButton.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];

@@ -147,6 +147,7 @@
     // 错误类型或显式要求时显示关闭按钮
     if (type == InlineMessageTypeError || self.showsCloseButton) {
         self.closeButton = [UIButton buttonWithType:UIButtonTypeSystem];
+        self.closeButton.accessibilityIdentifier = @"btn-InlineMessage-close";
         UIImage *closeIcon = [UIImage systemImageNamed:@"xmark"];
         [self.closeButton setImage:closeIcon forState:UIControlStateNormal];
         self.closeButton.tintColor = [UIColor secondaryLabelColor];

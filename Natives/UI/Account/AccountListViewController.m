@@ -85,6 +85,7 @@
 
 - (void)setupAddAccountButton {
     UIButton *addBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+    addBtn.accessibilityIdentifier = @"btn-AccountList-add";
     addBtn.translatesAutoresizingMaskIntoConstraints = NO;
     [addBtn setTitle:localize(@"login.option.add", @"添加账户") forState:UIControlStateNormal];
     addBtn.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightSemibold];

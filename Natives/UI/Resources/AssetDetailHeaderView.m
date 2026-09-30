@@ -159,6 +159,7 @@
 
     // 展开/收起按钮
     self.expandToggleButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.expandToggleButton.accessibilityIdentifier = @"btn-AssetHeader-expandToggle";
     self.expandToggleButton.translatesAutoresizingMaskIntoConstraints = NO;
     self.expandToggleButton.titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
     [self.expandToggleButton setTitle:localize(@"i18n_str_26", nil) forState:UIControlStateNormal];

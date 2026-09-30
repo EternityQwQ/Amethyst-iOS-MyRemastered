@@ -81,6 +81,7 @@
     [self.scrollView addSubview:self.contentTextView];
 
     self.actionButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.actionButton.accessibilityIdentifier = @"btn-AnnouncementDetail-action";
     self.actionButton.translatesAutoresizingMaskIntoConstraints = NO;
     self.actionButton.titleLabel.font = [UIFont systemFontOfSize:15 weight:UIFontWeightSemibold];
     self.actionButton.layer.cornerRadius = 10;

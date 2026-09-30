@@ -119,6 +119,7 @@
     [self.headerContainerView addSubview:self.hintLabel];
 
     self.importButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.importButton.accessibilityIdentifier = @"btn-ModpackImport-import";
     self.importButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.importButton setTitle:[@"  " stringByAppendingString:localize(@"i18n_str_2055", nil)] forState:UIControlStateNormal];
     [self.importButton setImage:[UIImage systemImageNamed:@"doc.badge.plus"] forState:UIControlStateNormal];

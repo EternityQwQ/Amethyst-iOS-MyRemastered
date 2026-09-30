@@ -205,6 +205,7 @@
     UIStackView *stack = [self contentStackOfCard:card];
 
     self.profileButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.profileButton.accessibilityIdentifier = @"btn-ModpackExport-profile";
     self.profileButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.profileButton setTitle:localize(@"i18n_str_492", nil) forState:UIControlStateNormal];
     self.profileButton.titleLabel.font = [UIFont systemFontOfSize:15 weight:UIFontWeightMedium];
@@ -396,6 +397,7 @@
 
 - (UIView *)createExportButtonSection {
     self.exportButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.exportButton.accessibilityIdentifier = @"btn-ModpackExport-export";
     self.exportButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.exportButton setTitle:localize(@"i18n_str_513", nil) forState:UIControlStateNormal];
     [self.exportButton setImage:[UIImage systemImageNamed:@"square.and.arrow.up"] forState:UIControlStateNormal];
@@ -603,6 +605,7 @@
     [card addSubview:spinner];
 
     UIButton *cancelBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+    cancelBtn.accessibilityIdentifier = @"btn-ModpackExport-cancel";
     cancelBtn.translatesAutoresizingMaskIntoConstraints = NO;
     [cancelBtn setTitle:localize(@"i18n_str_520", nil) forState:UIControlStateNormal];
     cancelBtn.titleLabel.font = [UIFont systemFontOfSize:15 weight:UIFontWeightMedium];

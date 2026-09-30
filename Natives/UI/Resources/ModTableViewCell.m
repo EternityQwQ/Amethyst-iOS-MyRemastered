@@ -140,6 +140,7 @@
 - (UIButton *)downloadButton {
     if (!_downloadButton) {
         _downloadButton = [UIButton buttonWithType:UIButtonTypeSystem];
+        _downloadButton.accessibilityIdentifier = @"btn-ModTableCell-download";
         _downloadButton.translatesAutoresizingMaskIntoConstraints = NO;
         [_downloadButton setTitle:localize(@"resman.mods.download", nil) forState:UIControlStateNormal];
         [_downloadButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
@@ -161,6 +162,7 @@
 - (UIButton *)openLinkButton {
     if (!_openLinkButton) {
         _openLinkButton = [UIButton buttonWithType:UIButtonTypeSystem];
+        _openLinkButton.accessibilityIdentifier = @"btn-ModTableCell-openLink";
         _openLinkButton.translatesAutoresizingMaskIntoConstraints = NO;
         UIImage *image = [[UIImage systemImageNamed:@"globe"] imageWithTintColor:[UIColor secondaryLabelColor]];
         [_openLinkButton setImage:image forState:UIControlStateNormal];

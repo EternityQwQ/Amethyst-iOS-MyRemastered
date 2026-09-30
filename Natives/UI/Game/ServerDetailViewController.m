@@ -137,6 +137,7 @@
 
     // 复制地址按钮
     self.addressCopyButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.addressCopyButton.accessibilityIdentifier = @"btn-ServerDetail-addressCopy";
     self.addressCopyButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.addressCopyButton setImage:[UIImage systemImageNamed:@"doc.on.doc"] forState:UIControlStateNormal];
     [self.addressCopyButton setTitle:[@" " stringByAppendingString:localize(@"i18n_str_2060", nil)] forState:UIControlStateNormal];
@@ -146,6 +147,7 @@
 
     // 加入服务器按钮
     self.joinButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.joinButton.accessibilityIdentifier = @"btn-ServerDetail-join";
     self.joinButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.joinButton setTitle:localize(@"i18n_str_960", nil) forState:UIControlStateNormal];
     [self.joinButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
@@ -157,6 +159,7 @@
 
     // 下载服务端文件包按钮
     self.downloadPackButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.downloadPackButton.accessibilityIdentifier = @"btn-ServerDetail-downloadPack";
     self.downloadPackButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.downloadPackButton setTitle:localize(@"i18n_str_961", nil) forState:UIControlStateNormal];
     [self.downloadPackButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];

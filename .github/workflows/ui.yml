@@ -192,6 +192,15 @@ jobs:
           assert len(nav) >= 40, f'[tier0] nav ids shrank: {len(nav)}'
           assert len(nav) == len(set(nav)), '[tier0] duplicate nav ids'
           print(f'[tier0] testability contract OK ({len(nav)} nav + root + 5 menu)')
+          # P8b：内容按钮 btn- 系同样只增不减（2026-09-30 基线 51 静态；
+          # 工厂 title 动态 id 另计 6 处：ModsManager chip/batch、DownloadTasks
+          # typeFilter、PLCrash、Download sidebarSelect、menu format）。
+          # 故意未覆盖（设计使然）：版本页 chip（identifier 存 sort key）、
+          # PLTaskProgress 工厂本体（4 调用处各设静态 id）。
+          btn = sorted(i for i in ids if i.startswith('btn-'))
+          assert len(btn) >= 51, f'[tier0] btn ids shrank: {len(btn)}'
+          assert len(btn) == len(set(btn)), '[tier0] duplicate btn ids'
+          print(f'[tier0] btn contract OK ({len(btn)} static)')
           PYEOF
 
       - name: No deprecated windows/rect APIs (P7 safe subset, only ScreenUtils fallback)

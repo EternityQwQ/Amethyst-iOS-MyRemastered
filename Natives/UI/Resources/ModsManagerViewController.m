@@ -331,6 +331,7 @@ static NSString *ModsManagerSHA1ForFile(NSString *path) {
     UIButton *chip = [UIButton buttonWithType:UIButtonTypeSystem];
     chip.translatesAutoresizingMaskIntoConstraints = NO;
     [chip setTitle:title forState:UIControlStateNormal];
+    chip.accessibilityIdentifier = [NSString stringWithFormat:@"btn-ModsManager-chip-%@", title];
     chip.titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightMedium];
     chip.contentEdgeInsets = UIEdgeInsetsMake(5, 14, 5, 14);
     chip.layer.cornerRadius = 14.0;
@@ -650,6 +651,7 @@ static NSString *ModsManagerSHA1ForFile(NSString *path) {
     UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
     button.translatesAutoresizingMaskIntoConstraints = NO;
     [button setTitle:title forState:UIControlStateNormal];
+    button.accessibilityIdentifier = [NSString stringWithFormat:@"btn-ModsManager-batchAction-%@", title];
     button.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
     [button setTitleColor:color forState:UIControlStateNormal];
     button.backgroundColor = [color colorWithAlphaComponent:0.14];

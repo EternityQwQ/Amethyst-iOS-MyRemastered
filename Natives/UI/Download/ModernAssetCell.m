@@ -74,6 +74,7 @@
 
         // ----- 下载按钮：右侧 24x24（FCL 风格紧凑按钮）-----
         self.downloadButton = [UIButton buttonWithType:UIButtonTypeSystem];
+        self.downloadButton.accessibilityIdentifier = @"btn-ModernAssetCell-download";
         self.downloadButton.translatesAutoresizingMaskIntoConstraints = NO;
         UIImage *downloadSymbol = [UIImage systemImageNamed:@"arrow.down.circle.fill"
                                            withConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:18 weight:UIFontWeightRegular]];

@@ -133,6 +133,7 @@
     [self.view addSubview:self.searchBar];
 
     self.filterButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.filterButton.accessibilityIdentifier = @"btn-Download-filter";
     self.filterButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.filterButton setImage:[UIImage systemImageNamed:@"slider.horizontal.3"] forState:UIControlStateNormal];
     [self.filterButton addTarget:self action:@selector(showFilterOptions) forControlEvents:UIControlEventTouchUpInside];
@@ -141,6 +142,7 @@
 
     // 整合包 tab 专用"导入本地整合包"按钮（参照 FCL 安卓在整合包列表上方提供显眼导入入口）
     self.importModpackButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.importModpackButton.accessibilityIdentifier = @"btn-Download-importModpack";
     self.importModpackButton.translatesAutoresizingMaskIntoConstraints = NO;
     // square.and.arrow.down.on.square 是 iOS 14+ 符号，加 fallback 避免显示成方块
     UIImage *importIcon = [UIImage systemImageNamed:@"square.and.arrow.down.on.square"]
@@ -402,6 +404,7 @@
 
     // Modrinth 按钮
     self.modrinthSourceButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.modrinthSourceButton.accessibilityIdentifier = @"btn-Download-modrinthSource";
     self.modrinthSourceButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.modrinthSourceButton setTitle:@"Modrinth" forState:UIControlStateNormal];
     self.modrinthSourceButton.titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
@@ -410,6 +413,7 @@
 
     // CurseForge 按钮
     self.curseforgeSourceButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.curseforgeSourceButton.accessibilityIdentifier = @"btn-Download-curseforgeSource";
     self.curseforgeSourceButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.curseforgeSourceButton setTitle:@"CurseForge" forState:UIControlStateNormal];
     self.curseforgeSourceButton.titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
@@ -533,6 +537,7 @@
 
     // Modrinth 按钮
     self.sidebarModrinthButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.sidebarModrinthButton.accessibilityIdentifier = @"btn-Download-sidebarModrinth";
     self.sidebarModrinthButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.sidebarModrinthButton setTitle:@"Mod" forState:UIControlStateNormal];
     self.sidebarModrinthButton.titleLabel.font = [UIFont systemFontOfSize:12 weight:UIFontWeightSemibold];
@@ -541,6 +546,7 @@
 
     // CurseForge 按钮
     self.sidebarCurseforgeButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.sidebarCurseforgeButton.accessibilityIdentifier = @"btn-Download-sidebarCurseforge";
     self.sidebarCurseforgeButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.sidebarCurseforgeButton setTitle:@"CF" forState:UIControlStateNormal];
     self.sidebarCurseforgeButton.titleLabel.font = [UIFont systemFontOfSize:12 weight:UIFontWeightSemibold];
@@ -632,6 +638,7 @@
 
     // ===== 5. 重置筛选按钮 =====
     self.sidebarResetButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.sidebarResetButton.accessibilityIdentifier = @"btn-Download-sidebarReset";
     self.sidebarResetButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.sidebarResetButton setTitle:localize(@"i18n_str_163", nil) forState:UIControlStateNormal];
     self.sidebarResetButton.titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightMedium];
@@ -675,6 +682,7 @@
     button.backgroundColor = [UIColor tertiarySystemFillColor];
     button.layer.cornerRadius = 8;
     [button addTarget:self action:selector forControlEvents:UIControlEventTouchUpInside];
+    button.accessibilityIdentifier = [NSString stringWithFormat:@"btn-Download-sidebarSelect-%@", title];
     button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
     button.contentEdgeInsets = UIEdgeInsetsMake(0, 12, 0, 12);
 

@@ -242,6 +242,7 @@ static CGFloat const kBatchToolbarBottomGap = 12.0; // 工具栏与安全区底�
     self.emptyLabel.numberOfLines = 0;
 
     self.emptyActionButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.emptyActionButton.accessibilityIdentifier = @"btn-ResourceList-emptyAction";
     self.emptyActionButton.titleLabel.font = [UIFont systemFontOfSize:15 weight:UIFontWeightSemibold];
     [self.emptyActionButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     self.emptyActionButton.backgroundColor = accentColor();
@@ -284,6 +285,7 @@ static CGFloat const kBatchToolbarBottomGap = 12.0; // 工具栏与安全区底�
     [self.view addSubview:self.batchToolbar];
 
     self.selectAllButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.selectAllButton.accessibilityIdentifier = @"btn-ResourceList-selectAll";
     [self.selectAllButton setTitle:localize(@"resman.common.select_all", nil) forState:UIControlStateNormal];
     self.selectAllButton.titleLabel.font = [UIFont systemFontOfSize:15 weight:UIFontWeightMedium];
     self.selectAllButton.tintColor = [UIColor labelColor];
@@ -291,6 +293,7 @@ static CGFloat const kBatchToolbarBottomGap = 12.0; // 工具栏与安全区底�
     [self.selectAllButton addTarget:self action:@selector(selectAllTapped) forControlEvents:UIControlEventTouchUpInside];
 
     self.cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.cancelButton.accessibilityIdentifier = @"btn-ResourceList-cancel";
     [self.cancelButton setTitle:localize(@"resman.common.cancel", nil) forState:UIControlStateNormal];
     self.cancelButton.titleLabel.font = [UIFont systemFontOfSize:15 weight:UIFontWeightMedium];
     self.cancelButton.tintColor = [UIColor secondaryLabelColor];

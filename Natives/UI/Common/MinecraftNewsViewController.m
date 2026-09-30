@@ -262,6 +262,7 @@ static const NSInteger kNewsPageSize = 24;
     [self.view addSubview:self.errorLabel];
 
     self.retryButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.retryButton.accessibilityIdentifier = @"btn-MinecraftNews-retry";
     self.retryButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.retryButton setTitle:NSLocalizedString(@"mc_news.retry", @"重试") forState:UIControlStateNormal];
     self.retryButton.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];

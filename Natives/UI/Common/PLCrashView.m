@@ -854,6 +854,7 @@ static NSString *const kGitHubIssuesURL = @"https://github.com/herbrine8403/Amet
 
     // 5. 查看完整日志按钮（透明文字按钮）
     _fullLogButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    _fullLogButton.accessibilityIdentifier = @"btn-PLCrash-fullLog";
     _fullLogButton.translatesAutoresizingMaskIntoConstraints = NO;
     [_fullLogButton setTitle:localize(@"crash.view_log", @"查看日志详情") forState:UIControlStateNormal];
     _fullLogButton.titleLabel.font = [UIFont systemFontOfSize:14];
@@ -864,6 +865,7 @@ static NSString *const kGitHubIssuesURL = @"https://github.com/herbrine8403/Amet
 
 - (UIButton *)createButtonWithTitle:(NSString *)title icon:(NSString *)icon backgroundColor:(UIColor *)bgColor textColor:(UIColor *)textColor bold:(BOOL)bold action:(SEL)action {
     UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+    button.accessibilityIdentifier = [NSString stringWithFormat:@"btn-PLCrash-%@", title];
     button.translatesAutoresizingMaskIntoConstraints = NO;
     button.backgroundColor = bgColor;
     button.layer.cornerRadius = 12;

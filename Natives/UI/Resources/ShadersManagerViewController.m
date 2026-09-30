@@ -200,6 +200,7 @@ static NSString * const kShaderCardCellIdentifier = @"ShaderCardCell";
     if (!_batchDeleteButton) {
         // 危险操作 pill：红底白字胶囊（高 32 / 圆角 16，Air-Design 7）
         _batchDeleteButton = [UIButton buttonWithType:UIButtonTypeSystem];
+        _batchDeleteButton.accessibilityIdentifier = @"btn-ShadersManager-batchDelete";
         [_batchDeleteButton setTitle:localize(@"resman.shaders.delete_selected", nil) forState:UIControlStateNormal];
         [_batchDeleteButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         _batchDeleteButton.titleLabel.font = [UIFont systemFontOfSize:15 weight:UIFontWeightSemibold];

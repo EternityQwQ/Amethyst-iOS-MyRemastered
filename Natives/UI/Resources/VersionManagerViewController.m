@@ -765,6 +765,8 @@ static NSInteger const kSectionVersions    = 1;
 /// 无论导航栏是否可见都使用浮动按钮，确保按钮在所有模式下都可访问
 - (void)setupNavigationBar {
     UIButton *fab = [UIButton buttonWithType:UIButtonTypeSystem];
+    fab.accessibilityIdentifier = @"btn-VersionManager-fab";
+    fab.accessibilityLabel = @"添加";
     UIImageSymbolConfiguration *plusConfig = [UIImageSymbolConfiguration configurationWithPointSize:18 weight:UIFontWeightBold];
     UIImage *plusImg = [UIImage systemImageNamed:@"plus" withConfiguration:plusConfig];
     [fab setImage:plusImg forState:UIControlStateNormal];
@@ -898,6 +900,7 @@ static NSInteger const kSectionVersions    = 1;
 
     // 规范 9.2：CTA 按钮（accentColor 背景 + 白字 + 圆角）
     UIButton *ctaButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    ctaButton.accessibilityIdentifier = @"btn-VersionManager-cta";
     ctaButton.translatesAutoresizingMaskIntoConstraints = NO;
     UIImageSymbolConfiguration *btnIconConfig = [UIImageSymbolConfiguration configurationWithPointSize:14 weight:UIFontWeightBold];
     UIImage *btnIcon = [UIImage systemImageNamed:@"arrow.down.circle.fill" withConfiguration:btnIconConfig];

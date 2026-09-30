@@ -286,6 +286,7 @@
 
 - (void)buildLoginButton {
     self.loginButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.loginButton.accessibilityIdentifier = @"btn-ThirdPartyLogin-login";
     self.loginButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.loginButton setTitle:localize(@"i18n_str_1042", nil) forState:UIControlStateNormal];
     [self.loginButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];

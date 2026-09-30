@@ -680,6 +680,7 @@ static __weak PLTaskProgressViewController *PLTaskProgressActiveInstance = nil;
     [self.footerView addSubview:self.buttonStack];
 
     self.minimizeButton = [self makeFooterButton];
+    self.minimizeButton.accessibilityIdentifier = @"btn-PLTaskProgress-minimize";
     self.minimizeButton.backgroundColor = [UIColor systemGrayColor];
     [self.minimizeButton setTitle:PLTaskProgressText(@"taskProgress.button.minimize", localize(@"i18n_str_1309", nil)) forState:UIControlStateNormal];
     [self.minimizeButton addTarget:self action:@selector(minimizeTapped) forControlEvents:UIControlEventTouchUpInside];
@@ -689,14 +690,17 @@ static __weak PLTaskProgressViewController *PLTaskProgressActiveInstance = nil;
     [spacer setContentCompressionResistancePriority:UILayoutPriorityDefaultLow - 1 forAxis:UILayoutConstraintAxisHorizontal];
 
     self.detailToggleButton = [self makeFooterButton];
+    self.detailToggleButton.accessibilityIdentifier = @"btn-PLTaskProgress-detailToggle";
     self.detailToggleButton.backgroundColor = accentColor();
     [self.detailToggleButton addTarget:self action:@selector(detailToggleTapped) forControlEvents:UIControlEventTouchUpInside];
 
     self.retryButton = [self makeFooterButton];
+    self.retryButton.accessibilityIdentifier = @"btn-PLTaskProgress-retry";
     self.retryButton.backgroundColor = accentColor();
     [self.retryButton addTarget:self action:@selector(retryTapped) forControlEvents:UIControlEventTouchUpInside];
 
     self.pauseResumeButton = [self makeFooterButton];
+    self.pauseResumeButton.accessibilityIdentifier = @"btn-PLTaskProgress-pauseResume";
     self.pauseResumeButton.backgroundColor = accentColor();
     [self.pauseResumeButton addTarget:self action:@selector(pauseResumeTapped) forControlEvents:UIControlEventTouchUpInside];
 

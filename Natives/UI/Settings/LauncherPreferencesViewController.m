@@ -1250,6 +1250,7 @@
     }
     if (NSProcessInfo.processInfo.isMacCatalystApp) {
         UIButton *closeButton = [UIButton buttonWithType:UIButtonTypeClose];
+        closeButton.accessibilityIdentifier = @"btn-Preferences-close";
         closeButton.frame = CGRectOffset(closeButton.frame, 10, 10);
         [closeButton addTarget:self action:@selector(actionClose) forControlEvents:UIControlEventTouchUpInside];
         [self.view addSubview:closeButton];

@@ -240,6 +240,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     // - 右侧：箭头图标（表示点击可查看详情）
     // - 当 DownloadTaskManager 中存在任何下载任务时显示，无任务时隐藏
     self.downloadCenterButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.downloadCenterButton.accessibilityIdentifier = @"btn-RightPanel-downloadCenter";
     self.downloadCenterButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.downloadCenterButton setTitle:localize(@"i18n_str_136", nil) forState:UIControlStateNormal];
     [self.downloadCenterButton setTitleColor:[UIColor labelColor] forState:UIControlStateNormal];
@@ -292,6 +293,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     
     // 启动游戏按钮（FCL 复合布局 + ZL2 按压动画风格）
     self.launchButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.launchButton.accessibilityIdentifier = @"btn-RightPanel-launch";
     self.launchButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.launchButton setTitle:localize(@"i18n_str_412", nil) forState:UIControlStateNormal];
     [self.launchButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
@@ -331,6 +333,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 
     // 选择版本按钮（FCL 风格：右侧版本选择入口；控制设置已挪到左侧菜单 case 3）
     self.manageVersionBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.manageVersionBtn.accessibilityIdentifier = @"btn-RightPanel-manageVersion";
     self.manageVersionBtn.translatesAutoresizingMaskIntoConstraints = NO;
     [self.manageVersionBtn setTitle:localize(@"i18n_str_38", nil) forState:UIControlStateNormal];
     [self.manageVersionBtn setTitleColor:[UIColor labelColor] forState:UIControlStateNormal];
@@ -345,6 +348,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 
     // 执行JAR按钮
     self.executeJarBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.executeJarBtn.accessibilityIdentifier = @"btn-RightPanel-executeJar";
     self.executeJarBtn.translatesAutoresizingMaskIntoConstraints = NO;
     [self.executeJarBtn setTitle:localize(@"i18n_str_414", nil) forState:UIControlStateNormal];
     [self.executeJarBtn setTitleColor:[UIColor labelColor] forState:UIControlStateNormal];

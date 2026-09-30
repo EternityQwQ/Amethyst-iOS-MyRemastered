@@ -1650,6 +1650,7 @@ static BOOL ame87_mcVersionRequiresTextureBuffer(NSString *mcVersionId) {
     // 取消启动按钮（底部，独立添加到 self.view 不受遮罩穿透影响）
     // ========================================================================
     self.launchCancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.launchCancelButton.accessibilityIdentifier = @"btn-Surface-launchCancel";
     self.launchCancelButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.launchCancelButton setTitle:localize(@"launch.cancel", @"取消启动") forState:UIControlStateNormal];
     [self.launchCancelButton setTitleColor:[UIColor colorWithWhite:0.7 alpha:1.0] forState:UIControlStateNormal];

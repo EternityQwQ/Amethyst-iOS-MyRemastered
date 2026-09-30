@@ -87,6 +87,7 @@ static const CGFloat kSectionInset = 16.0;
     [self.contentView addSubview:self.typeTagLabel];
 
     self.sourceTagButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    self.sourceTagButton.accessibilityIdentifier = @"btn-DownloadTasks-sourceTag";
     self.sourceTagButton.translatesAutoresizingMaskIntoConstraints = NO;
     self.sourceTagButton.titleLabel.font = [UIFont systemFontOfSize:10 weight:UIFontWeightMedium];
     self.sourceTagButton.contentEdgeInsets = UIEdgeInsetsMake(2, 6, 2, 6);
@@ -146,6 +147,7 @@ static const CGFloat kSectionInset = 16.0;
 
     // FCL 风格：主操作按钮（暂停/继续/重试），右侧靠齐
     self.primaryActionButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.primaryActionButton.accessibilityIdentifier = @"btn-DownloadTasks-primaryAction";
     self.primaryActionButton.translatesAutoresizingMaskIntoConstraints = NO;
     self.primaryActionButton.titleLabel.font = [UIFont systemFontOfSize:12 weight:UIFontWeightMedium];
     self.primaryActionButton.contentEdgeInsets = UIEdgeInsetsMake(4, 10, 4, 10);
@@ -156,6 +158,7 @@ static const CGFloat kSectionInset = 16.0;
 
     // FCL 风格：次操作按钮（取消/移除）
     self.secondaryActionButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.secondaryActionButton.accessibilityIdentifier = @"btn-DownloadTasks-secondaryAction";
     self.secondaryActionButton.translatesAutoresizingMaskIntoConstraints = NO;
     self.secondaryActionButton.titleLabel.font = [UIFont systemFontOfSize:12 weight:UIFontWeightMedium];
     self.secondaryActionButton.contentEdgeInsets = UIEdgeInsetsMake(4, 10, 4, 10);
@@ -725,6 +728,7 @@ static const CGFloat kSectionInset = 16.0;
     [self.headerView addSubview:self.titleLabel];
 
     self.closeButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.closeButton.accessibilityIdentifier = @"btn-DownloadTasks-close";
     self.closeButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.closeButton setImage:[UIImage systemImageNamed:@"xmark.circle.fill"] forState:UIControlStateNormal];
     self.closeButton.tintColor = [UIColor labelColor];
@@ -733,6 +737,7 @@ static const CGFloat kSectionInset = 16.0;
 
     // Phase 6 Task 6.2：历史入口（关闭按钮左侧，时钟图标）
     self.historyButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.historyButton.accessibilityIdentifier = @"btn-DownloadTasks-history";
     self.historyButton.translatesAutoresizingMaskIntoConstraints = NO;
     [self.historyButton setImage:[UIImage systemImageNamed:@"clock.arrow.circlepath"] forState:UIControlStateNormal];
     self.historyButton.tintColor = [UIColor labelColor];
@@ -970,6 +975,7 @@ static const CGFloat kSectionInset = 16.0;
 
     NSString *fullTitle = [NSString stringWithFormat:@"%@ (%@)", title, count];
     [button setTitle:fullTitle forState:UIControlStateNormal];
+    button.accessibilityIdentifier = [NSString stringWithFormat:@"btn-DownloadTasks-typeFilter-%@", title];
     button.titleLabel.font = [UIFont systemFontOfSize:13 weight:selected ? UIFontWeightSemibold : UIFontWeightRegular];
     [button setTitleColor:selected ? [UIColor whiteColor] : [UIColor labelColor] forState:UIControlStateNormal];
     button.backgroundColor = selected ? [UIColor systemBlueColor] : [UIColor secondarySystemBackgroundColor];

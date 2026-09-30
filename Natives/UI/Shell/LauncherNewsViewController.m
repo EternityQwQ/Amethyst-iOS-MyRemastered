@@ -551,6 +551,7 @@ static NSString *festivalGreeting(void) {
     [self.contentContainer addSubview:self.messageLabel];
     
     self.actionButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.actionButton.accessibilityIdentifier = @"btn-News-action";
     self.actionButton.translatesAutoresizingMaskIntoConstraints = NO;
     self.actionButton.titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
     self.actionButton.layer.cornerRadius = 8;
@@ -849,6 +850,7 @@ static NSString *festivalGreeting(void) {
     [self.headerView addSubview:self.headerTitleLabel];
     
     self.customizeButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.customizeButton.accessibilityIdentifier = @"btn-News-customize";
     self.customizeButton.translatesAutoresizingMaskIntoConstraints = NO;
     UIImage *gearIcon = [UIImage systemImageNamed:@"slider.horizontal.3"];
     [self.customizeButton setImage:gearIcon forState:UIControlStateNormal];
