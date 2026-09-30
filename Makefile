@@ -961,15 +961,18 @@ assets:
 
 payload: $(PAYLOAD_DEPS)
 	echo '[Amethyst v$(VERSION)] payload - start'
-	# Mithril / MobileGL 都是可选渲染器：这里用 - 前缀，任一失败都不阻断主构建。
+	# Mithril / MobileGL 都是可选渲染器（- 前缀：任一失败都不阻断主构建）。
+	# UITEST=1 时整段跳过（主程序仅 dlopen，sim 包不需要渲染库）。
 	# 缺库时对应渲染器会在设置里自动隐藏（见 LauncherPreferences.m 的存在性过滤）。
-	-$(MAKE) dep_mithril
-	-$(MAKE) dep_mobilegl
+	# 注意：-$(MAKE) 的忽略失败语义由 || true 等价保持（device 行为不变）。
+	if [ '$(UITEST)' != '1' ]; then $(MAKE) dep_mithril || true; fi
+	if [ '$(UITEST)' != '1' ]; then $(MAKE) dep_mobilegl || true; fi
 	# SimpleFPEWrapper：不再用 - 前缀吞失败。之前"可选"开关把编译错误静默成
 	# 绿色，产出的 IPA 里根本没有 libSimpleFPEWrapper.dylib（假绿）。现在 iOS
 	# 适配补丁 + 编译旗标都已就位，构建失败必须响亮红 —— 与 dep_mg 同款约定。
 	# dep_sfpew 内部会把 cmake/编译输出落盘并在失败时 tail 出来，方便定位。
-	$(MAKE) dep_sfpew
+	# UITEST=1 时跳过（渲染库，sim 包不需要）。
+	if [ '$(UITEST)' != '1' ]; then $(MAKE) dep_sfpew; fi
 	$(call METHOD_DIRCHECK,$(WORKINGDIR)/AngelAuraAmethyst.app/libs)
 	$(call METHOD_DIRCHECK,$(WORKINGDIR)/AngelAuraAmethyst.app/libs_caciocavallo)
 	$(call METHOD_DIRCHECK,$(WORKINGDIR)/AngelAuraAmethyst.app/libs_caciocavallo17)
