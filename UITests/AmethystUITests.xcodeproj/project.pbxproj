@@ -12,6 +12,9 @@
 		A13000000000000000000003 /* AmethystShellTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A11000000000000000000005 /* AmethystShellTests.m */; };
 		A13000000000000000000005 /* AMESnapshotHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = A1100000000000000000000D /* AMESnapshotHelper.m */; };
 		A13000000000000000000006 /* AmethystSnapshotTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A1100000000000000000000E /* AmethystSnapshotTests.m */; };
+		B13000000000000000000001 /* testThemeButtonImage.rgba in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000001 /* testThemeButtonImage.rgba */; };
+		B13000000000000000000002 /* testThemeButtonDescription.txt in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000002 /* testThemeButtonDescription.txt */; };
+		B13000000000000000000003 /* testHostRootDescription.txt in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000003 /* testHostRootDescription.txt */; };
 		A13000000000000000000004 /* AmethystAppUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = A11000000000000000000007 /* AmethystAppUITests.m */; };
 /* End PBXBuildFile section */
 
@@ -34,6 +37,9 @@
 		A1100000000000000000000C /* AMESnapshotHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AMESnapshotHelper.h; sourceTree = "<group>"; };
 		A1100000000000000000000D /* AMESnapshotHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AMESnapshotHelper.m; sourceTree = "<group>"; };
 		A1100000000000000000000E /* AmethystSnapshotTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AmethystSnapshotTests.m; sourceTree = "<group>"; };
+		B11000000000000000000001 /* testThemeButtonImage.rgba */ = {isa = PBXFileReference; lastKnownFileType = file; path = testThemeButtonImage.rgba; sourceTree = "<group>"; };
+		B11000000000000000000002 /* testThemeButtonDescription.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = testThemeButtonDescription.txt; sourceTree = "<group>"; };
+		B11000000000000000000003 /* testHostRootDescription.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = testHostRootDescription.txt; sourceTree = "<group>"; };
 		A11000000000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A11000000000000000000007 /* AmethystAppUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AmethystAppUITests.m; sourceTree = "<group>"; };
 		A11000000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -82,8 +88,27 @@
 				A1100000000000000000000C /* AMESnapshotHelper.h */,
 				A1100000000000000000000D /* AMESnapshotHelper.m */,
 				A1100000000000000000000E /* AmethystSnapshotTests.m */,
+				B10000000000000000000001 /* __Snapshots__ */,
 			);
 			path = AmethystXCTests;
+			sourceTree = "<group>";
+		};
+		B10000000000000000000001 /* __Snapshots__ */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000002 /* AmethystSnapshotTests */,
+			);
+			path = __Snapshots__;
+			sourceTree = "<group>";
+		};
+		B10000000000000000000002 /* AmethystSnapshotTests */ = {
+			isa = PBXGroup;
+			children = (
+				B11000000000000000000001 /* testThemeButtonImage.rgba */,
+				B11000000000000000000002 /* testThemeButtonDescription.txt */,
+				B11000000000000000000003 /* testHostRootDescription.txt */,
+			);
+			path = AmethystSnapshotTests;
 			sourceTree = "<group>";
 		};
 		A10000000000000000000005 /* AmethystXCUITests */ = {
@@ -128,6 +153,7 @@
 			buildConfigurationList = A15000000000000000000003 /* Build configuration list for PBXNativeTarget "AmethystXCTests" */;
 			buildPhases = (
 				A14000000000000000000002 /* Sources */,
+				B14000000000000000000001 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -182,6 +208,19 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B14000000000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B13000000000000000000001 /* testThemeButtonImage.rgba in Resources */,
+				B13000000000000000000002 /* testThemeButtonDescription.txt in Resources */,
+				B13000000000000000000003 /* testHostRootDescription.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		A14000000000000000000001 /* Sources */ = {

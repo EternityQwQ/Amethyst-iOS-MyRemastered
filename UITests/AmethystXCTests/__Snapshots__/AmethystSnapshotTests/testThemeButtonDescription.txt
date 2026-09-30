@@ -1,0 +1,2 @@
+<UIButton: 0x0; frame = (0 0; 200 80); clipsToBounds = YES; opaque = NO; gestureRecognizers = <NSArray: 0x0>; backgroundColor = UIExtendedSRGBColorSpace 0.545098 0.360784 0.964706 1; layer = <CALayer: 0x0>>
+   | <UIButtonLabel: 0x0; frame = (84.6667 31; 31 18); text = '测试'; opaque = NO; userInteractionEnabled = NO; layer = <_UILabelLayer: 0x0>>
