@@ -955,7 +955,8 @@ jobs:
       - name: Ad-hoc sign, install, launch
         run: |
           set -e
-          APP="Payload/AngelAuraAmethyst.app"
+          # OUTPUTDIR=artifacts（见 Makefile），Payload 在 artifacts/ 下，不在仓库根
+          APP="artifacts/Payload/AngelAuraAmethyst.app"
           test -d "$APP"
           # 覆盖 Makefile 的 ldid 假签名：模拟器认 ad-hoc（codesign -s -）
           codesign --force --sign - "$APP"
