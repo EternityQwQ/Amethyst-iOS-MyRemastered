@@ -863,8 +863,12 @@ jobs:
       - name: Install simulator app
         run: |
           set -e
-          APP="sim-app/AngelAuraAmethyst.app"
-          test -d "$APP"
+          # download-artifact 的目录展平语义不稳定（是否保留顶层目录名），
+          # 用 find 定位 .app，不硬编码层级
+          ls sim-app/ || true
+          APP=$(find sim-app -maxdepth 3 -name "AngelAuraAmethyst.app" | head -n 1)
+          test -n "$APP" || { echo '[ui-tests] sim .app not found under sim-app/'; exit 1; }
+          echo "[ui-tests] sim app at: $APP"
           codesign --force --sign - "$APP"
           xcrun simctl install "${SIM_UDID}" "$APP"
           echo '[ui-tests] sim app installed'
