@@ -15,6 +15,7 @@
 		B13000000000000000000001 /* testThemeButtonImage.rgba in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000001 /* testThemeButtonImage.rgba */; };
 		B13000000000000000000002 /* testThemeButtonDescription.txt in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000002 /* testThemeButtonDescription.txt */; };
 		B13000000000000000000003 /* testHostRootDescription.txt in Resources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000003 /* testHostRootDescription.txt */; };
+		B13000000000000000000004 /* MarqueeLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000005 /* MarqueeLabel.m */; };
 		A13000000000000000000004 /* AmethystAppUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = A11000000000000000000007 /* AmethystAppUITests.m */; };
 /* End PBXBuildFile section */
 
@@ -40,6 +41,8 @@
 		B11000000000000000000001 /* testThemeButtonImage.rgba */ = {isa = PBXFileReference; lastKnownFileType = file; path = testThemeButtonImage.rgba; sourceTree = "<group>"; };
 		B11000000000000000000002 /* testThemeButtonDescription.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = testThemeButtonDescription.txt; sourceTree = "<group>"; };
 		B11000000000000000000003 /* testHostRootDescription.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = testHostRootDescription.txt; sourceTree = "<group>"; };
+		B11000000000000000000004 /* MarqueeLabel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UI/Common/MarqueeLabel.h"; sourceTree = "<group>"; };
+		B11000000000000000000005 /* MarqueeLabel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UI/Common/MarqueeLabel.m"; sourceTree = "<group>"; };
 		A11000000000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A11000000000000000000007 /* AmethystAppUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AmethystAppUITests.m; sourceTree = "<group>"; };
 		A11000000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -56,16 +59,7 @@
 				A10000000000000000000004 /* AmethystXCTests */,
 				A10000000000000000000005 /* AmethystXCUITests */,
 				A10000000000000000000006 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		A10000000000000000000002 = {
-			isa = PBXGroup;
-			children = (
-				A10000000000000000000003 /* TestHost */,
-				A10000000000000000000004 /* AmethystXCTests */,
-				A10000000000000000000005 /* AmethystXCUITests */,
-				A10000000000000000000006 /* Products */,
+				B10000000000000000000003 /* AppSources */,
 			);
 			sourceTree = "<group>";
 		};
@@ -109,6 +103,15 @@
 				B11000000000000000000003 /* testHostRootDescription.txt */,
 			);
 			path = AmethystSnapshotTests;
+			sourceTree = "<group>";
+		};
+		B10000000000000000000003 /* AppSources */ = {
+			isa = PBXGroup;
+			children = (
+				B11000000000000000000004 /* MarqueeLabel.h */,
+				B11000000000000000000005 /* MarqueeLabel.m */,
+			);
+			path = ../../Natives;
 			sourceTree = "<group>";
 		};
 		A10000000000000000000005 /* AmethystXCUITests */ = {
@@ -239,6 +242,7 @@
 				A13000000000000000000003 /* AmethystShellTests.m in Sources */,
 				A13000000000000000000005 /* AMESnapshotHelper.m in Sources */,
 				A13000000000000000000006 /* AmethystSnapshotTests.m in Sources */,
+				B13000000000000000000004 /* MarqueeLabel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -358,7 +362,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
-				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../Natives/UI/Shell";
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../Natives/UI/Shell",
+					"$(PROJECT_DIR)/../Natives/UI/Common",
+				);
 				INFOPLIST_FILE = AmethystXCTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -385,7 +392,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
-				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../Natives/UI/Shell";
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../Natives/UI/Shell",
+					"$(PROJECT_DIR)/../Natives/UI/Common",
+				);
 				INFOPLIST_FILE = AmethystXCTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (

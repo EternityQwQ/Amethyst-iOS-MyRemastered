@@ -5,6 +5,7 @@
 // 缺失即 record+fail（pointfree 语义），CI 取 artifact 合入后再跑即绿。
 @import XCTest;
 #import "AMESnapshotHelper.h"
+#import "MarqueeLabel.h"
 #import "UITheme.h"
 
 @interface AmethystSnapshotTests : XCTestCase
@@ -39,6 +40,41 @@
     XCTAssertNotNil(win);
     if (!win) return;
     AMEAssertSnapshotDescription(win.rootViewController.view, @"testHostRootDescription", self);
+}
+
+// 主题五色全覆盖（P8a 只录了 violet；五色是 alias-safe 的色板契约）
+- (void)testThemeAccentsImage {
+    NSArray<NSString *> *accents = @[kThemeAccentViolet, kThemeAccentTeal, kThemeAccentOrange,
+                                     kThemeAccentPink, kThemeAccentIndigo];
+    NSArray<NSString *> *names = @[@"Violet", @"Teal", @"Orange", @"Pink", @"Indigo"];
+    for (NSUInteger i = 0; i < accents.count; i++) {
+        UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
+        btn.frame = CGRectMake(0, 0, 200, 80);
+        btn.backgroundColor = UIThemeColorFromHex(accents[i]);
+        [btn setTitle:names[i] forState:UIControlStateNormal];
+        [btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        btn.layer.cornerRadius = 10;
+        btn.layer.masksToBounds = YES;
+        [btn layoutIfNeeded];
+        AMEAssertSnapshotImage(btn, [NSString stringWithFormat:@"testThemeAccent-%@",
+                                     names[i]], self, 0.01);
+    }
+}
+
+// 真 App 视图首例：MarqueeLabel（纯 UIKit，零外部符号，可进 test bundle）。
+// 静态首帧（不启动滚动动画，录的是排版结果；动画行为仍需真机）。
+- (void)testMarqueeLabelImage {
+    MarqueeLabel *label = [[MarqueeLabel alloc] initWithFrame:CGRectMake(0, 0, 200, 30)];
+    label.text = @"这是一条很长的跑马灯测试文本 Marquee";
+    label.font = [UIFont systemFontOfSize:14];
+    [label layoutIfNeeded];
+    AMEAssertSnapshotImage(label, @"testMarqueeLabelImage", self, 0.01);
+}
+
+- (void)testMarqueeLabelDescription {
+    MarqueeLabel *label = [[MarqueeLabel alloc] initWithFrame:CGRectMake(0, 0, 200, 30)];
+    label.text = @"abc";
+    AMEAssertSnapshotDescription(label, @"testMarqueeLabelDescription", self);
 }
 
 @end
