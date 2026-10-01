@@ -24,6 +24,14 @@ static void AMESaveScreen(NSString *name) {
     [png writeToFile:path atomically:YES];
 }
 
+// 下载类型入口：侧栏 "Mods" 行是可点按钮（静态文本查不到，实测结论），
+// 用按钮优先、文本兜底。返回找到的元素（调用方再断言/点击）。
+static XCUIElement *AMEDownloadModsTab(XCUIApplication *app) {
+    XCUIElement *btn = app.buttons[@"Mods"];
+    if ([btn waitForExistenceWithTimeout:10.0]) return btn;
+    return app.staticTexts[@"Mods"];
+}
+
 @interface AmethystAppUITests : XCTestCase
 @end
 
@@ -166,8 +174,8 @@ static void AMESaveScreen(NSString *name) {
     XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0]);
     [menuDownload tap];
     // 默认是版本 tab（Mojang 源，CI 出境可能不通）；切 Mods tab 走 Modrinth
-    XCUIElement *modsTab = app.staticTexts[@"Mods"];
-    XCTAssertTrue([modsTab waitForExistenceWithTimeout:20.0], @"Mods 类型入口未出现");
+    XCUIElement *modsTab = AMEDownloadModsTab(app);
+    XCTAssertTrue([modsTab waitForExistenceWithTimeout:10.0], @"Mods 类型入口未出现");
     [modsTab tap];
     XCUIElement *modBtn = app.buttons[@"btn-Download-sidebarModrinth"];
     XCTAssertTrue([modBtn waitForExistenceWithTimeout:20.0], @"Mod 源按钮未出现");
@@ -189,8 +197,8 @@ static void AMESaveScreen(NSString *name) {
     XCUIElement *menuDownload = app.buttons[@"launcher-menu-1"];
     XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0]);
     [menuDownload tap];
-    XCUIElement *modsTab = app.staticTexts[@"Mods"];
-    XCTAssertTrue([modsTab waitForExistenceWithTimeout:20.0], @"Mods 类型入口未出现");
+    XCUIElement *modsTab = AMEDownloadModsTab(app);
+    XCTAssertTrue([modsTab waitForExistenceWithTimeout:10.0], @"Mods 类型入口未出现");
     [modsTab tap];
     XCUIElement *dlBtn = app.buttons[@"btn-ModernAssetCell-download"];
     XCTAssertTrue([dlBtn waitForExistenceWithTimeout:30.0], @"下载列表未加载出条目");
@@ -208,8 +216,8 @@ static void AMESaveScreen(NSString *name) {
     XCUIElement *menuDownload = app.buttons[@"launcher-menu-1"];
     XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0]);
     [menuDownload tap];
-    XCUIElement *modsTab = app.staticTexts[@"Mods"];
-    XCTAssertTrue([modsTab waitForExistenceWithTimeout:20.0], @"Mods 类型入口未出现");
+    XCUIElement *modsTab = AMEDownloadModsTab(app);
+    XCTAssertTrue([modsTab waitForExistenceWithTimeout:10.0], @"Mods 类型入口未出现");
     [modsTab tap];
     XCUIElement *table = app.tables.firstMatch;
     XCTAssertTrue([table waitForExistenceWithTimeout:20.0], @"下载列表未出现");
@@ -233,8 +241,8 @@ static void AMESaveScreen(NSString *name) {
         XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0],
                       @"第 %ld 轮：下载菜单丢失", (long)i);
         [menuDownload tap];
-        XCUIElement *modsTab = app.staticTexts[@"Mods"];
-        if ([modsTab waitForExistenceWithTimeout:10.0]) {
+        XCUIElement *modsTab = AMEDownloadModsTab(app);
+        if ([modsTab waitForExistenceWithTimeout:5.0]) {
             [modsTab tap];
         }
         XCUIElement *table = app.tables.firstMatch;
