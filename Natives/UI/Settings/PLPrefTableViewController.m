@@ -202,6 +202,8 @@
         cell.imageView.image = [UIImage systemImageNamed:item[@"icon"]];
         cell.imageView.tintColor = [item[@"destructive"] boolValue] ? UIColor.systemRedColor : nil;
         cell.userInteractionEnabled = YES;
+        // UI Testing 可测性（加法）：搜索结果行同样 key 标识（matched 系 item mutableCopy，带 key）
+        cell.accessibilityIdentifier = [NSString stringWithFormat:@"pref-search-%@", item[@"key"] ?: @"row"];
         return cell;
     }
 

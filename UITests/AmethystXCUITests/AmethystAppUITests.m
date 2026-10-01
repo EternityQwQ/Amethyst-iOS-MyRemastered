@@ -69,23 +69,21 @@ static void AMESaveScreen(NSString *name) {
     [app terminate];
 }
 
-// 自定义触屏编辑器流程（P7 首刀验证入口）：设置 → custom_controls 行 → 编辑器。
-// 行级 identifier（pref-cell-<key>）+ 编辑器引导文案（customcontrols-guide）定位；
+// 自定义触屏编辑器流程（P7 首刀验证入口）：设置 → 搜索 custom → 结果行 → 编辑器。
+// 走搜索流而非滚表：动态 UITableView 非可见行无 cell 对象，滚翻找是盲找；
+// 搜索扁平化直达（filteredItems 带 key，pref-search-<key> 标识）。
 // 留编辑器截图作为后续 CCMenu 表单迁移的前后对比基线。
 - (void)testCustomControlsEditor {
     XCUIApplication *app = [self launchedApp];
     XCUIElement *menuSettings = app.buttons[@"launcher-menu-4"];
     XCTAssertTrue([menuSettings waitForExistenceWithTimeout:20.0]);
     [menuSettings tap];
-    // 设置表是动态 UITableView，非可见行没有 cell 对象——向下滚翻找
-    XCUIElement *ccRow = app.cells[@"pref-cell-custom_controls"];
-    BOOL found = [ccRow waitForExistenceWithTimeout:5.0];
-    XCUIElement *settingsTable = app.tables.firstMatch;
-    for (int i = 0; i < 8 && !found; i++) {
-        [settingsTable swipeUp];
-        found = [ccRow waitForExistenceWithTimeout:2.0];
-    }
-    XCTAssertTrue(found, @"custom_controls 行未出现（滚到底也没找到）");
+    XCUIElement *search = app.searchFields.firstMatch;
+    XCTAssertTrue([search waitForExistenceWithTimeout:20.0], @"设置搜索框未出现");
+    [search tap];
+    [search typeText:@"custom"];
+    XCUIElement *ccRow = app.cells[@"pref-search-custom_controls"];
+    XCTAssertTrue([ccRow waitForExistenceWithTimeout:20.0], @"custom_controls 搜索结果未出现");
     [ccRow tap];
     XCUIElement *guide = app.staticTexts[@"customcontrols-guide"];
     XCTAssertTrue([guide waitForExistenceWithTimeout:20.0], @"编辑器引导文案未出现");
