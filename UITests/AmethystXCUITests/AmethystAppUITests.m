@@ -70,6 +70,24 @@ static void AMESaveScreen(NSString *name) {
     [app terminate];
 }
 
+// 上下滑动预览：在首页滚动区上滑/下滑，各留一张真机截图。
+// 目标优先 scrollViews（新闻列表），无则退到主窗口（swipe 对任意元素有效）。
+// 只断言 App 不死（滚动内容随数据/网络变化，不做像素断言，图由人审）。
+- (void)testSwipeUpDownPreview {
+    XCUIApplication *app = [self launchedApp];
+    XCUIElement *target = app.scrollViews.firstMatch;
+    if (![target waitForExistenceWithTimeout:10.0]) {
+        target = app.windows.firstMatch;
+    }
+    [target swipeUp];
+    AMESaveScreen(@"app-swipe-up");
+    [target swipeDown];
+    AMESaveScreen(@"app-swipe-down");
+    XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning,
+                       @"上下滑动后 App 死亡");
+    [app terminate];
+}
+
 // 启动性能（Apple 官方模板同款 metric，接真 App 包体）
 - (void)testLaunchPerformance {
     if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *)) {
