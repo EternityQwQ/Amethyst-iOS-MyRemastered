@@ -23,6 +23,10 @@
 		B1300000000000000000000A /* testMarqueeLabelImage.rgba in Resources */ = {isa = PBXBuildFile; fileRef = B1100000000000000000000B /* testMarqueeLabelImage.rgba */; };
 		B1300000000000000000000B /* testMarqueeLabelDescription.txt in Resources */ = {isa = PBXBuildFile; fileRef = B1100000000000000000000C /* testMarqueeLabelDescription.txt */; };
 		B13000000000000000000004 /* MarqueeLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000005 /* MarqueeLabel.m */; };
+		B1300000000000000000000C /* CustomControlsUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = B1100000000000000000000D /* CustomControlsUtils.m */; };
+		B1300000000000000000000D /* ScreenUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = B1100000000000000000000E /* ScreenUtils.m */; };
+		B1300000000000000000000E /* AMEEngineStubs.m in Sources */ = {isa = PBXBuildFile; fileRef = B1100000000000000000000F /* AMEEngineStubs.m */; };
+		B1300000000000000000000F /* AmethystEngineTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B11000000000000000000010 /* AmethystEngineTests.m */; };
 		A13000000000000000000004 /* AmethystAppUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = A11000000000000000000007 /* AmethystAppUITests.m */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +49,8 @@
 		A1100000000000000000000C /* AMESnapshotHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AMESnapshotHelper.h; sourceTree = "<group>"; };
 		A1100000000000000000000D /* AMESnapshotHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AMESnapshotHelper.m; sourceTree = "<group>"; };
 		A1100000000000000000000E /* AmethystSnapshotTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AmethystSnapshotTests.m; sourceTree = "<group>"; };
+		B1100000000000000000000F /* AMEEngineStubs.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AMEEngineStubs.m; sourceTree = "<group>"; };
+		B11000000000000000000010 /* AmethystEngineTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AmethystEngineTests.m; sourceTree = "<group>"; };
 		B11000000000000000000001 /* testThemeButtonImage.rgba */ = {isa = PBXFileReference; lastKnownFileType = file; path = testThemeButtonImage.rgba; sourceTree = "<group>"; };
 		B11000000000000000000002 /* testThemeButtonDescription.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = testThemeButtonDescription.txt; sourceTree = "<group>"; };
 		B11000000000000000000003 /* testHostRootDescription.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = testHostRootDescription.txt; sourceTree = "<group>"; };
@@ -57,6 +63,8 @@
 		B1100000000000000000000C /* testMarqueeLabelDescription.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = testMarqueeLabelDescription.txt; sourceTree = "<group>"; };
 		B11000000000000000000004 /* MarqueeLabel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UI/Common/MarqueeLabel.h"; sourceTree = "<group>"; };
 		B11000000000000000000005 /* MarqueeLabel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UI/Common/MarqueeLabel.m"; sourceTree = "<group>"; };
+		B1100000000000000000000D /* CustomControlsUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "customcontrols/CustomControlsUtils.m"; sourceTree = "<group>"; };
+		B1100000000000000000000E /* ScreenUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ScreenUtils.m"; sourceTree = "<group>"; };
 		A11000000000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A11000000000000000000007 /* AmethystAppUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AmethystAppUITests.m; sourceTree = "<group>"; };
 		A11000000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -96,6 +104,8 @@
 				A1100000000000000000000C /* AMESnapshotHelper.h */,
 				A1100000000000000000000D /* AMESnapshotHelper.m */,
 				A1100000000000000000000E /* AmethystSnapshotTests.m */,
+				B1100000000000000000000F /* AMEEngineStubs.m */,
+				B11000000000000000000010 /* AmethystEngineTests.m */,
 				B10000000000000000000001 /* __Snapshots__ */,
 			);
 			path = AmethystXCTests;
@@ -131,6 +141,8 @@
 			children = (
 				B11000000000000000000004 /* MarqueeLabel.h */,
 				B11000000000000000000005 /* MarqueeLabel.m */,
+				B1100000000000000000000D /* CustomControlsUtils.m */,
+				B1100000000000000000000E /* ScreenUtils.m */,
 			);
 			path = ../Natives;
 			sourceTree = "<group>";
@@ -271,6 +283,10 @@
 				A13000000000000000000005 /* AMESnapshotHelper.m in Sources */,
 				A13000000000000000000006 /* AmethystSnapshotTests.m in Sources */,
 				B13000000000000000000004 /* MarqueeLabel.m in Sources */,
+				B1300000000000000000000C /* CustomControlsUtils.m in Sources */,
+				B1300000000000000000000D /* ScreenUtils.m in Sources */,
+				B1300000000000000000000E /* AMEEngineStubs.m in Sources */,
+				B1300000000000000000000F /* AmethystEngineTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,6 +411,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../Natives/UI/Shell",
 					"$(PROJECT_DIR)/../Natives/UI/Common",
+					"$(PROJECT_DIR)/../Natives",
+					"$(PROJECT_DIR)/../Natives/customcontrols",
 				);
 				INFOPLIST_FILE = AmethystXCTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
@@ -425,6 +443,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../Natives/UI/Shell",
 					"$(PROJECT_DIR)/../Natives/UI/Common",
+					"$(PROJECT_DIR)/../Natives",
+					"$(PROJECT_DIR)/../Natives/customcontrols",
 				);
 				INFOPLIST_FILE = AmethystXCTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
