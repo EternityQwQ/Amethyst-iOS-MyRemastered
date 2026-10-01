@@ -90,23 +90,24 @@ static void AMESaveScreen(NSString *name) {
         ccRow = app.cells[@"pref-search-custom_controls"];
         XCTAssertTrue([ccRow waitForExistenceWithTimeout:20.0], @"custom_controls 搜索结果未出现");
     } else {
-        NSPredicate *anyPrefRow = [NSPredicate predicateWithFormat:@"identifier BEGINSWITH 'pref-cell-'"];
-        XCUIElementQuery *rows = [app.cells matchingPredicate:anyPrefRow];
-        // 锚点必须可点（首个匹配可能在屏外 frame 为空，对它 swipe 会抛异常）
-        XCUIElement *anchor = nil;
-        for (NSUInteger i = 0; i < rows.count; i++) {
-            XCUIElement *c = rows.allElementsBoundByIndex[i];
-            if (c.isHittable) { anchor = c; break; }
+        // 阻断诊断：先dump可见行（identifier/label/frame/hittable），再滚表
+        for (NSUInteger di = 0; di < app.cells.count; di++) {
+            XCUIElement *dc = app.cells.allElementsBoundByIndex[di];
+            NSLog(@"[AME-diag] cell[%lu] id=%@ label=%@ frame=%@ hittable=%d",
+                  (unsigned long)di, dc.identifier, dc.label,
+                  NSStringFromCGRect(dc.frame), dc.isHittable);
         }
-        XCTAssertNotNil(anchor, @"设置表无可点行，滚不动");
+        NSPredicate *anyPrefRow = [NSPredicate predicateWithFormat:@"identifier BEGINSWITH 'pref-cell-'"];
+        XCUIElement *table = app.tables.firstMatch;
         ccRow = app.cells[@"pref-cell-custom_controls"];
         BOOL found = [ccRow waitForExistenceWithTimeout:3.0];
-        for (int i = 0; i < 12 && !found; i++) {
-            [anchor swipeUp];
-            anchor = [app.cells matchingPredicate:anyPrefRow].firstMatch;
+        for (int i = 0; i < 20 && !found; i++) {
+            [table swipeUp];
+            XCUIElement *firstRow = [app.cells matchingPredicate:anyPrefRow].firstMatch;
+            NSLog(@"[AME-diag] swipe %d firstRow=%@", i, firstRow.identifier);
             found = [ccRow waitForExistenceWithTimeout:2.0];
         }
-        XCTAssertTrue(found, @"custom_controls 行未出现（滚到底也没找到）");
+        XCTAssertTrue(found, @"custom_controls 行未出现（滚了20页也没找到）");
     }
     [ccRow tap];
     XCUIElement *guide = app.staticTexts[@"customcontrols-guide"];
