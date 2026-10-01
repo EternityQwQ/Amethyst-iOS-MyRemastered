@@ -165,7 +165,34 @@ static XCUIElement *AMEDownloadModsTab(XCUIApplication *app) {
     [app terminate];
 }
 
-// 下载源访问：Mod 与 CF 按钮逐个点（CF 无 API Key 时走提示流，有 Key 时真切换）。
+// 下载搜索：在 mods 页搜 fabric（空 query 本来就无结果，必须带词）。
+// 幂等：框里已有 fabric 就跳过（重复输入会变 fabricfabric 查无结果）。
+static void AMESearchMods(XCUIApplication *app) {
+    XCUIElement *s = app.searchFields.firstMatch;
+    if (![s waitForExistenceWithTimeout:10.0]) return;
+    [s tap];
+    NSString *cur = nil;
+    @try { cur = (NSString *)s.value; } @catch (NSException *e) {}
+    if (![cur isKindOfClass:[NSString class]] || cur.length == 0 ||
+        [cur rangeOfString:@"Search"].location != NSNotFound) {
+        [s typeText:@"fabric"];
+    }
+}
+
+// 清场：关一切浮层（标准 alert 点按钮；自定义卡片/表单下滑关闭）。
+// 返回关掉的东西（日志用），供诊断rounds卡死用。
+static NSString *AMEDismissAnyModal(XCUIApplication *app) {
+    XCUIElement *alert = app.alerts.firstMatch;
+    if ([alert waitForExistenceWithTimeout:3.0]) {
+        XCUIElement *ab = alert.buttons.firstMatch;
+        if ([ab waitForExistenceWithTimeout:2.0]) {
+            [ab tap];
+            return @"alert-button";
+        }
+    }
+    [app.windows.firstMatch swipeDown];
+    return @"swipe-down";
+}
 // 不断言具体分支（分支依赖外部 Key 配置），只保证两处理器都被执行到、App 不死，
 // 两张截图留作人工核对（滑块位置/提示条即证据）。
 - (void)testDownloadSourceAccess {
@@ -177,6 +204,7 @@ static XCUIElement *AMEDownloadModsTab(XCUIApplication *app) {
     XCUIElement *modsTab = AMEDownloadModsTab(app);
     XCTAssertTrue([modsTab waitForExistenceWithTimeout:10.0], @"Mods 类型入口未出现");
     [modsTab tap];
+    AMESearchMods(app);
     XCUIElement *modBtn = app.buttons[@"btn-Download-sidebarModrinth"];
     XCTAssertTrue([modBtn waitForExistenceWithTimeout:20.0], @"Mod 源按钮未出现");
     [modBtn tap];
@@ -186,6 +214,7 @@ static XCUIElement *AMEDownloadModsTab(XCUIApplication *app) {
     [cfBtn tap];
     [NSThread sleepForTimeInterval:3.0];
     AMESaveScreen(@"app-source-curseforge");
+    AMEDismissAnyModal(app);
     XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning);
     [app terminate];
 }
@@ -200,6 +229,7 @@ static XCUIElement *AMEDownloadModsTab(XCUIApplication *app) {
     XCUIElement *modsTab = AMEDownloadModsTab(app);
     XCTAssertTrue([modsTab waitForExistenceWithTimeout:10.0], @"Mods 类型入口未出现");
     [modsTab tap];
+    AMESearchMods(app);
     XCUIElement *dlBtn = app.buttons[@"btn-ModernAssetCell-download"];
     XCTAssertTrue([dlBtn waitForExistenceWithTimeout:30.0], @"下载列表未加载出条目");
     [dlBtn tap];
@@ -219,6 +249,7 @@ static XCUIElement *AMEDownloadModsTab(XCUIApplication *app) {
     XCUIElement *modsTab = AMEDownloadModsTab(app);
     XCTAssertTrue([modsTab waitForExistenceWithTimeout:10.0], @"Mods 类型入口未出现");
     [modsTab tap];
+    AMESearchMods(app);
     XCUIElement *table = app.tables.firstMatch;
     XCTAssertTrue([table waitForExistenceWithTimeout:20.0], @"下载列表未出现");
     [table swipeDown];
@@ -237,6 +268,10 @@ static XCUIElement *AMEDownloadModsTab(XCUIApplication *app) {
     const NSInteger rounds = 20;
     NSInteger versionOpened = 0;
     for (NSInteger i = 0; i < rounds; i++) {
+        NSString *cleared = AMEDismissAnyModal(app);
+        if (i == 0 || cleared) {
+            NSLog(@"[AME-repeat] round %ld pre-clear: %@", (long)i, cleared ?: @"none");
+        }
         XCUIElement *menuDownload = app.buttons[@"launcher-menu-1"];
         XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0],
                       @"第 %ld 轮：下载菜单丢失", (long)i);
@@ -245,6 +280,7 @@ static XCUIElement *AMEDownloadModsTab(XCUIApplication *app) {
         if ([modsTab waitForExistenceWithTimeout:5.0]) {
             [modsTab tap];
         }
+        AMESearchMods(app);
         XCUIElement *table = app.tables.firstMatch;
         if ([table waitForExistenceWithTimeout:10.0]) {
             [table swipeDown];

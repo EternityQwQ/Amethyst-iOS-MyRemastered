@@ -95,11 +95,7 @@
                     strongSelf.emptyLabel.hidden = NO;
                 }
             } else {
-                // DIAG-TEMP（定位 CI 模拟器 Network error，复现后即删）：
-                // 把 NSError domain+code 直接打到空态文案上，截图即取证。
-                NSString *detail = [NSString stringWithFormat:@"%@ [%@ %ld]",
-                    localize(@"i18n_str_177", nil), error.domain, (long)error.code];
-                strongSelf.emptyLabel.text = detail;
+                strongSelf.emptyLabel.text = localize(@"i18n_str_177", nil);
                 strongSelf.emptyLabel.hidden = NO;
             }
         });
