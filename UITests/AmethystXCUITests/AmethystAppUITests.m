@@ -90,24 +90,16 @@ static void AMESaveScreen(NSString *name) {
         ccRow = app.cells[@"pref-search-custom_controls"];
         XCTAssertTrue([ccRow waitForExistenceWithTimeout:20.0], @"custom_controls 搜索结果未出现");
     } else {
-        // 阻断诊断：先dump可见行（identifier/label/frame/hittable），再滚表
-        for (NSUInteger di = 0; di < app.cells.count; di++) {
-            XCUIElement *dc = app.cells.allElementsBoundByIndex[di];
-            NSLog(@"[AME-diag] cell[%lu] id=%@ label=%@ frame=%@ hittable=%d",
-                  (unsigned long)di, dc.identifier, dc.label,
-                  NSStringFromCGRect(dc.frame), dc.isHittable);
-        }
-        NSPredicate *anyPrefRow = [NSPredicate predicateWithFormat:@"identifier BEGINSWITH 'pref-cell-'"];
-        XCUIElement *table = app.tables.firstMatch;
+        // 分区下钻：设置表只有 8 个分区行（custom_controls 藏在 control 分区里），
+        // 先点 control 分区行，下钻表内再找 custom_controls 行。
+        // 注：tap 自带滚入视野（XCTest 自动滚动），无需手滚；之前 20 次手滚纹丝不动
+        // 即因此——表内容本就无需滚，行在下钻表里。
+        XCUIElement *controlSection = app.cells[@"pref-cell-control"];
+        XCTAssertTrue([controlSection waitForExistenceWithTimeout:20.0], @"control 分区行未出现");
+        AMESaveScreen(@"app-settings-sections");
+        [controlSection tap];
         ccRow = app.cells[@"pref-cell-custom_controls"];
-        BOOL found = [ccRow waitForExistenceWithTimeout:3.0];
-        for (int i = 0; i < 20 && !found; i++) {
-            [table swipeUp];
-            XCUIElement *firstRow = [app.cells matchingPredicate:anyPrefRow].firstMatch;
-            NSLog(@"[AME-diag] swipe %d firstRow=%@", i, firstRow.identifier);
-            found = [ccRow waitForExistenceWithTimeout:2.0];
-        }
-        XCTAssertTrue(found, @"custom_controls 行未出现（滚了20页也没找到）");
+        XCTAssertTrue([ccRow waitForExistenceWithTimeout:20.0], @"custom_controls 行未出现");
     }
     [ccRow tap];
     XCUIElement *guide = app.staticTexts[@"customcontrols-guide"];
