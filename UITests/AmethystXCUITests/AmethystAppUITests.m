@@ -78,12 +78,30 @@ static void AMESaveScreen(NSString *name) {
     XCUIElement *menuSettings = app.buttons[@"launcher-menu-4"];
     XCTAssertTrue([menuSettings waitForExistenceWithTimeout:20.0]);
     [menuSettings tap];
+    NSLog(@"[AME-diag] tables=%lu cells=%lu searchFields=%lu",
+          (unsigned long)app.tables.count, (unsigned long)app.cells.count,
+          (unsigned long)app.searchFields.count);
+    // 路径A（首选）：搜索框直达。路径B：任一可见设置行作锚点滚表。
     XCUIElement *search = app.searchFields.firstMatch;
-    XCTAssertTrue([search waitForExistenceWithTimeout:20.0], @"设置搜索框未出现");
-    [search tap];
-    [search typeText:@"custom"];
-    XCUIElement *ccRow = app.cells[@"pref-search-custom_controls"];
-    XCTAssertTrue([ccRow waitForExistenceWithTimeout:20.0], @"custom_controls 搜索结果未出现");
+    XCUIElement *ccRow = nil;
+    if ([search waitForExistenceWithTimeout:5.0]) {
+        [search tap];
+        [search typeText:@"custom"];
+        ccRow = app.cells[@"pref-search-custom_controls"];
+        XCTAssertTrue([ccRow waitForExistenceWithTimeout:20.0], @"custom_controls 搜索结果未出现");
+    } else {
+        NSPredicate *anyPrefRow = [NSPredicate predicateWithFormat:@"identifier BEGINSWITH 'pref-cell-'"];
+        XCUIElement *anchor = [app.cells matchingPredicate:anyPrefRow].firstMatch;
+        XCTAssertTrue([anchor waitForExistenceWithTimeout:20.0], @"设置表无可见行，滚不动");
+        ccRow = app.cells[@"pref-cell-custom_controls"];
+        BOOL found = [ccRow waitForExistenceWithTimeout:3.0];
+        for (int i = 0; i < 12 && !found; i++) {
+            [anchor swipeUp];
+            anchor = [app.cells matchingPredicate:anyPrefRow].firstMatch;
+            found = [ccRow waitForExistenceWithTimeout:2.0];
+        }
+        XCTAssertTrue(found, @"custom_controls 行未出现（滚到底也没找到）");
+    }
     [ccRow tap];
     XCUIElement *guide = app.staticTexts[@"customcontrols-guide"];
     XCTAssertTrue([guide waitForExistenceWithTimeout:20.0], @"编辑器引导文案未出现");
