@@ -241,24 +241,61 @@ jobs:
       - name: P7 Frame migration ratchet (CGRectMake only shrinks)
         run: |
           set -e
-          # P7（CustomControls Frame→约束）验证先行：手算 CGRectMake 只许减少不许增加。
-          # 基线（实测，P7-1 铬件迁移后）：ControlButton 1 + ControlJoystick 5
-          # + CustomControlsVC 31 = 37（原 39，popoverToolbar/scrollView 已迁约束）。
+          # P7（Frame→约束）验证先行：全仓手算 CGRectMake 只许减少不许增加。
+          # 基线（实测，共 141 处；P9-2 已删文件不在内）：
+          # CustomControlsVC 30（含已迁铬件/blurView）、ProfileSettings 14……
           # 每消一处都应是约束等价替换；新增即方向错误。布局正确性仍需像素验证
           # （真机/sim，见 P7 计划），本门禁只锁数量；文件改名/删除即响亮失败，
-          # 避免基线静默失效。
+          # 避免基线静默失效（改布局时同步更新本表）。
           python3 - <<'PYEOF'
           import re, os, sys
-          BASE = {'Natives/customcontrols/ControlButton.m': 1,
-                  'Natives/customcontrols/ControlJoystick.m': 5,
-                  'Natives/UI/Game/CustomControlsViewController.m': 31}
+          BASE = {
+              'Natives/UI/Account/AccountListViewController.m': 1,
+              'Natives/UI/Common/GameMenuOverlayView.m': 2,
+              'Natives/UI/Common/ImageCropperViewController.m': 5,
+              'Natives/UI/Common/MarqueeLabel.m': 2,
+              'Natives/UI/Common/MinecraftNewsViewController.m': 1,
+              'Natives/UI/Common/PLCrashView.m': 3,
+              'Natives/UI/Common/PLLogOutputView.m': 1,
+              'Natives/UI/Common/PLPickerView.m': 1,
+              'Natives/UI/Common/PickTextField.m': 3,
+              'Natives/UI/Download/DownloadHistoryViewController.m': 2,
+              'Natives/UI/Download/DownloadTasksViewController.m': 2,
+              'Natives/UI/Game/CustomControlsViewController+UndoManager.m': 1,
+              'Natives/UI/Game/CustomControlsViewController.m': 30,
+              'Natives/UI/Game/JavaGUIViewController.m': 3,
+              'Natives/UI/Game/SurfaceViewController+Navigation.m': 8,
+              'Natives/UI/Game/SurfaceViewController.m': 7,
+              'Natives/UI/Resources/AssetDetailHeaderView.m': 2,
+              'Natives/UI/Resources/AssetVersionViewController.m': 1,
+              'Natives/UI/Resources/DataPacksManagerViewController.m': 1,
+              'Natives/UI/Resources/ModTableViewController.m': 4,
+              'Natives/UI/Resources/ModpackExportViewController.m': 2,
+              'Natives/UI/Resources/ModpackImportViewController.m': 5,
+              'Natives/UI/Resources/ProfileSettingsViewController.m': 14,
+              'Natives/UI/Resources/VersionManagerViewController.m': 3,
+              'Natives/UI/Settings/BackgroundSettingsViewController.m': 6,
+              'Natives/UI/Settings/LauncherPrefContCfgViewController.m': 2,
+              'Natives/UI/Settings/LauncherPrefGameDirViewController.m': 1,
+              'Natives/UI/Settings/LauncherPreferencesViewController.m': 2,
+              'Natives/UI/Settings/LauncherProfileEditorViewController.m': 1,
+              'Natives/UI/Settings/PLPrefTableViewController.m': 2,
+              'Natives/UI/Settings/TouchControllerPreferencesViewController.m': 2,
+              'Natives/UI/Shell/LauncherNavigationController.m': 9,
+              'Natives/UI/Shell/LauncherNewsViewController.m': 2,
+              'Natives/UIKit+hook.m': 2,
+              'Natives/customcontrols/ControlButton.m': 1,
+              'Natives/customcontrols/ControlJoystick.m': 5,
+              'Natives/sdl3_hook.m': 1,
+              'Natives/utils.m': 1,
+          }
           total = 0
           for f, base in BASE.items():
               assert os.path.isfile(f), f'[tier0] P7 baseline file gone: {f}'
               n = len(re.findall(r'CGRectMake\s*\(', open(f, encoding='utf-8', errors='ignore').read()))
               assert n <= base, f'[tier0] CGRectMake grew in {f}: {n} > {base}'
               total += n
-          print(f'[tier0] P7 Frame ratchet OK ({total}/37 remaining)')
+          print(f'[tier0] P7 Frame ratchet OK ({total}/141 remaining)')
           PYEOF
 
       - name: P8 font mapping pin (Dynamic Type safe subset)
