@@ -35,6 +35,11 @@ void setPrefObject(NSString *key, id value) {
     (void)key; (void)value;
 }
 
+// utils.h 把 NSLog 重定向到此（CustomControlsUtils.m 经 generateAndSaveCustomControl 引用）
+void customNSLog(const char *file, int lineNumber, const char *functionName, NSString *format, ...) {
+    (void)file; (void)lineNumber; (void)functionName; (void)format;
+}
+
 @implementation ControlButton
 
 + (id)buttonWithProperties:(NSMutableDictionary *)propArray {
