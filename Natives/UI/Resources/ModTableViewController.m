@@ -36,7 +36,7 @@
     UIView *container = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 140, 32)];
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 78, 32)];
     label.text = localize(@"i18n_str_455", nil);
-    label.font = [UIFont systemFontOfSize:13];
+    label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     label.textAlignment = NSTextAlignmentRight;
     label.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleRightMargin;
     [container addSubview:label];

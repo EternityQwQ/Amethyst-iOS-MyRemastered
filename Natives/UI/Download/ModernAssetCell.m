@@ -51,7 +51,7 @@
         // ----- 第二行：下载次数 + 描述（FCL download_count 12sp + description 12sp）-----
         self.descLabel = [[UILabel alloc] init];
         self.descLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        self.descLabel.font = [UIFont systemFontOfSize:11];
+        self.descLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2];
         self.descLabel.textColor = [UIColor secondaryLabelColor];
         self.descLabel.numberOfLines = 1;
         self.descLabel.lineBreakMode = NSLineBreakByTruncatingTail;

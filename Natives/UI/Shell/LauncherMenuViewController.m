@@ -1,4 +1,5 @@
 #import "LauncherMenuViewController.h"
+#import "UITheme.h"
 #import "LauncherRouter.h"
 #import "LauncherPreferencesViewController.h"
 #import "LauncherPreferences.h"
@@ -242,22 +243,9 @@
 }
 
 - (UIColor *)colorFromHexString:(NSString *)hexString {
-    NSString *hex = [hexString stringByReplacingOccurrencesOfString:@"#" withString:@""];
-    if (hex.length != 6 && hex.length != 8) return nil;
-    unsigned int r, g, b, a = 255;
-    if (hex.length == 6) {
-        [[NSScanner scannerWithString:hex] scanHexInt:&r];
-        b = r & 0xFF;
-        g = (r >> 8) & 0xFF;
-        r = (r >> 16) & 0xFF;
-    } else {
-        [[NSScanner scannerWithString:hex] scanHexInt:&r];
-        a = r & 0xFF;
-        b = (r >> 8) & 0xFF;
-        g = (r >> 16) & 0xFF;
-        r = (r >> 24) & 0xFF;
-    }
-    return [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a/255.0];
+    // P8 alpha 裁决：收敛到 UITheme（RRGGBBAA）。本方法原语义已是 RRGGBBAA，
+    // 转调后逐值一致。保留方法壳，调用点不动。
+    return UIThemeColorFromHexWithAlpha(hexString);
 }
 
 - (void)handleMenuSelection:(NSInteger)index {

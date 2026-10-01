@@ -343,7 +343,7 @@ static NSString *const kGitHubIssuesURL = @"https://github.com/herbrine8403/Amet
     _reasonLabel = [[UILabel alloc] init];
     _reasonLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _reasonLabel.text = [self crashReasonText];
-    _reasonLabel.font = [UIFont systemFontOfSize:13];
+    _reasonLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     _reasonLabel.textColor = [UIColor secondaryLabelColor];
     _reasonLabel.textAlignment = NSTextAlignmentCenter;
     _reasonLabel.numberOfLines = 0;
@@ -373,7 +373,7 @@ static NSString *const kGitHubIssuesURL = @"https://github.com/herbrine8403/Amet
     if ([self isOOMCrash]) {
         _oomSuggestionLabel = [[UILabel alloc] init];
         _oomSuggestionLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        _oomSuggestionLabel.font = [UIFont systemFontOfSize:12];
+        _oomSuggestionLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
         _oomSuggestionLabel.textColor = [UIColor secondaryLabelColor];
         _oomSuggestionLabel.textAlignment = NSTextAlignmentCenter;
         _oomSuggestionLabel.numberOfLines = 0;
@@ -522,7 +522,7 @@ static NSString *const kGitHubIssuesURL = @"https://github.com/herbrine8403/Amet
     UILabel *label = [[UILabel alloc] init];
     label.translatesAutoresizingMaskIntoConstraints = NO;
     label.text = text;
-    label.font = [UIFont systemFontOfSize:13];
+    label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     label.textColor = [UIColor secondaryLabelColor];
     label.numberOfLines = 0;
     [row addSubview:label];
@@ -872,7 +872,7 @@ static NSString *const kGitHubIssuesURL = @"https://github.com/herbrine8403/Amet
     button.layer.cornerCurve = kCACornerCurveContinuous;
 
     [button setTitleColor:textColor forState:UIControlStateNormal];
-    button.titleLabel.font = bold ? [UIFont boldSystemFontOfSize:15] : [UIFont systemFontOfSize:15];
+    button.titleLabel.font = bold ? [UIFont boldSystemFontOfSize:15] : [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
 
     if (@available(iOS 13.0, *)) {
         UIImageSymbolConfiguration *config = [UIImageSymbolConfiguration configurationWithPointSize:15 weight:bold ? UIImageSymbolWeightMedium : UIImageSymbolWeightRegular];

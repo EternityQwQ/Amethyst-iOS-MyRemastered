@@ -18,6 +18,11 @@ extern UIWindow *mainWindow;
 @implementation SceneDelegate
 
 - (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions {
+    // P8 动态字体：全应用 UILabel 跟随 Dynamic Type。默认字号下 preferredFont
+    // 与 systemFont 同字号逐值一致（各处已按 17/Body、16/Callout、15/Subheadline、
+    // 13/Footnote、12/Caption1、11/Caption2 对位替换）；仅用户调大字号时放大——
+    // 计划授权的无障碍改进。Tier0 锁映射表。
+    [[UILabel appearance] setAdjustsFontForContentSizeCategory:YES];
     UIWindowScene *windowScene = (UIWindowScene *)scene;
     
     // 强制横屏 (iOS 16+)

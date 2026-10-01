@@ -154,7 +154,7 @@
         // ----- 日期 -----
         self.dateLabel = [[UILabel alloc] init];
         self.dateLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        self.dateLabel.font = [UIFont systemFontOfSize:12];
+        self.dateLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
         self.dateLabel.textColor = [UIColor secondaryLabelColor];
         self.dateLabel.adjustsFontSizeToFitWidth = YES;
         self.dateLabel.minimumScaleFactor = 0.7;

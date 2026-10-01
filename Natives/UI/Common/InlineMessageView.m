@@ -172,7 +172,7 @@
     if (message.length > 0) {
         self.messageLabel = [[UILabel alloc] init];
         self.messageLabel.text = message;
-        self.messageLabel.font = [UIFont systemFontOfSize:13];
+        self.messageLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
         self.messageLabel.textColor = [UIColor secondaryLabelColor];
         self.messageLabel.numberOfLines = 0;
         self.messageLabel.textAlignment = NSTextAlignmentCenter;

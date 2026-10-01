@@ -98,7 +98,7 @@
     self.nameRowStack.translatesAutoresizingMaskIntoConstraints = NO;
 
     self.versionNumberLabel = [[UILabel alloc] init];
-    self.versionNumberLabel.font = [UIFont systemFontOfSize:12];
+    self.versionNumberLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     self.versionNumberLabel.textColor = [UIColor secondaryLabelColor];
     self.versionNumberLabel.numberOfLines = 1;
     self.versionNumberLabel.adjustsFontSizeToFitWidth = YES;
@@ -123,17 +123,17 @@
 
     // ===== 右侧：日期 + 文件大小 + 游戏版本 =====
     self.datePublishedLabel = [[UILabel alloc] init];
-    self.datePublishedLabel.font = [UIFont systemFontOfSize:11];
+    self.datePublishedLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2];
     self.datePublishedLabel.textColor = [UIColor tertiaryLabelColor];
     self.datePublishedLabel.textAlignment = NSTextAlignmentRight;
 
     self.fileSizeLabel = [[UILabel alloc] init];
-    self.fileSizeLabel.font = [UIFont systemFontOfSize:11];
+    self.fileSizeLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2];
     self.fileSizeLabel.textColor = [UIColor tertiaryLabelColor];
     self.fileSizeLabel.textAlignment = NSTextAlignmentRight;
 
     self.gameVersionsLabel = [[UILabel alloc] init];
-    self.gameVersionsLabel.font = [UIFont systemFontOfSize:11];
+    self.gameVersionsLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2];
     self.gameVersionsLabel.textColor = [UIColor tertiaryLabelColor];
     self.gameVersionsLabel.textAlignment = NSTextAlignmentRight;
     self.gameVersionsLabel.numberOfLines = 1;

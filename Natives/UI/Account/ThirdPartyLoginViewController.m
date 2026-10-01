@@ -120,7 +120,7 @@
     // 错误提示（默认隐藏）
     self.errorLabel = [[UILabel alloc] init];
     self.errorLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.errorLabel.font = [UIFont systemFontOfSize:13];
+    self.errorLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     self.errorLabel.textColor = [UIColor systemRedColor];
     self.errorLabel.numberOfLines = 0;
     self.errorLabel.textAlignment = NSTextAlignmentCenter;
@@ -159,7 +159,7 @@
 
     self.headerSubtitle = [[UILabel alloc] init];
     self.headerSubtitle.translatesAutoresizingMaskIntoConstraints = NO;
-    self.headerSubtitle.font = [UIFont systemFontOfSize:13];
+    self.headerSubtitle.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     self.headerSubtitle.textColor = [UIColor secondaryLabelColor];
     self.headerSubtitle.numberOfLines = 0;
 
@@ -221,7 +221,7 @@
     UITextField *field = [[UITextField alloc] init];
     field.translatesAutoresizingMaskIntoConstraints = NO;
     field.placeholder = placeholder;
-    field.font = [UIFont systemFontOfSize:16];
+    field.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCallout];
     field.textColor = [UIColor labelColor];
     field.secureTextEntry = isSecure;
     field.keyboardType = keyboardType;

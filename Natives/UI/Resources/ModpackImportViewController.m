@@ -113,7 +113,7 @@
     self.hintLabel.translatesAutoresizingMaskIntoConstraints = NO;
     self.hintLabel.textAlignment = NSTextAlignmentCenter;
     self.hintLabel.textColor = [UIColor secondaryLabelColor];
-    self.hintLabel.font = [UIFont systemFontOfSize:12];
+    self.hintLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     self.hintLabel.numberOfLines = 0;
     self.hintLabel.text = localize(@"i18n_str_566", nil);
     [self.headerContainerView addSubview:self.hintLabel];

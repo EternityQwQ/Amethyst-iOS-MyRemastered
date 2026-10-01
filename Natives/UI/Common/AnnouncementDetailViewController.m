@@ -76,7 +76,7 @@
     self.contentTextView.backgroundColor = [UIColor clearColor];
     self.contentTextView.textContainerInset = UIEdgeInsetsZero;
     self.contentTextView.textContainer.lineFragmentPadding = 0;
-    self.contentTextView.font = [UIFont systemFontOfSize:15];
+    self.contentTextView.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
     self.contentTextView.dataDetectorTypes = UIDataDetectorTypeLink;
     [self.scrollView addSubview:self.contentTextView];
 
@@ -127,7 +127,7 @@
     // 用 MarkdownParser 渲染正文
     NSString *content = self.item.content.length > 0 ? self.item.content : self.item.summary;
     NSAttributedString *attributed = [MarkdownParser parseMarkdown:content
-                                                         baseFont:[UIFont systemFontOfSize:15]];
+                                                         baseFont:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]];
     self.contentTextView.attributedText = attributed;
 
     // 若有 actionURL 显示按钮

@@ -97,7 +97,7 @@
     UILabel *placeholderLabel = [[UILabel alloc] init];
     placeholderLabel.text = localize(@"i18n_str_54", nil);
     placeholderLabel.textColor = [UIColor secondaryLabelColor];
-    placeholderLabel.font = [UIFont systemFontOfSize:16];
+    placeholderLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCallout];
     placeholderLabel.textAlignment = NSTextAlignmentCenter;
     placeholderLabel.tag = 100;
     placeholderLabel.frame = self.previewImageView.bounds;

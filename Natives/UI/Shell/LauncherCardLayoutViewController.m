@@ -297,8 +297,10 @@ static CGFloat LauncherCardLayoutRightPanelWidth(UITraitCollection *trait) {
 }
 
 - (nullable UIColor *)colorFromHexString:(id)hex {
-    // 收敛到 UITheme（语义逐行一致，见 UITheme.h）；保留方法壳，调用点不动。
-    return UIThemeColorFromHex(hex);
+    // 收敛到 UITheme alpha 版（P8 裁决 RRGGBBAA；6 位与旧版逐值一致）。
+    // 差异仅非法长度：旧版任意长度扫低 24 位出色，新版非 6/8 位返回 nil 走调用方
+    // fallback（用户设置均为 6 位，实践无差）。保留方法壳，调用点不动。
+    return UIThemeColorFromHexWithAlpha(hex);
 }
 
 /// 外观变化时重新应用卡片颜色（保留圆角，重建背景）

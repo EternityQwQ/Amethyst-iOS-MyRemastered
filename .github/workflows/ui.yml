@@ -261,6 +261,50 @@ jobs:
           print(f'[tier0] P7 Frame ratchet OK ({total}/37 remaining)')
           PYEOF
 
+      - name: P8 font mapping pin (Dynamic Type safe subset)
+        run: |
+          set -e
+          # P8 字体推广安全子集：仅精确等值替换（默认字号下逐值一致）。
+          # 映射表：17/Body 16/Callout 15/Subheadline 13/Footnote 12/Caption1 11/Caption2。
+          # 带 weight/非常规字号一律不动（无精确等价）。本门禁锁死两件事：
+          # ① 六个精确原形不得重现（重现即回退）；② 激活行存在（SceneDelegate appearance）。
+          python3 - <<'PYEOF'
+          import re, glob, sys
+          MAP = {'17': 'UIFontTextStyleBody', '16': 'UIFontTextStyleCallout',
+                 '15': 'UIFontTextStyleSubheadline', '13': 'UIFontTextStyleFootnote',
+                 '12': 'UIFontTextStyleCaption1', '11': 'UIFontTextStyleCaption2'}
+          n_plain = 0
+          for f in glob.glob('Natives/UI/**/*.m', recursive=True):
+              txt = open(f, encoding='utf-8', errors='ignore').read()
+              n_plain += len(re.findall(r'\[UIFont systemFontOfSize:(17|16|15|13|12|11)\]', txt))
+          assert n_plain == 0, f'[tier0] plain systemFontOfSize remnant: {n_plain}'
+          for size, style in MAP.items():
+              hits = sum(open(f, encoding='utf-8', errors='ignore').read().count(
+                  f'preferredFontForTextStyle:{style}') for f in glob.glob('Natives/UI/**/*.m', recursive=True))
+              assert hits > 0, f'[tier0] font mapping unused: {size}->{style}'
+          sd = open('Natives/SceneDelegate.m', encoding='utf-8', errors='ignore').read()
+          assert 'setAdjustsFontForContentSizeCategory:YES' in sd, '[tier0] Dynamic Type activation missing'
+          print('[tier0] P8 font mapping pinned (6 styles live, 0 plain remnants, activation present)')
+          PYEOF
+
+      - name: P8 alpha contract (four shells delegate to UITheme)
+        run: |
+          set -e
+          # P8 alpha 裁决 RRGGBBAA：Root/Menu/Card/RightPanel 四个 colorFromHexString
+          # 方法壳全部转调 UIThemeColorFromHexWithAlpha，6 位逐值一致、8 位统一。
+          python3 - <<'PYEOF'
+          import sys
+          files = ['Natives/UI/Shell/LauncherRootViewController.m',
+                   'Natives/UI/Shell/LauncherMenuViewController.m',
+                   'Natives/UI/Shell/LauncherCardLayoutViewController.m',
+                   'Natives/UI/Shell/LauncherRightPanelViewController.m']
+          for f in files:
+              txt = open(f, encoding='utf-8', errors='ignore').read()
+              assert 'UIThemeColorFromHexWithAlpha' in txt, f'[tier0] alpha shell broken: {f}'
+              assert 'scanHexInt' not in txt, f'[tier0] residual hex parser in: {f}'
+          print('[tier0] P8 alpha contract OK (4 shells delegate)')
+          PYEOF
+
   tier1:
     name: UI Tier1 structural checks
     runs-on: ubuntu-latest

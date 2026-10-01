@@ -56,6 +56,33 @@
 
 #pragma mark - UITheme 运行时 parity
 
+// P8 alpha 裁决（RRGGBBAA）的运行时证明：8 位解析 + 6 位与旧函数一致 + 非法拒绝
+- (void)testThemeAlphaContract {
+    UIColor *c = UIThemeColorFromHexWithAlpha(@"#8B5CF680");
+    XCTAssertNotNil(c);
+    CGFloat r = 0, g = 0, b = 0, a = 0;
+    XCTAssertTrue([c getRed:&r green:&g blue:&b alpha:&a]);
+    XCTAssertEqualWithAccuracy(r, 0x8B / 255.0, 0.005);
+    XCTAssertEqualWithAccuracy(g, 0x5C / 255.0, 0.005);
+    XCTAssertEqualWithAccuracy(b, 0xF6 / 255.0, 0.005);
+    XCTAssertEqualWithAccuracy(a, 0x80 / 255.0, 0.005);
+    // 6 位与 UIThemeColorFromHex 逐值一致
+    UIColor *six = UIThemeColorFromHexWithAlpha(kThemeAccentTeal);
+    UIColor *sixOld = UIThemeColorFromHex(kThemeAccentTeal);
+    CGFloat r1, g1, b1, a1, r2, g2, b2, a2;
+    [six getRed:&r1 green:&g1 blue:&b1 alpha:&a1];
+    [sixOld getRed:&r2 green:&g2 blue:&b2 alpha:&a2];
+    XCTAssertEqualWithAccuracy(r1, r2, 0.0001);
+    XCTAssertEqualWithAccuracy(g1, g2, 0.0001);
+    XCTAssertEqualWithAccuracy(b1, b2, 0.0001);
+    XCTAssertEqualWithAccuracy(a1, a2, 0.0001);
+    // 非法输入
+    XCTAssertNil(UIThemeColorFromHexWithAlpha(nil));
+    XCTAssertNil(UIThemeColorFromHexWithAlpha(@""));
+    XCTAssertNil(UIThemeColorFromHexWithAlpha(@"#12345"));
+    XCTAssertNil(UIThemeColorFromHexWithAlpha(@"not-a-color"));
+}
+
 // 强调色解析与文档值一致（#8B5CF6，alpha 恒 1.0）
 - (void)testThemeAccentVioletParity {
     UIColor *c = UIThemeColorFromHex(kThemeAccentViolet);

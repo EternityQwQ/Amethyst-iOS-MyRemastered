@@ -603,7 +603,7 @@ static const CGFloat kSectionInset = 16.0;
     if (self) {
         self.messageLabel = [[UILabel alloc] init];
         self.messageLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        self.messageLabel.font = [UIFont systemFontOfSize:16];
+        self.messageLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCallout];
         self.messageLabel.textColor = [UIColor secondaryLabelColor];
         self.messageLabel.textAlignment = NSTextAlignmentCenter;
         self.messageLabel.numberOfLines = 0;
@@ -857,7 +857,7 @@ static const CGFloat kSectionInset = 16.0;
 
     UILabel *label = [[UILabel alloc] init];
     label.translatesAutoresizingMaskIntoConstraints = NO;
-    label.font = [UIFont systemFontOfSize:16];
+    label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCallout];
     label.textColor = [UIColor secondaryLabelColor];
     label.textAlignment = NSTextAlignmentCenter;
     label.text = localize(@"i18n_str_139", nil);

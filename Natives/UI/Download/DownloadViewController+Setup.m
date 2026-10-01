@@ -697,7 +697,7 @@
     UILabel *valueLabel = [[UILabel alloc] init];
     valueLabel.translatesAutoresizingMaskIntoConstraints = NO;
     valueLabel.text = value;
-    valueLabel.font = [UIFont systemFontOfSize:12];
+    valueLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     valueLabel.textColor = [UIColor labelColor];
     valueLabel.adjustsFontSizeToFitWidth = YES;
     valueLabel.minimumScaleFactor = 0.7;

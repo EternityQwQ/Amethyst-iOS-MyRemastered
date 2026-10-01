@@ -1,4 +1,5 @@
 #import "LauncherRootViewController.h"
+#import "UITheme.h"
 #import "LauncherRouter.h"
 #import "LauncherMenuViewController.h"
 #import "LauncherNewsViewController.h"
@@ -477,25 +478,9 @@ static CGFloat LauncherRootLayoutRightPanelWidth(UITraitCollection *trait) {
 }
 
 - (UIColor *)colorFromHexString:(NSString *)hexString {
-    NSString *hex = [hexString stringByReplacingOccurrencesOfString:@"#" withString:@""];
-    if (hex.length != 6 && hex.length != 8) return nil;
-    unsigned int rgb = 0;
-    if (![[NSScanner scannerWithString:hex] scanHexInt:&rgb]) return nil;
-    unsigned int r, g, b, a;
-    if (hex.length == 6) {
-        // RRGGBB
-        r = (rgb >> 16) & 0xFF;
-        g = (rgb >> 8) & 0xFF;
-        b = rgb & 0xFF;
-        a = 255;
-    } else {
-        // AARRGGBB
-        a = (rgb >> 24) & 0xFF;
-        r = (rgb >> 16) & 0xFF;
-        g = (rgb >> 8) & 0xFF;
-        b = rgb & 0xFF;
-    }
-    return [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a/255.0];
+    // P8 alpha 裁决：收敛到 UITheme（RRGGBBAA）。原 8 位 AARRGGBB 分支与 Menu 互斥，
+    // 仓库内零 8 位字面量、用户默认全 6 位——既有渲染逐值不变。保留方法壳，调用点不动。
+    return UIThemeColorFromHexWithAlpha(hexString);
 }
 
 #pragma mark - Content Switching

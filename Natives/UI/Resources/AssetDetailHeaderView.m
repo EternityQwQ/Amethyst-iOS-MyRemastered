@@ -125,7 +125,7 @@
     // 作者（13pt secondary，带 person.crop.circle 图标，用 NSAttributedString）
     self.authorLabel = [[UILabel alloc] init];
     self.authorLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.authorLabel.font = [UIFont systemFontOfSize:13];
+    self.authorLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     self.authorLabel.textColor = [UIColor secondaryLabelColor];
     self.authorLabel.numberOfLines = 1;
     self.authorLabel.lineBreakMode = NSLineBreakByTruncatingTail;
@@ -258,7 +258,7 @@
             [attrText appendAttributedString:[[NSAttributedString alloc] initWithString:@" "]];
         }
         [attrText appendAttributedString:[[NSAttributedString alloc] initWithString:author
-                                                                       attributes:@{NSFontAttributeName: [UIFont systemFontOfSize:13],
+                                                                       attributes:@{NSFontAttributeName: [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote],
                                                                                     NSForegroundColorAttributeName: [UIColor secondaryLabelColor]}]];
         self.authorLabel.attributedText = attrText;
     } else {

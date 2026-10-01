@@ -220,7 +220,7 @@ static NSString *PLFormatDuration(NSTimeInterval seconds) {
 
     // 当前文件名（单行中部截断，长文件名仍能看清首尾）
     self.messageLabel = [[UILabel alloc] init];
-    self.messageLabel.font = [UIFont systemFontOfSize:12];
+    self.messageLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     self.messageLabel.textColor = [UIColor secondaryLabelColor];
     self.messageLabel.numberOfLines = 1;
     self.messageLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
@@ -264,7 +264,7 @@ static NSString *PLFormatDuration(NSTimeInterval seconds) {
 
     // ETA："剩余约 1 分 20 秒"
     self.etaLabel = [[UILabel alloc] init];
-    self.etaLabel.font = [UIFont systemFontOfSize:12];
+    self.etaLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     self.etaLabel.textColor = [UIColor tertiaryLabelColor];
     self.etaLabel.numberOfLines = 1;
     self.etaLabel.hidden = YES;
@@ -556,7 +556,7 @@ static __weak PLTaskProgressViewController *PLTaskProgressActiveInstance = nil;
 
     self.subtitleLabel = [[UILabel alloc] init];
     self.subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.subtitleLabel.font = [UIFont systemFontOfSize:13];
+    self.subtitleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     self.subtitleLabel.textColor = [UIColor secondaryLabelColor];
     self.subtitleLabel.textAlignment = NSTextAlignmentCenter;
     self.subtitleLabel.numberOfLines = 1;
@@ -591,7 +591,7 @@ static __weak PLTaskProgressViewController *PLTaskProgressActiveInstance = nil;
 - (void)setupErrorSection {
     // 失败摘要（多行，始终随失败态显示）
     self.errorSummaryLabel = [[UILabel alloc] init];
-    self.errorSummaryLabel.font = [UIFont systemFontOfSize:13];
+    self.errorSummaryLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     self.errorSummaryLabel.textColor = [UIColor systemRedColor];
     self.errorSummaryLabel.numberOfLines = 0;
     self.errorSummaryLabel.hidden = YES;

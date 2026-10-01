@@ -350,7 +350,7 @@ static const void *kMenuDimViewKey = &kMenuDimViewKey;
         cell.textLabel.textColor = [UIColor whiteColor];
         // 修复：游戏内菜单字体不应使用 sp 缩放，使用固定 16pt 保证所有设备一致
         // 原 [ScreenUtils sp:16] 在 iPad 上会放大到 32pt 导致菜单字体过大
-        cell.textLabel.font = [UIFont systemFontOfSize:16];
+        cell.textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCallout];
         cell.textLabel.textAlignment = NSTextAlignmentLeft;
         // FCL 风格：左侧留出图标空间，cell 高度 48
         cell.separatorInset = UIEdgeInsetsMake(0, 16, 0, 16);

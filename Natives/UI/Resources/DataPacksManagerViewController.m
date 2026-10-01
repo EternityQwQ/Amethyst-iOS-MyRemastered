@@ -151,7 +151,7 @@
 
     UILabel *tipLabel = [[UILabel alloc] init];
     tipLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    tipLabel.font = [UIFont systemFontOfSize:11];
+    tipLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2];
     tipLabel.textColor = [UIColor systemOrangeColor];
     tipLabel.textAlignment = NSTextAlignmentCenter;
     tipLabel.numberOfLines = 0;

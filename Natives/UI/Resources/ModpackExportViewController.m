@@ -218,7 +218,7 @@
 
     self.profileInfoLabel = [[UILabel alloc] init];
     self.profileInfoLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.profileInfoLabel.font = [UIFont systemFontOfSize:12];
+    self.profileInfoLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     self.profileInfoLabel.textColor = [UIColor tertiaryLabelColor];
     self.profileInfoLabel.numberOfLines = 0;
     [stack addArrangedSubview:self.profileInfoLabel];
@@ -269,7 +269,7 @@
 
     UILabel *hint = [[UILabel alloc] init];
     hint.translatesAutoresizingMaskIntoConstraints = NO;
-    hint.font = [UIFont systemFontOfSize:11];
+    hint.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2];
     hint.textColor = [UIColor tertiaryLabelColor];
     hint.numberOfLines = 0;
     hint.text = localize(@"i18n_str_499", nil);
@@ -310,7 +310,7 @@
     field.translatesAutoresizingMaskIntoConstraints = NO;
     field.placeholder = placeholder;
     field.borderStyle = UITextBorderStyleRoundedRect;
-    field.font = [UIFont systemFontOfSize:15];
+    field.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
     field.delegate = self;
     field.clearButtonMode = UITextFieldViewModeWhileEditing;
     field.autocapitalizationType = UITextAutocapitalizationTypeNone;
@@ -593,7 +593,7 @@
 
     UILabel *stageLabel = [[UILabel alloc] init];
     stageLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    stageLabel.font = [UIFont systemFontOfSize:13];
+    stageLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     stageLabel.textColor = [UIColor secondaryLabelColor];
     stageLabel.textAlignment = NSTextAlignmentCenter;
     stageLabel.numberOfLines = 0;

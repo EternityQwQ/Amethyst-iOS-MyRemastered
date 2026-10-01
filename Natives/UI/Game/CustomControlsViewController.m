@@ -620,6 +620,8 @@ CGFloat currentY;
 @property(nonatomic) UISwitch *switchFwdLock, *switchToggleable, *switchMousePass, *switchSwipeable;
 @property(nonatomic) UIColorWell *colorWellBackground, *colorWellStroke;
 @property(nonatomic) DBNumberedSlider *sliderStrokeWidth, *sliderCornerRadius, *sliderOpacity;
+// P7-1b：blurView 中心约束（拖动手势改常量，不直接写 frame）
+@property(nonatomic) NSLayoutConstraint *blurCenterX, *blurCenterY;
 
 @end
 
@@ -651,14 +653,20 @@ CGFloat currentY;
     UIBlurEffectStyle blurStyle = UIBlurEffectStyleSystemMaterial;
     UIVisualEffectView *blurView;
     blurView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:blurStyle]];
-    blurView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
-    blurView.frame = CGRectMake(
-        (self.view.frame.size.width - MAX(tempW, tempH))/2,
-        (self.view.frame.size.height - MIN(tempW, tempH))/2,
-        MAX(tempW, tempH), MIN(tempW, tempH));
+    // P7-1b：blurView 迁约束（与原居中 frame 逐值等价；拖动走下面两个常量）。
+    // 原 autoresizingMask 四弹簧 == 居中保持，约束 centerX/Y 同义。
+    blurView.translatesAutoresizingMaskIntoConstraints = NO;
     blurView.layer.cornerRadius = 10.0;
     blurView.clipsToBounds = YES;
     [self.view addSubview:blurView];
+    self.blurCenterX = [blurView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor];
+    self.blurCenterY = [blurView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor];
+    [NSLayoutConstraint activateConstraints:@[
+        self.blurCenterX, self.blurCenterY,
+        [blurView.widthAnchor constraintEqualToConstant:MAX(tempW, tempH)],
+        [blurView.heightAnchor constraintEqualToConstant:MIN(tempW, tempH)],
+    ]];
+    [self.view layoutIfNeeded];
 
     UIBarButtonItem *btnFlexibleSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
 
@@ -904,7 +912,11 @@ CGFloat currentY;
         CGRect rect = self.view.subviews[0].frame;
         rect.origin.x = clamp(rect.origin.x - lastPoint.x + point.x, -self.view.frame.size.width/2, self.view.frame.size.width - sender.view.frame.size.width/2);
         rect.origin.y = clamp(rect.origin.y - lastPoint.y + point.y, 0, self.view.frame.size.height - sender.view.frame.size.height);
-        self.view.subviews[0].frame = rect;
+        // P7-1b：拖动改约束常量（逐值等价原来直接写 frame；约束布局下直接写 frame
+        // 会被下一次 layout 覆盖）。rect 计算（含 clamp）与原来逐行一致。
+        self.blurCenterX.constant = CGRectGetMidX(rect) - self.view.bounds.size.width / 2;
+        self.blurCenterY.constant = CGRectGetMidY(rect) - self.view.bounds.size.height / 2;
+        [self.view layoutIfNeeded];
     }
     lastPoint = point;
 }

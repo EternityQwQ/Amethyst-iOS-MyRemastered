@@ -889,7 +889,7 @@ static NSString * localizeProfileTitle(NSString *title) {
     }
     UITextField *textField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 200, 30)];
     textField.text = self.profile[@"lastVersionId"] ?: @"";
-    textField.font = [UIFont systemFontOfSize:13];
+    textField.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     textField.adjustsFontSizeToFitWidth = YES;
     textField.minimumFontSize = 9;
     textField.textAlignment = NSTextAlignmentRight;
@@ -991,7 +991,7 @@ static NSString * localizeProfileTitle(NSString *title) {
     UITextField *textField = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, 220, 30)];
     textField.placeholder = localize(@"i18n_str_893", nil);
     textField.text = self.serverIp;
-    textField.font = [UIFont systemFontOfSize:13];
+    textField.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     textField.adjustsFontSizeToFitWidth = YES;
     textField.minimumFontSize = 9;
     textField.clearButtonMode = UITextFieldViewModeWhileEditing;
@@ -1020,7 +1020,7 @@ static NSString * localizeProfileTitle(NSString *title) {
     textField.placeholder = @"(default)";
     // 仅当 profile 显式设置了 javaArgs 时才显示，否则留空显示 placeholder
     textField.text = self.profile[@"javaArgs"] ?: @"";
-    textField.font = [UIFont systemFontOfSize:13];
+    textField.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     textField.adjustsFontSizeToFitWidth = YES;
     textField.minimumFontSize = 9;
     textField.clearButtonMode = UITextFieldViewModeWhileEditing;

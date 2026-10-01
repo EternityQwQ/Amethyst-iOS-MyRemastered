@@ -1,4 +1,5 @@
 #import "LauncherRightPanelViewController.h"
+#import "UITheme.h"
 #import "ScreenUtils.h"
 #import "LauncherRouter.h"
 #import "authenticator/BaseAuthenticator.h"
@@ -203,7 +204,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     // 版本标签
     self.versionLabel = [[UILabel alloc] init];
     self.versionLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.versionLabel.font = [UIFont systemFontOfSize:13];
+    self.versionLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     self.versionLabel.textColor = [UIColor secondaryLabelColor];
     self.versionLabel.textAlignment = NSTextAlignmentCenter;
     self.versionLabel.adjustsFontSizeToFitWidth = YES;
@@ -218,7 +219,7 @@ static void *ProgressObserverContext = &ProgressObserverContext;
     // 进度标签
     self.progressLabel = [[UILabel alloc] init];
     self.progressLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.progressLabel.font = [UIFont systemFontOfSize:12];
+    self.progressLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     self.progressLabel.textColor = [UIColor secondaryLabelColor];
     self.progressLabel.textAlignment = NSTextAlignmentCenter;
     self.progressLabel.text = @"";
@@ -734,27 +735,9 @@ static void *ProgressObserverContext = &ProgressObserverContext;
 }
 
 - (nullable UIColor *)colorFromHexString:(id)hex {
-    if (![hex isKindOfClass:[NSString class]] || [(NSString *)hex length] == 0) return nil;
-    NSString *clean = [(NSString *)hex stringByReplacingOccurrencesOfString:@"#" withString:@""];
-    if (clean.length != 6 && clean.length != 8) return nil;
-    unsigned int rgb = 0;
-    NSScanner *scanner = [NSScanner scannerWithString:clean];
-    if (![scanner scanHexInt:&rgb]) return nil;
-    unsigned int r, g, b, a;
-    if (clean.length == 6) {
-        // RRGGBB
-        r = (rgb >> 16) & 0xFF;
-        g = (rgb >> 8) & 0xFF;
-        b = rgb & 0xFF;
-        a = 255;
-    } else {
-        // AARRGGBB
-        a = (rgb >> 24) & 0xFF;
-        r = (rgb >> 16) & 0xFF;
-        g = (rgb >> 8) & 0xFF;
-        b = rgb & 0xFF;
-    }
-    return [UIColor colorWithRed:r / 255.0 green:g / 255.0 blue:b / 255.0 alpha:a / 255.0];
+    // P8 alpha 裁决：收敛到 UITheme（RRGGBBAA）。原 8 位 AARRGGBB 分支与 Menu 互斥，
+    // 仓库内零 8 位字面量、用户默认全 6 位——既有渲染逐值不变。保留方法壳，调用点不动。
+    return UIThemeColorFromHexWithAlpha(hex);
 }
 
 - (void)showVersionPicker {

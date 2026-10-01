@@ -36,7 +36,7 @@ static NSString * const kHistoryCellReuseIdentifier = @"DownloadHistoryCell";
 
         self.detailLabel = [[UILabel alloc] init];
         self.detailLabel.translatesAutoresizingMaskIntoConstraints = NO;
-        self.detailLabel.font = [UIFont systemFontOfSize:12];
+        self.detailLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
         self.detailLabel.textColor = [UIColor secondaryLabelColor];
         self.detailLabel.numberOfLines = 1;
         [self.contentView addSubview:self.detailLabel];
@@ -190,7 +190,7 @@ static NSString * const kHistoryCellReuseIdentifier = @"DownloadHistoryCell";
 
     if (!self.emptyLabel) {
         self.emptyLabel = [[UILabel alloc] init];
-        self.emptyLabel.font = [UIFont systemFontOfSize:16];
+        self.emptyLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCallout];
         self.emptyLabel.textColor = [UIColor secondaryLabelColor];
         self.emptyLabel.textAlignment = NSTextAlignmentCenter;
         self.emptyLabel.numberOfLines = 0;

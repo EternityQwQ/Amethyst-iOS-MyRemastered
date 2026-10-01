@@ -229,7 +229,7 @@
     UILabel *subtitleLabel = [[UILabel alloc] init];
     subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     subtitleLabel.text = subtitle;
-    subtitleLabel.font = [UIFont systemFontOfSize:12];
+    subtitleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     subtitleLabel.textColor = [UIColor secondaryLabelColor];
     subtitleLabel.adjustsFontSizeToFitWidth = YES;
     subtitleLabel.minimumScaleFactor = 0.7;
