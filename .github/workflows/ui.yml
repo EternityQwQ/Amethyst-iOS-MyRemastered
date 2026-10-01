@@ -894,9 +894,11 @@ jobs:
       - name: Collect App UI previews (viewable PNGs)
         if: always()
         run: |
-          # 黑盒用例在 mac 宿主 /tmp 落真 PNG（AMEshot-*.png），捞出来做样式画廊
+          # 黑盒用例在固定共享目录 /tmp/AMEshots 落真 PNG（NSTemporaryDirectory 是
+          # 进程私有容器，从外部捞不到），连同 harness 画廊一并收集为样式 artifact
           mkdir -p AppPreviews
-          find /tmp -maxdepth 1 -name "AMEshot-*.png" 2>/dev/null -exec cp {} AppPreviews/ \; || true
+          cp /tmp/AMEshots/AMEshot-*.png AppPreviews/ 2>/dev/null || true
+          find ~/Library/Developer/CoreSimulator/Devices/${SIM_UDID} -name "AMEpreview-*.png" 2>/dev/null -exec cp {} AppPreviews/ \; || true
           ls AppPreviews/ || true
 
       - name: Upload App UI previews

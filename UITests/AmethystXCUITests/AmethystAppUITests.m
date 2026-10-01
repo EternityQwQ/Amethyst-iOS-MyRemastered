@@ -10,7 +10,12 @@ static NSString * const kAmethystBundleID = @"com.air-devs.air";
 static void AMESaveScreen(NSString *name) {
     NSData *png = [[XCUIScreen mainScreen].screenshot PNGRepresentation];
     if (!png) return;
-    NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:
+    // 落固定共享目录 /tmp/AMEshots（NSTemporaryDirectory 是 xctest 进程私有容器，
+    // CI 从外部捞不到；/tmp 全局可读，workflow 定点收集）。
+    NSString *dir = @"/tmp/AMEshots";
+    [[NSFileManager defaultManager] createDirectoryAtPath:dir
+                              withIntermediateDirectories:YES attributes:nil error:NULL];
+    NSString *path = [dir stringByAppendingPathComponent:
                       [NSString stringWithFormat:@"AMEshot-%@.png", name]];
     [png writeToFile:path atomically:YES];
 }
