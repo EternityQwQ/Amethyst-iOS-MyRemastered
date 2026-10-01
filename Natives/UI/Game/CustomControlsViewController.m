@@ -662,7 +662,8 @@ CGFloat currentY;
 
     UIBarButtonItem *btnFlexibleSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
 
-    UIToolbar *popoverToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0.0, 0.0,   blurView.frame.size.width, 44.0)];
+    UIToolbar *popoverToolbar = [[UIToolbar alloc] init];
+    popoverToolbar.translatesAutoresizingMaskIntoConstraints = NO;
     UIPanGestureRecognizer *dragVCGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragViewController:)];
     dragVCGesture.minimumNumberOfTouches = 1;
     dragVCGesture.maximumNumberOfTouches = 1;
@@ -672,10 +673,30 @@ CGFloat currentY;
     UIBarButtonItem *popoverDoneButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(actionEditFinish)];
     popoverToolbar.items = @[popoverCancelButton, btnFlexibleSpace, popoverDoneButton]; 
     [blurView.contentView addSubview:popoverToolbar];
+    // P7-1：容器铬件迁约束（与原 frame 逐值等价：顶/左右贴边/高44）。
+    // blurView 故意保留 frame 制：dragViewController: 手势直接写
+    // subviews[0].frame 做拖动，约束会打赢手势——拖动改写是独立切片。
+    [NSLayoutConstraint activateConstraints:@[
+        [popoverToolbar.topAnchor constraintEqualToAnchor:blurView.contentView.topAnchor],
+        [popoverToolbar.leadingAnchor constraintEqualToAnchor:blurView.contentView.leadingAnchor],
+        [popoverToolbar.trailingAnchor constraintEqualToAnchor:blurView.contentView.trailingAnchor],
+        [popoverToolbar.heightAnchor constraintEqualToConstant:44.0],
+    ];
 
-    self.scrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(5.0, popoverToolbar.frame.size.height, blurView.frame.size.width - 10.0, blurView.frame.size.height - popoverToolbar.frame.size.height)];
+    self.scrollView = [[UIScrollView alloc] init];
+    self.scrollView.translatesAutoresizingMaskIntoConstraints = NO;
     self.scrollView.keyboardDismissMode = UIScrollViewKeyboardDismissModeInteractive;
     [blurView.contentView addSubview:self.scrollView];
+    // 与原 frame 逐值等价：左右各 inset 5，上贴 toolbar 底，下贴底边
+    [NSLayoutConstraint activateConstraints:@[
+        [self.scrollView.topAnchor constraintEqualToAnchor:popoverToolbar.bottomAnchor],
+        [self.scrollView.leadingAnchor constraintEqualToAnchor:blurView.contentView.leadingAnchor constant:5.0],
+        [self.scrollView.trailingAnchor constraintEqualToAnchor:blurView.contentView.trailingAnchor constant:-5.0],
+        [self.scrollView.bottomAnchor constraintEqualToAnchor:blurView.contentView.bottomAnchor],
+    ]];
+    // 约束转 frame 同步点：下游读 blurView.frame 算 width，手动布局时代 frame
+    // 赋值即有效，约束时代需显式 layout 一次（值与原来逐值一致）
+    [self.view layoutIfNeeded];
 
     UIToolbar *editPickToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0.0, 0.0, blurView.frame.size.width, 44.0)];
  
