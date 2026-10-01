@@ -31,12 +31,15 @@ static void AMESaveScreen(NSString *name) {
     return app;
 }
 
-// 启动落点：前台运行 + 根视图出现 + 留截图证据
+// 启动落点：前台运行 + 首个菜单项出现（菜单按钮是天然 AX 元素；
+// 注意：launcher-root 设在普通 UIView 上，UIView 默认 isAccessibilityElement=NO
+// 故 XCUITest 看不见它——曾因此误报失败。不断言它，只断言业务可见元素）+ 留截图证据
 - (void)testLaunchShowsLauncherRoot {
     XCUIApplication *app = [self launchedApp];
+    AMESaveScreen(@"app-launch");
     XCTAssertEqual(app.state, XCUIApplicationStateRunningForeground);
-    XCUIElement *root = app.otherElements[@"launcher-root"];
-    XCTAssertTrue([root waitForExistenceWithTimeout:20.0], @"launcher-root 未出现（App 未装/启动失败/identifier 丢失）");
+    XCUIElement *firstMenu = app.buttons[@"launcher-menu-0"];
+    XCTAssertTrue([firstMenu waitForExistenceWithTimeout:20.0], @"launcher-menu-0 未出现（App 未装/启动失败/identifier 丢失）");
     [XCTContext runActivityNamed:@"launcher-home-screenshot" block:^(id<XCTActivity> activity) {
         XCTAttachment *shot = [XCTAttachment attachmentWithScreenshot:XCUIScreen.mainScreen.screenshot];
         shot.lifetime = XCTAttachmentLifetimeKeepAlways;
