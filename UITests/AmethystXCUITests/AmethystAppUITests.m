@@ -8,6 +8,10 @@
 static NSString * const kAmethystBundleID = @"com.air-devs.air";
 
 static void AMESaveScreen(NSString *name) {
+    // 先静置 1 秒：push/modal 转场动画（约 0.3~0.5s）播完再拍，保证界面完整呈现，
+    // 而不是截到动画半帧。注意：网络异步内容（如新闻列表）不在此保证内——
+    // 它的出现时机不定，如需断言内容必须另加 waitForExistence。
+    [NSThread sleepForTimeInterval:1.0];
     NSData *png = [[XCUIScreen mainScreen].screenshot PNGRepresentation];
     if (!png) return;
     // 落固定共享目录 /tmp/AMEshots（NSTemporaryDirectory 是 xctest 进程私有容器，
