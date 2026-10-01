@@ -91,8 +91,14 @@ static void AMESaveScreen(NSString *name) {
         XCTAssertTrue([ccRow waitForExistenceWithTimeout:20.0], @"custom_controls 搜索结果未出现");
     } else {
         NSPredicate *anyPrefRow = [NSPredicate predicateWithFormat:@"identifier BEGINSWITH 'pref-cell-'"];
-        XCUIElement *anchor = [app.cells matchingPredicate:anyPrefRow].firstMatch;
-        XCTAssertTrue([anchor waitForExistenceWithTimeout:20.0], @"设置表无可见行，滚不动");
+        XCUIElementQuery *rows = [app.cells matchingPredicate:anyPrefRow];
+        // 锚点必须可点（首个匹配可能在屏外 frame 为空，对它 swipe 会抛异常）
+        XCUIElement *anchor = nil;
+        for (NSUInteger i = 0; i < rows.count; i++) {
+            XCUIElement *c = rows.allElementsBoundByIndex[i];
+            if (c.isHittable) { anchor = c; break; }
+        }
+        XCTAssertNotNil(anchor, @"设置表无可点行，滚不动");
         ccRow = app.cells[@"pref-cell-custom_controls"];
         BOOL found = [ccRow waitForExistenceWithTimeout:3.0];
         for (int i = 0; i < 12 && !found; i++) {
