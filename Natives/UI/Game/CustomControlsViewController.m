@@ -664,7 +664,7 @@ CGFloat currentY;
     [NSLayoutConstraint activateConstraints:@[
         self.blurCenterX, self.blurCenterY,
         [blurView.widthAnchor constraintEqualToConstant:MAX(tempW, tempH)],
-        [blurView.heightAnchor constraintEqualToConstant:MIN(tempW, tempH)],
+        [blurView.heightAnchor constraintEqualToConstant:MIN(tempW, tempH)]
     ]];
     [self.view layoutIfNeeded];
 
@@ -688,8 +688,8 @@ CGFloat currentY;
         [popoverToolbar.topAnchor constraintEqualToAnchor:blurView.contentView.topAnchor],
         [popoverToolbar.leadingAnchor constraintEqualToAnchor:blurView.contentView.leadingAnchor],
         [popoverToolbar.trailingAnchor constraintEqualToAnchor:blurView.contentView.trailingAnchor],
-        [popoverToolbar.heightAnchor constraintEqualToConstant:44.0],
-    ];
+        [popoverToolbar.heightAnchor constraintEqualToConstant:44.0]
+    ]];
 
     self.scrollView = [[UIScrollView alloc] init];
     self.scrollView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -700,7 +700,7 @@ CGFloat currentY;
         [self.scrollView.topAnchor constraintEqualToAnchor:popoverToolbar.bottomAnchor],
         [self.scrollView.leadingAnchor constraintEqualToAnchor:blurView.contentView.leadingAnchor constant:5.0],
         [self.scrollView.trailingAnchor constraintEqualToAnchor:blurView.contentView.trailingAnchor constant:-5.0],
-        [self.scrollView.bottomAnchor constraintEqualToAnchor:blurView.contentView.bottomAnchor],
+        [self.scrollView.bottomAnchor constraintEqualToAnchor:blurView.contentView.bottomAnchor]
     ]];
     // 约束转 frame 同步点：下游读 blurView.frame 算 width，手动布局时代 frame
     // 赋值即有效，约束时代需显式 layout 一次（值与原来逐值一致）
