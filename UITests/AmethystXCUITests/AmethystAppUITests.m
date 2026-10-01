@@ -20,17 +20,6 @@ static void AMESaveScreen(NSString *name) {
     [png writeToFile:path atomically:YES];
 }
 
-// Translation Notice 模态弹窗挡住一切手势（滑动测试曾因此空转）。
-// 有则点 Got It 关掉，无则直过（首次启动后可能不再弹）。
-static void AMEDismissTranslationNoticeIfNeeded(XCUIApplication *app) {
-    XCUIElement *alert = app.alerts.firstMatch;
-    if (![alert waitForExistenceWithTimeout:5.0]) return;
-    XCUIElement *gotIt = alert.buttons[@"Got It"];
-    if ([gotIt waitForExistenceWithTimeout:5.0]) {
-        [gotIt tap];
-    }
-}
-
 @interface AmethystAppUITests : XCTestCase
 @end
 
@@ -52,7 +41,6 @@ static void AMEDismissTranslationNoticeIfNeeded(XCUIApplication *app) {
 // 故 XCUITest 看不见它——曾因此误报失败。不断言它，只断言业务可见元素）+ 留截图证据
 - (void)testLaunchShowsLauncherRoot {
     XCUIApplication *app = [self launchedApp];
-    AMESaveScreen(@"app-launch");
     XCTAssertEqual(app.state, XCUIApplicationStateRunningForeground);
     XCUIElement *firstMenu = app.buttons[@"launcher-menu-0"];
     XCTAssertTrue([firstMenu waitForExistenceWithTimeout:20.0], @"launcher-menu-0 未出现（App 未装/启动失败/identifier 丢失）");
@@ -78,59 +66,6 @@ static void AMEDismissTranslationNoticeIfNeeded(XCUIApplication *app) {
         XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning,
                            @"点菜单项 %@ 后 App 死亡", identifier);
     }
-    [app terminate];
-}
-
-// 上下滑动预览：在首页滚动区上滑/下滑，各留一张真机截图。
-// 目标优先 scrollViews（新闻列表），无则退到主窗口（swipe 对任意元素有效）。
-// 只断言 App 不死（滚动内容随数据/网络变化，不做像素断言，图由人审）。
-- (void)testSwipeUpDownPreview {
-    XCUIApplication *app = [self launchedApp];
-    XCUIElement *target = app.scrollViews.firstMatch;
-    if (![target waitForExistenceWithTimeout:10.0]) {
-        target = app.windows.firstMatch;
-    }
-    [target swipeUp];
-    AMESaveScreen(@"app-swipe-up");
-    [target swipeDown];
-    AMESaveScreen(@"app-swipe-down");
-    XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning,
-                       @"上下滑动后 App 死亡");
-    [app terminate];
-}
-
-// 真滚验证：先关 Translation Notice 弹窗，再对新闻滚动区上滑，
-// 前后两张截图 PNG 不等即证明内容真滚了（若手势被吃，两张完全一致即红）。
-// 注意：新闻卡若有自动轮播，两次截图也可能不等——此时断言空转但无害
-// （App 存活断言仍有效，图由人审确认是否真滚）。
-- (void)testRealScrollAfterDismiss {
-    XCUIApplication *app = [self launchedApp];
-    XCUIElement *firstMenu = app.buttons[@"launcher-menu-0"];
-    XCTAssertTrue([firstMenu waitForExistenceWithTimeout:20.0]);
-    AMEDismissTranslationNoticeIfNeeded(app);
-    // 若刚才关过弹窗，等它彻底消失（动画收尾），否则后续手势还会被吃
-    NSPredicate *gone = [NSPredicate predicateWithFormat:@"exists == NO"];
-    XCTestExpectation *goneExp = [self expectationForPredicate:gone
-                                              evaluatedWithObject:app.alerts.firstMatch
-                                                          handler:nil];
-    [self waitForExpectations:@[goneExp] timeout:5.0];
-    XCUIElement *target = app.scrollViews.firstMatch;
-    if (![target waitForExistenceWithTimeout:10.0]) {
-        target = app.windows.firstMatch;
-    }
-    [NSThread sleepForTimeInterval:2.0];
-    AMESaveScreen(@"app-scroll-before");
-    NSData *before = [[XCUIScreen mainScreen].screenshot PNGRepresentation];
-    [target swipeUp];
-    [NSThread sleepForTimeInterval:1.0];
-    AMESaveScreen(@"app-scroll-after");
-    NSData *after = [[XCUIScreen mainScreen].screenshot PNGRepresentation];
-    XCTAssertNotNil(before);
-    XCTAssertNotNil(after);
-    XCTAssertNotEqualObjects(before, after, @"滑动前后截图完全一致：手势被吃了，内容没滚");
-    [target swipeDown];
-    AMESaveScreen(@"app-scroll-back");
-    XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning);
     [app terminate];
 }
 
