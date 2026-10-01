@@ -105,6 +105,22 @@ static void AMESaveScreen(NSString *name) {
     XCUIElement *guide = app.staticTexts[@"customcontrols-guide"];
     XCTAssertTrue([guide waitForExistenceWithTimeout:20.0], @"编辑器引导文案未出现");
     AMESaveScreen(@"app-customcontrols-editor");
+    // 画布落子开 CCMenu 表单：中央长按 → Add button 建钮 → 点新钮 → Edit。
+    // （编辑器画布默认空，必须先建钮；坐标归一化，与屏幕方向无关。）
+    XCUICoordinate *center = [[app.windows firstMatch]
+                              coordinateWithNormalizedOffset:CGVectorMake(0.5, 0.5)];
+    [center pressForDuration:0.8];
+    XCUIElement *addButton = app.menuItems[@"Add button"];
+    XCTAssertTrue([addButton waitForExistenceWithTimeout:10.0], @"Add button 菜单未出现");
+    [addButton tap];
+    [center tap];
+    XCUIElement *editItem = app.menuItems[@"Edit"];
+    XCTAssertTrue([editItem waitForExistenceWithTimeout:10.0], @"Edit 菜单未出现");
+    [editItem tap];
+    // CCMenu 表单标志：Name 文本框（各机型/语言下最稳定的锚点）
+    XCTAssertTrue([app.textFields.firstMatch waitForExistenceWithTimeout:10.0],
+                  @"CCMenu 表单未出现");
+    AMESaveScreen(@"app-ccmenu-form");
     XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning);
     [app terminate];
 }
