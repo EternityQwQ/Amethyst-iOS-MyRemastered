@@ -142,8 +142,15 @@ static void AMEDismissTranslationNoticeIfNeeded(XCUIApplication *app) {
     XCUIElement *menuSettings = app.buttons[@"launcher-menu-4"];
     XCTAssertTrue([menuSettings waitForExistenceWithTimeout:20.0]);
     [menuSettings tap];
+    // 设置表是动态 UITableView，非可见行没有 cell 对象——向下滚翻找
     XCUIElement *ccRow = app.cells[@"pref-cell-custom_controls"];
-    XCTAssertTrue([ccRow waitForExistenceWithTimeout:20.0], @"custom_controls 行未出现");
+    BOOL found = [ccRow waitForExistenceWithTimeout:5.0];
+    XCUIElement *settingsTable = app.tables.firstMatch;
+    for (int i = 0; i < 8 && !found; i++) {
+        [settingsTable swipeUp];
+        found = [ccRow waitForExistenceWithTimeout:2.0];
+    }
+    XCTAssertTrue(found, @"custom_controls 行未出现（滚到底也没找到）");
     [ccRow tap];
     XCUIElement *guide = app.staticTexts[@"customcontrols-guide"];
     XCTAssertTrue([guide waitForExistenceWithTimeout:20.0], @"编辑器引导文案未出现");
