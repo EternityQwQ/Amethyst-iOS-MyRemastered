@@ -919,6 +919,15 @@ jobs:
           xcrun simctl boot "$UDID" 2>/dev/null || true
           echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
 
+      - name: Network egress diagnostics (non-blocking)
+        run: |
+          # 下载内容走公网（Mojang piston-meta / Modrinth API）；若 runner 出境被挡，
+          # 内容型用例必然空列表——本步只诊断不定罪（|| true）。
+          for u in https://piston-meta.mojang.com/mc/game/version_manifest_v2.json https://api.modrinth.com/v2/tag/game_version; do
+            echo "== $u";
+            curl -s -o /dev/null -w "HTTP:%{http_code} TIME:%{time_total}s SIZE:%{size_download}\n" --max-time 25 "$u" || echo "CURL-FAIL $u";
+          done
+
       - name: Build for testing (proves both .xctest compile)
         run: |
           set -o pipefail

@@ -165,6 +165,10 @@ static void AMESaveScreen(NSString *name) {
     XCUIElement *menuDownload = app.buttons[@"launcher-menu-1"];
     XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0]);
     [menuDownload tap];
+    // 默认是版本 tab（Mojang 源，CI 出境可能不通）；切 Mods tab 走 Modrinth
+    XCUIElement *modsTab = app.staticTexts[@"Mods"];
+    XCTAssertTrue([modsTab waitForExistenceWithTimeout:20.0], @"Mods 类型入口未出现");
+    [modsTab tap];
     XCUIElement *modBtn = app.buttons[@"btn-Download-sidebarModrinth"];
     XCTAssertTrue([modBtn waitForExistenceWithTimeout:20.0], @"Mod 源按钮未出现");
     [modBtn tap];
@@ -185,6 +189,9 @@ static void AMESaveScreen(NSString *name) {
     XCUIElement *menuDownload = app.buttons[@"launcher-menu-1"];
     XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0]);
     [menuDownload tap];
+    XCUIElement *modsTab = app.staticTexts[@"Mods"];
+    XCTAssertTrue([modsTab waitForExistenceWithTimeout:20.0], @"Mods 类型入口未出现");
+    [modsTab tap];
     XCUIElement *dlBtn = app.buttons[@"btn-ModernAssetCell-download"];
     XCTAssertTrue([dlBtn waitForExistenceWithTimeout:30.0], @"下载列表未加载出条目");
     [dlBtn tap];
@@ -201,12 +208,63 @@ static void AMESaveScreen(NSString *name) {
     XCUIElement *menuDownload = app.buttons[@"launcher-menu-1"];
     XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0]);
     [menuDownload tap];
+    XCUIElement *modsTab = app.staticTexts[@"Mods"];
+    XCTAssertTrue([modsTab waitForExistenceWithTimeout:20.0], @"Mods 类型入口未出现");
+    [modsTab tap];
     XCUIElement *table = app.tables.firstMatch;
     XCTAssertTrue([table waitForExistenceWithTimeout:20.0], @"下载列表未出现");
     [table swipeDown];
     [NSThread sleepForTimeInterval:5.0];
     AMESaveScreen(@"app-download-refresh");
     XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning);
+    [app terminate];
+}
+
+// 重复压测×20：刷新 + 切源（Mod/CF）+ 点资源进版本页，轮轮截图人工审。
+// 设计要点：每轮先点 menu-1 重锚回下载列表（CF 无 Key 会跳设置页，重锚免疫漂移）；
+// 版本页以导航返回键为到达证据，截图后点返回；全程不断言网络内容，只断言存活。
+// verdict：20 轮中至少一次进版本页即证明链路通（网络抖动容忍），计数打日志。
+- (void)testRepeatRefreshSourcesAndResources {
+    XCUIApplication *app = [self launchedApp];
+    const NSInteger rounds = 20;
+    NSInteger versionOpened = 0;
+    for (NSInteger i = 0; i < rounds; i++) {
+        XCUIElement *menuDownload = app.buttons[@"launcher-menu-1"];
+        XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0],
+                      @"第 %ld 轮：下载菜单丢失", (long)i);
+        [menuDownload tap];
+        XCUIElement *modsTab = app.staticTexts[@"Mods"];
+        if ([modsTab waitForExistenceWithTimeout:10.0]) {
+            [modsTab tap];
+        }
+        XCUIElement *table = app.tables.firstMatch;
+        if ([table waitForExistenceWithTimeout:10.0]) {
+            [table swipeDown];
+        }
+        XCUIElement *modBtn = app.buttons[@"btn-Download-sidebarModrinth"];
+        if ([modBtn waitForExistenceWithTimeout:5.0]) {
+            [modBtn tap];
+        }
+        XCUIElement *cfBtn = app.buttons[@"btn-Download-sidebarCurseforge"];
+        if ([cfBtn waitForExistenceWithTimeout:5.0]) {
+            [cfBtn tap];
+        }
+        XCUIElement *dlBtn = app.buttons[@"btn-ModernAssetCell-download"];
+        if ([dlBtn waitForExistenceWithTimeout:10.0]) {
+            [dlBtn tap];
+            XCUIElement *backBtn = app.navigationBars.buttons.firstMatch;
+            if ([backBtn waitForExistenceWithTimeout:15.0]) {
+                versionOpened++;
+                AMESaveScreen([NSString stringWithFormat:@"app-repeat-%ld-version", (long)i]);
+                [backBtn tap];
+            }
+        }
+        AMESaveScreen([NSString stringWithFormat:@"app-repeat-%ld-list", (long)i]);
+        XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning,
+                           @"第 %ld 轮后 App 死亡", (long)i);
+    }
+    NSLog(@"[AME-repeat] versionOpened=%ld/20", (long)versionOpened);
+    XCTAssertGreaterThan(versionOpened, 0, @"20 轮无一次进版本页：下载链路不通");
     [app terminate];
 }
 
