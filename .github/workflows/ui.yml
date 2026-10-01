@@ -242,7 +242,7 @@ jobs:
         run: |
           set -e
           # P7（Frame→约束）验证先行：全仓手算 CGRectMake 只许减少不许增加。
-          # 基线（实测，共 141 处；P9-2 已删文件不在内）：
+          # 基线（实测，共 124 处；CCMenu 表单行已迁同值约束，P9-2 已删文件不在内）：
           # CustomControlsVC 30（含已迁铬件/blurView）、ProfileSettings 14……
           # 每消一处都应是约束等价替换；新增即方向错误。布局正确性仍需像素验证
           # （真机/sim，见 P7 计划），本门禁只锁数量；文件改名/删除即响亮失败，
@@ -262,7 +262,7 @@ jobs:
               'Natives/UI/Download/DownloadHistoryViewController.m': 2,
               'Natives/UI/Download/DownloadTasksViewController.m': 2,
               'Natives/UI/Game/CustomControlsViewController+UndoManager.m': 1,
-              'Natives/UI/Game/CustomControlsViewController.m': 30,
+              'Natives/UI/Game/CustomControlsViewController.m': 13,
               'Natives/UI/Game/JavaGUIViewController.m': 3,
               'Natives/UI/Game/SurfaceViewController+Navigation.m': 8,
               'Natives/UI/Game/SurfaceViewController.m': 7,
@@ -295,7 +295,7 @@ jobs:
               n = len(re.findall(r'CGRectMake\s*\(', open(f, encoding='utf-8', errors='ignore').read()))
               assert n <= base, f'[tier0] CGRectMake grew in {f}: {n} > {base}'
               total += n
-          print(f'[tier0] P7 Frame ratchet OK ({total}/141 remaining)')
+          print(f'[tier0] P7 Frame ratchet OK ({total}/124 remaining)')
           PYEOF
 
       - name: P8 font mapping pin (Dynamic Type safe subset)

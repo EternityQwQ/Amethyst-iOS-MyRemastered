@@ -627,6 +627,21 @@ CGFloat currentY;
 
 @implementation CCMenuViewController
 
+// P7-2：表单行同值约束 helper。CCMenu 表单行几何（-5 偏移、label 实测宽度参与计算）
+// 逐行精确，stack 化反而失真；此处只把“frame 拼写”换成“约束拼写”，数值逐字照抄，
+// 布局结果逐像素一致。label 保持 addLabel 手工帧（sizeToFit 实测宽度仍是计算输入）。
+// contentSize 仍由文末手动设置（安全网，不动）。
+static void AMEPlaceInScroll(UIScrollView *sv, UIView *v, CGFloat x, CGFloat y, CGFloat w, CGFloat h) {
+    v.translatesAutoresizingMaskIntoConstraints = NO;
+    [sv addSubview:v];
+    [NSLayoutConstraint activateConstraints:@[
+        [v.leadingAnchor constraintEqualToAnchor:sv.leadingAnchor constant:x],
+        [v.topAnchor constraintEqualToAnchor:sv.topAnchor constant:y],
+        [v.widthAnchor constraintEqualToConstant:w],
+        [v.heightAnchor constraintEqualToConstant:h]
+    ]];
+}
+
 - (UILabel*)addLabel:(NSString *)name {
     UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(0.0, currentY, 0.0, 0.0)];
     label.text = name;
@@ -718,13 +733,13 @@ CGFloat currentY;
     // Property: Name
     if (![self.targetButton isKindOfClass:ControlJoystick.class]) {
         UILabel *labelName = [self addLabel:localize(@"custom_controls.button_edit.name", nil)];
-        self.editName = [[UITextField alloc] initWithFrame:CGRectMake(labelName.frame.size.width + 5.0, currentY, width - labelName.frame.size.width - 5.0, labelName.frame.size.height)];
+        self.editName = [[UITextField alloc] init];
         [self.editName addTarget:self action:@selector(textFieldEditingChanged) forControlEvents:UIControlEventEditingChanged];
         [self.editName addTarget:self.editName action:@selector(resignFirstResponder) forControlEvents:UIControlEventEditingDidEndOnExit];
         self.editName.placeholder = localize(@"custom_controls.button_edit.name", nil);
         self.editName.returnKeyType = UIReturnKeyDone;
         self.editName.text = self.targetButton.properties[@"name"];
-        [self.scrollView addSubview:self.editName];
+        AMEPlaceInScroll(self.scrollView, self.editName, labelName.frame.size.width + 5.0, currentY, width - labelName.frame.size.width - 5.0, labelName.frame.size.height);
         currentY += labelName.frame.size.height + 15.0;
     }
 
@@ -734,10 +749,11 @@ CGFloat currentY;
         UILabel *labelSize = [self addLabel:localize(@"custom_controls.button_edit.size", nil)];
         // width / 2.0 + (labelSize.frame.size.width + 4.0) / 2.0
         CGFloat editSizeWidthValue = (width - labelSize.frame.size.width) / 2 - labelSize.frame.size.height / 2;
-        UILabel *labelSizeX = [[UILabel alloc] initWithFrame:CGRectMake(labelSize.frame.size.width + editSizeWidthValue, labelSize.frame.origin.y, labelSize.frame.size.height, labelSize.frame.size.height)];
+        UILabel *labelSizeX = [[UILabel alloc] init];
         labelSizeX.text = @"x";
-        [self.scrollView addSubview:labelSizeX];
-        self.editSizeWidth = [[UITextField alloc] initWithFrame:CGRectMake(labelSize.frame.size.width, labelSize.frame.origin.y, editSizeWidthValue, labelSize.frame.size.height)];
+        AMEPlaceInScroll(self.scrollView, labelSizeX, labelSize.frame.size.width + editSizeWidthValue, labelSize.frame.origin.y, labelSize.frame.size.height, labelSize.frame.size.height);
+        [self.scrollView layoutIfNeeded];
+        self.editSizeWidth = [[UITextField alloc] init];
         [self.editSizeWidth addTarget:self action:@selector(textFieldEditingChanged) forControlEvents:UIControlEventEditingChanged];
         [self.editSizeWidth addTarget:self.editSizeWidth action:@selector(resignFirstResponder) forControlEvents:UIControlEventEditingDidEndOnExit];
         self.editSizeWidth.keyboardType = UIKeyboardTypeDecimalPad;
@@ -745,8 +761,8 @@ CGFloat currentY;
         self.editSizeWidth.returnKeyType = UIReturnKeyDone;
         self.editSizeWidth.text = [self.targetButton.properties[@"width"] stringValue];
         self.editSizeWidth.textAlignment = NSTextAlignmentCenter;
-        [self.scrollView addSubview:self.editSizeWidth];
-        self.editSizeHeight = [[UITextField alloc] initWithFrame:CGRectMake(labelSizeX.frame.origin.x + labelSizeX.frame.size.width, labelSize.frame.origin.y, editSizeWidthValue, labelSize.frame.size.height)];
+        AMEPlaceInScroll(self.scrollView, self.editSizeWidth, labelSize.frame.size.width, labelSize.frame.origin.y, editSizeWidthValue, labelSize.frame.size.height);
+        self.editSizeHeight = [[UITextField alloc] init];
         [self.editSizeHeight addTarget:self action:@selector(textFieldEditingChanged) forControlEvents:UIControlEventEditingChanged];
         [self.editSizeHeight addTarget:self.editSizeHeight action:@selector(resignFirstResponder) forControlEvents:UIControlEventEditingDidEndOnExit];
         self.editSizeHeight.keyboardType = UIKeyboardTypeDecimalPad;
@@ -754,7 +770,7 @@ CGFloat currentY;
         self.editSizeHeight.returnKeyType = UIReturnKeyDone;
         self.editSizeHeight.text = [self.targetButton.properties[@"height"] stringValue];
         self.editSizeHeight.textAlignment = NSTextAlignmentCenter;
-        [self.scrollView addSubview:self.editSizeHeight];
+        AMEPlaceInScroll(self.scrollView, self.editSizeHeight, labelSizeX.frame.origin.x + labelSizeX.frame.size.width, labelSize.frame.origin.y, editSizeWidthValue, labelSize.frame.size.height);
         currentY += labelSize.frame.size.height + 15.0;
     }
 
@@ -765,27 +781,28 @@ CGFloat currentY;
         UILabel *labelOrientation = [self addLabel:localize(@"custom_controls.button_edit.orientation", nil)];
         self.ctrlOrientation = [[UISegmentedControl alloc] initWithItems:self.arrOrientation];
         [self.ctrlOrientation addTarget:self action:@selector(orientationValueChanged:) forControlEvents:UIControlEventValueChanged];
-        self.ctrlOrientation.frame = CGRectMake(labelOrientation.frame.size.width + 5.0, currentY - 5.0, width - labelOrientation.frame.size.width - 5.0, 30.0);
+        AMEPlaceInScroll(self.scrollView, self.ctrlOrientation, labelOrientation.frame.size.width + 5.0, currentY - 5.0, width - labelOrientation.frame.size.width - 5.0, 30.0);
         self.ctrlOrientation.selectedSegmentIndex = [self.arrOrientation indexOfObject:
             ((ControlDrawer *)self.targetButton).drawerData[@"orientation"]];
-        [self.scrollView addSubview:self.ctrlOrientation];
+        AMEPlaceInScroll(self.scrollView, self.ctrlOrientation, labelOrientation.frame.size.width + 5.0, currentY - 5.0, width - labelOrientation.frame.size.width - 5.0, 30.0);
         currentY += labelOrientation.frame.size.height + 15.0;
     } else if ([self.targetButton isKindOfClass:ControlJoystick.class]) {
         // Property: Forward lock
         UILabel *labelFwdLock = [self addLabel:localize(@"custom_controls.button_edit.forward_lock", nil)];
-        self.switchFwdLock = [[UISwitch alloc] initWithFrame:CGRectMake(width - 62.0, currentY - 5.0, 50.0, 30)];
+        self.switchFwdLock = [[UISwitch alloc] init];
         [self.switchFwdLock setOn:[self.targetButton.properties[@"forwardLock"] boolValue] animated:NO];
-        [self.scrollView addSubview:self.switchFwdLock];
+        AMEPlaceInScroll(self.scrollView, self.switchFwdLock, width - 62.0, currentY - 5.0, 50.0, 30);
         currentY += labelFwdLock.frame.size.height + 15.0;
     } else {
         // Property: Mapping
         UILabel *labelMapping = [self addLabel:localize(@"custom_controls.button_edit.mapping", nil)];
 
-        self.editMapping = [[UITextView alloc] initWithFrame:CGRectMake(0,0,1,1)];
+        self.editMapping = [[UITextView alloc] init];
         self.editMapping.text = @"\n\n\n";
         [self.editMapping sizeToFit];
         self.editMapping.scrollEnabled = NO;
-        self.editMapping.frame = CGRectMake(labelMapping.frame.size.width + 5.0, labelMapping.frame.origin.y, width - labelMapping.frame.size.width - 5.0, self.editMapping.frame.size.height);
+        AMEPlaceInScroll(self.scrollView, self.editMapping, labelMapping.frame.size.width + 5.0, labelMapping.frame.origin.y, width - labelMapping.frame.size.width - 5.0, self.editMapping.frame.size.height);
+        [self.scrollView layoutIfNeeded];
 
         self.pickerMapping = [[UIPickerView alloc] init];
         self.pickerMapping.delegate = self;
@@ -798,7 +815,7 @@ CGFloat currentY;
 
         self.editMapping.inputAccessoryView = editPickToolbar;
         self.editMapping.inputView = self.pickerMapping;
-        [self.scrollView addSubview:self.editMapping];
+        [self.scrollView layoutIfNeeded];
         currentY += self.editMapping.frame.size.height + 15.0;
     }
 
@@ -806,80 +823,80 @@ CGFloat currentY;
     if (![self.targetButton isKindOfClass:ControlJoystick.class]) {
         // Property: Toggleable
         UILabel *labelToggleable = [self addLabel:localize(@"custom_controls.button_edit.toggleable", nil)];
-        self.switchToggleable = [[UISwitch alloc] initWithFrame:CGRectMake(width - 62.0, currentY - 5.0, 50.0, 30)];
+        self.switchToggleable = [[UISwitch alloc] init];
         [self.switchToggleable setOn:[self.targetButton.properties[@"isToggle"] boolValue] animated:NO];
-        [self.scrollView addSubview:self.switchToggleable];
+        AMEPlaceInScroll(self.scrollView, self.switchToggleable, width - 62.0, currentY - 5.0, 50.0, 30);
         currentY += labelToggleable.frame.size.height + 15.0;
 
 
         // Property: Mouse pass
         UILabel *labelMousePass = [self addLabel:localize(@"custom_controls.button_edit.mouse_pass", nil)];
-        self.switchMousePass = [[UISwitch alloc] initWithFrame:CGRectMake(width - 62.0, currentY - 5.0, 50.0, 30)];
+        self.switchMousePass = [[UISwitch alloc] init];
         [self.switchMousePass setOn:[self.targetButton.properties[@"passThruEnabled"] boolValue]];
-        [self.scrollView addSubview:self.switchMousePass];
+        AMEPlaceInScroll(self.scrollView, self.switchMousePass, width - 62.0, currentY - 5.0, 50.0, 30);
         currentY += labelMousePass.frame.size.height + 15.0;
 
 
         // Property: Swipeable
         UILabel *labelSwipeable = [self addLabel:localize(@"custom_controls.button_edit.swipeable", nil)];
-        self.switchSwipeable = [[UISwitch alloc] initWithFrame:CGRectMake(width - 62.0, currentY - 5.0, 50.0, 30)];
+        self.switchSwipeable = [[UISwitch alloc] init];
         [self.switchSwipeable setOn:[self.targetButton.properties[@"isSwipeable"] boolValue]];
-        [self.scrollView addSubview:self.switchSwipeable];
+        AMEPlaceInScroll(self.scrollView, self.switchSwipeable, width - 62.0, currentY - 5.0, 50.0, 30);
         currentY += labelSwipeable.frame.size.height + 15.0;
     }
 
 
     // Property: Background color
     UILabel *labelBGColor = [self addLabel:localize(@"custom_controls.button_edit.bg_color", nil)];
-    self.colorWellBackground = [[UIColorWell alloc] initWithFrame:CGRectMake(width - 42.0, currentY - 5.0, 30.0, 30.0)];
+    self.colorWellBackground = [[UIColorWell alloc] init];
     [self.colorWellBackground addTarget:self action:@selector(colorWellChanged) forControlEvents:UIControlEventValueChanged];
     self.colorWellBackground.selectedColor = convertARGB2UIColor([self.targetButton.properties[@"bgColor"] intValue]);
-    [self.scrollView addSubview:self.colorWellBackground];
+    AMEPlaceInScroll(self.scrollView, self.colorWellBackground, width - 42.0, currentY - 5.0, 30.0, 30.0);
     currentY += labelBGColor.frame.size.height + 15.0;
 
     // Property: Stroke width
     UILabel *labelStrokeWidth = [self addLabel:localize(@"custom_controls.button_edit.stroke_width", nil)];
-    self.sliderStrokeWidth = [[DBNumberedSlider alloc] initWithFrame:CGRectMake(labelStrokeWidth.frame.size.width + 5.0, currentY - 5.0, width - labelStrokeWidth.frame.size.width - 5.0, 30.0)];
+    self.sliderStrokeWidth = [[DBNumberedSlider alloc] init];
     self.sliderStrokeWidth.continuous = YES;
     self.sliderStrokeWidth.maximumValue = MAX([self.targetButton.properties[@"width"] intValue], [self.targetButton.properties[@"height"] intValue]) / 2;
     self.sliderStrokeWidth.tag = TAG_SLIDER_STROKEWIDTH;
     self.sliderStrokeWidth.value = [self.targetButton.properties[@"strokeWidth"] intValue];
     [self.sliderStrokeWidth addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
-    [self.scrollView addSubview:self.sliderStrokeWidth];
+    AMEPlaceInScroll(self.scrollView, self.sliderStrokeWidth, labelStrokeWidth.frame.size.width + 5.0, currentY - 5.0, width - labelStrokeWidth.frame.size.width - 5.0, 30.0);
     currentY += labelStrokeWidth.frame.size.height + 15.0;
 
 
     // Property: Stroke color
     UILabel *labelStrokeColor = [self addLabel:localize(@"custom_controls.button_edit.stroke_color", nil)];
-    self.colorWellStroke = [[UIColorWell alloc] initWithFrame:CGRectMake(width - 42.0, currentY - 5.0, 30.0, 30.0)];
+    self.colorWellStroke = [[UIColorWell alloc] init];
     [self.colorWellStroke addTarget:self action:@selector(colorWellChanged) forControlEvents:UIControlEventValueChanged];
     self.colorWellStroke.selectedColor = convertARGB2UIColor([self.targetButton.properties[@"strokeColor"] intValue]);
-    [self.scrollView addSubview:self.colorWellStroke];
+    AMEPlaceInScroll(self.scrollView, self.colorWellStroke, width - 42.0, currentY - 5.0, 30.0, 30.0);
     currentY += labelStrokeColor.frame.size.height + 15.0;
 
 
     // Property: Corner radius
     if (![self.targetButton isKindOfClass:ControlJoystick.class]) {
         UILabel *labelCornerRadius = [self addLabel:localize(@"custom_controls.button_edit.corner_radius", nil)];
-        self.sliderCornerRadius = [[DBNumberedSlider alloc] initWithFrame:CGRectMake(labelCornerRadius.frame.size.width + 5.0, currentY - 5.0, width - labelCornerRadius.frame.size.width - 5.0, 30.0)];
+        self.sliderCornerRadius = [[DBNumberedSlider alloc] init];
         self.sliderCornerRadius.continuous = YES;
         self.sliderCornerRadius.maximumValue = 100;
         self.sliderCornerRadius.value = [self.targetButton.properties[@"cornerRadius"] intValue];
         [self.sliderCornerRadius addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
-        [self.scrollView addSubview:self.sliderCornerRadius];
+        AMEPlaceInScroll(self.scrollView, self.sliderCornerRadius, labelCornerRadius.frame.size.width + 5.0, currentY - 5.0, width - labelCornerRadius.frame.size.width - 5.0, 30.0);
         currentY += labelCornerRadius.frame.size.height + 15.0;
     }
 
 
     // Property: Button Opacity
     UILabel *labelOpacity = [self addLabel:localize(@"custom_controls.button_edit.opacity", nil)];
-    self.sliderOpacity = [[DBNumberedSlider alloc] initWithFrame:CGRectMake(labelOpacity.frame.size.width + 5.0, currentY - 5.0, width - labelOpacity.frame.size.width - 5.0, 30.0)];
+    self.sliderOpacity = [[DBNumberedSlider alloc] init];
     self.sliderOpacity.continuous = YES;
     self.sliderOpacity.minimumValue = 1;
     self.sliderOpacity.maximumValue = 100;
     self.sliderOpacity.value = [self.targetButton.properties[@"opacity"] floatValue] * 100.0;
     [self.sliderOpacity addTarget:self action:@selector(sliderValueChanged:) forControlEvents:UIControlEventValueChanged];
-    [self.scrollView addSubview:self.sliderOpacity];
+    AMEPlaceInScroll(self.scrollView, self.sliderOpacity, labelOpacity.frame.size.width + 5.0, currentY - 5.0, width - labelOpacity.frame.size.width - 5.0, 30.0);
     currentY += labelOpacity.frame.size.height + 15.0;
 
 
@@ -888,7 +905,7 @@ CGFloat currentY;
     UILabel *labelVisibility = [self addLabel:localize(@"custom_controls.button_edit.visibility", nil)];
     self.ctrlVisibility = [[UISegmentedControl alloc] initWithItems:self.arrVisibility];
     [self.ctrlVisibility addTarget:self action:@selector(visibilityValueChanged:) forControlEvents:UIControlEventValueChanged];
-    self.ctrlVisibility.frame = CGRectMake(labelVisibility.frame.size.width + 5.0, currentY - 5.0, width - labelVisibility.frame.size.width - 5.0, 30.0);
+    AMEPlaceInScroll(self.scrollView, self.ctrlVisibility, labelVisibility.frame.size.width + 5.0, currentY - 5.0, width - labelVisibility.frame.size.width - 5.0, 30.0);
     BOOL displayInGame = [self.targetButton.properties[@"displayInGame"] boolValue];
     BOOL displayInMenu = [self.targetButton.properties[@"displayInMenu"] boolValue];
     if (displayInGame && displayInMenu) {
@@ -898,7 +915,7 @@ CGFloat currentY;
     } else if (displayInMenu) {
         self.ctrlVisibility.selectedSegmentIndex = VISIBILITY_IN_MENU;
     } // else the segment is not chosen
-    [self.scrollView addSubview:self.ctrlVisibility];
+    [self.scrollView layoutIfNeeded];
     currentY += labelVisibility.frame.size.height + 15.0;
 
     self.scrollView.contentSize = CGSizeMake(self.scrollView.contentSize.width, currentY);
