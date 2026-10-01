@@ -41,6 +41,9 @@
     UIEdgeInsets insets = [ScreenUtils keyWindow].safeAreaInsets;
 
     UILabel *guideLabel = [[UILabel alloc] initWithFrame:self.view.frame];
+    // UI Testing 可测性（加法）：编辑器落点断言 + VoiceOver 读提示文案
+    guideLabel.accessibilityIdentifier = @"customcontrols-guide";
+    guideLabel.isAccessibilityElement = YES;
     guideLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     guideLabel.numberOfLines = 0;
     guideLabel.textAlignment = NSTextAlignmentCenter;

@@ -268,6 +268,9 @@
     cell.textLabel.enabled = cell.detailTextLabel.enabled = cell.userInteractionEnabled;
     [(id)cell.accessoryView setEnabled:cell.userInteractionEnabled];
 
+    // UI Testing 可测性（加法）：行级 identifier 取配置 key，XCUITest 按 key 点行
+    cell.accessibilityIdentifier = [NSString stringWithFormat:@"pref-cell-%@", key ?: @"section"];
+
     return cell;
 }
 

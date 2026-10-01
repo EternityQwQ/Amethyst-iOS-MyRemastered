@@ -182,12 +182,17 @@ jobs:
           import re, glob, sys
           ids = set()
           fmts = set()
+          pfmts = set()
           for f in glob.glob('Natives/**/*.m', recursive=True):
               txt = open(f, encoding='utf-8', errors='ignore').read()
               ids |= set(re.findall(r'accessibilityIdentifier\s*=\s*@"([^"]+)"', txt))
               fmts |= set(re.findall(r'@"([^"]*launcher-menu-[^"]*)"', txt))
+              pfmts |= set(re.findall(r'@"([^"]*pref-cell-[^"]*)"', txt))
           assert 'launcher-root' in ids, '[tier0] missing testability id: launcher-root'
           assert any('launcher-menu-' in f for f in fmts), '[tier0] missing menu id format'
+          # P7 深流入口：设置行级 id（pref-cell-<key> 格式）+ 编辑器引导文案（字面量）
+          assert any('pref-cell-' in f for f in pfmts), '[tier0] missing pref-cell id format'
+          assert 'customcontrols-guide' in ids, '[tier0] missing testability id: customcontrols-guide'
           nav = sorted(i for i in ids if i.startswith('nav-'))
           assert len(nav) >= 40, f'[tier0] nav ids shrank: {len(nav)}'
           assert len(nav) == len(set(nav)), '[tier0] duplicate nav ids'

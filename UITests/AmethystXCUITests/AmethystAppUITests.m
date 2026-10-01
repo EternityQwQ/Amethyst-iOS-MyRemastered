@@ -134,6 +134,24 @@ static void AMEDismissTranslationNoticeIfNeeded(XCUIApplication *app) {
     [app terminate];
 }
 
+// 自定义触屏编辑器流程（P7 首刀验证入口）：设置 → custom_controls 行 → 编辑器。
+// 行级 identifier（pref-cell-<key>）+ 编辑器引导文案（customcontrols-guide）定位；
+// 留编辑器截图作为后续 CCMenu 表单迁移的前后对比基线。
+- (void)testCustomControlsEditor {
+    XCUIApplication *app = [self launchedApp];
+    XCUIElement *menuSettings = app.buttons[@"launcher-menu-4"];
+    XCTAssertTrue([menuSettings waitForExistenceWithTimeout:20.0]);
+    [menuSettings tap];
+    XCUIElement *ccRow = app.cells[@"pref-cell-custom_controls"];
+    XCTAssertTrue([ccRow waitForExistenceWithTimeout:20.0], @"custom_controls 行未出现");
+    [ccRow tap];
+    XCUIElement *guide = app.staticTexts[@"customcontrols-guide"];
+    XCTAssertTrue([guide waitForExistenceWithTimeout:20.0], @"编辑器引导文案未出现");
+    AMESaveScreen(@"app-customcontrols-editor");
+    XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning);
+    [app terminate];
+}
+
 // 启动性能（Apple 官方模板同款 metric，接真 App 包体）
 - (void)testLaunchPerformance {
     if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *)) {
