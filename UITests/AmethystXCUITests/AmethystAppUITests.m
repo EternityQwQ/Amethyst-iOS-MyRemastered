@@ -129,6 +129,87 @@ static void AMESaveScreen(NSString *name) {
     [app terminate];
 }
 
+// 下载中心页（menu-1）：等任一下载域按钮出现（tab/筛选/导入常驻至少其一），截图。
+// 列表内容走网络，不做内容断言；页面铬存在 + App 存活即过，图由人审。
+- (void)testDownloadCenter {
+    XCUIApplication *app = [self launchedApp];
+    XCUIElement *menuDownload = app.buttons[@"launcher-menu-1"];
+    XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0]);
+    [menuDownload tap];
+    NSPredicate *anyDlBtn = [NSPredicate predicateWithFormat:@"identifier BEGINSWITH 'btn-Download-'"];
+    XCUIElement *anchor = [app.buttons matchingPredicate:anyDlBtn].firstMatch;
+    XCTAssertTrue([anchor waitForExistenceWithTimeout:20.0], @"下载页按钮未出现");
+    AMESaveScreen(@"app-download-center");
+    XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning);
+    [app terminate];
+}
+
+// 版本管理页（menu-3）：等新建浮动按钮（常驻），截图。
+- (void)testVersionManager {
+    XCUIApplication *app = [self launchedApp];
+    XCUIElement *menuVersion = app.buttons[@"launcher-menu-3"];
+    XCTAssertTrue([menuVersion waitForExistenceWithTimeout:20.0]);
+    [menuVersion tap];
+    XCUIElement *fab = app.buttons[@"btn-VersionManager-fab"];
+    XCTAssertTrue([fab waitForExistenceWithTimeout:20.0], @"版本页新建按钮未出现");
+    AMESaveScreen(@"app-version-manager");
+    XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning);
+    [app terminate];
+}
+
+// 下载源访问：Mod 与 CF 按钮逐个点（CF 无 API Key 时走提示流，有 Key 时真切换）。
+// 不断言具体分支（分支依赖外部 Key 配置），只保证两处理器都被执行到、App 不死，
+// 两张截图留作人工核对（滑块位置/提示条即证据）。
+- (void)testDownloadSourceAccess {
+    XCUIApplication *app = [self launchedApp];
+    XCUIElement *menuDownload = app.buttons[@"launcher-menu-1"];
+    XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0]);
+    [menuDownload tap];
+    XCUIElement *modBtn = app.buttons[@"btn-Download-sidebarModrinth"];
+    XCTAssertTrue([modBtn waitForExistenceWithTimeout:20.0], @"Mod 源按钮未出现");
+    [modBtn tap];
+    AMESaveScreen(@"app-source-modrinth");
+    XCUIElement *cfBtn = app.buttons[@"btn-Download-sidebarCurseforge"];
+    XCTAssertTrue([cfBtn waitForExistenceWithTimeout:10.0], @"CF 源按钮未出现");
+    [cfBtn tap];
+    [NSThread sleepForTimeInterval:3.0];
+    AMESaveScreen(@"app-source-curseforge");
+    XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning);
+    [app terminate];
+}
+
+// 资源下载入口：列表首个下载按钮 → 版本页（下载决策点）。
+// 列表走网络，30 秒等首个下载钮；版本页以导航栏返回键为到达证据。
+- (void)testResourceDownloadEntry {
+    XCUIApplication *app = [self launchedApp];
+    XCUIElement *menuDownload = app.buttons[@"launcher-menu-1"];
+    XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0]);
+    [menuDownload tap];
+    XCUIElement *dlBtn = app.buttons[@"btn-ModernAssetCell-download"];
+    XCTAssertTrue([dlBtn waitForExistenceWithTimeout:30.0], @"下载列表未加载出条目");
+    [dlBtn tap];
+    XCUIElement *backBtn = app.navigationBars.buttons.firstMatch;
+    XCTAssertTrue([backBtn waitForExistenceWithTimeout:20.0], @"版本页未打开");
+    AMESaveScreen(@"app-version-page");
+    XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning);
+    [app terminate];
+}
+
+// 下载列表刷新：表头下拉触发 refreshControl，截图+存活（内容随网络，不做内容断言）。
+- (void)testDownloadListRefresh {
+    XCUIApplication *app = [self launchedApp];
+    XCUIElement *menuDownload = app.buttons[@"launcher-menu-1"];
+    XCTAssertTrue([menuDownload waitForExistenceWithTimeout:20.0]);
+    [menuDownload tap];
+    XCUIElement *table = app.tables.firstMatch;
+    XCTAssertTrue([table waitForExistenceWithTimeout:20.0], @"下载列表未出现");
+    [table swipeDown];
+    [NSThread sleepForTimeInterval:5.0];
+    AMESaveScreen(@"app-download-refresh");
+    XCTAssertNotEqual(app.state, XCUIApplicationStateNotRunning);
+    [app terminate];
+}
+
 // 启动性能（Apple 官方模板同款 metric，接真 App 包体）
 - (void)testLaunchPerformance {
     if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *)) {
