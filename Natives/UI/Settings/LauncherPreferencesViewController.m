@@ -1652,15 +1652,18 @@
         // Set semi-transparent dark background for cells
         [[BackgroundManager sharedManager] applyEffectToCell:cell];
 
-        // Set white text for better visibility on dark background
-        cell.textLabel.textColor = [UIColor whiteColor];
-        cell.textLabel.shadowColor = [UIColor blackColor];
-        cell.textLabel.shadowOffset = CGSizeMake(0, 1);
+        // P8-dark：文字色跟随壁纸明暗（深壁纸白字 = historic 行为像素不变；
+        // 浅壁纸改 label 系，否则白字不可读）。阴影只在深壁纸加。
+        BackgroundManager *bgManager = [BackgroundManager sharedManager];
+        BOOL bgIsDark = bgManager.backgroundIsDark;
+        cell.textLabel.textColor = [bgManager contentTextColorForBackground];
+        cell.textLabel.shadowColor = bgIsDark ? [UIColor blackColor] : nil;
+        cell.textLabel.shadowOffset = bgIsDark ? CGSizeMake(0, 1) : CGSizeZero;
 
         // Detail text light gray
-        cell.detailTextLabel.textColor = [UIColor colorWithWhite:0.8 alpha:1.0];
-        cell.detailTextLabel.shadowColor = [UIColor blackColor];
-        cell.detailTextLabel.shadowOffset = CGSizeMake(0, 1);
+        cell.detailTextLabel.textColor = [bgManager contentDetailTextColorForBackground];
+        cell.detailTextLabel.shadowColor = bgIsDark ? [UIColor blackColor] : nil;
+        cell.detailTextLabel.shadowOffset = bgIsDark ? CGSizeMake(0, 1) : CGSizeZero;
 
         // Tint color for icons and accessories：使用主题强调色（accentColor）
         cell.tintColor = accentColor();
@@ -1672,7 +1675,7 @@
             if ([subview isKindOfClass:[UISlider class]]) {
                 UISlider *slider = (UISlider *)subview;
                 slider.tintColor = accentColor();
-                slider.thumbTintColor = [UIColor whiteColor];
+                slider.thumbTintColor = [bgManager contentTextColorForBackground];
             }
 
             // Style switches
@@ -1684,24 +1687,25 @@
             // Style text fields
             if ([subview isKindOfClass:[UITextField class]]) {
                 UITextField *textField = (UITextField *)subview;
-                textField.textColor = [UIColor whiteColor];
-                textField.backgroundColor = [UIColor colorWithWhite:0.2 alpha:0.6];
+                textField.textColor = [bgManager contentTextColorForBackground];
+                textField.backgroundColor = bgIsDark ? [UIColor colorWithWhite:0.2 alpha:0.6]
+                                                     : [UIColor systemBackgroundColor];
                 textField.layer.cornerRadius = 8;
             }
 
             // Style labels
             if ([subview isKindOfClass:[UILabel class]]) {
                 UILabel *label = (UILabel *)subview;
-                label.textColor = [UIColor whiteColor];
-                label.shadowColor = [UIColor blackColor];
-                label.shadowOffset = CGSizeMake(0, 1);
+                label.textColor = [bgManager contentTextColorForBackground];
+                label.shadowColor = bgIsDark ? [UIColor blackColor] : nil;
+                label.shadowOffset = bgIsDark ? CGSizeMake(0, 1) : CGSizeZero;
             }
         }
 
         // Style the picker label if exists
         if (cell.accessoryView && [cell.accessoryView isKindOfClass:[UILabel class]]) {
             UILabel *pickerLabel = (UILabel *)cell.accessoryView;
-            pickerLabel.textColor = [UIColor colorWithWhite:0.8 alpha:1.0];
+            pickerLabel.textColor = [bgManager contentDetailTextColorForBackground];
         }
     } else {
         // Reset to default when no background

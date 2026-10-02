@@ -402,6 +402,7 @@ add_executable(AngelAuraAmethyst
   UI/Resources/VersionManagerViewController.m
   UI/Resources/ProfileSettingsViewController.m
   UI/Download/DownloadViewController.m
+  UI/Download/DownloadInstallerService.m
   UI/Download/DownloadViewController+InstallerCore.m
   UI/Download/DownloadViewController+InstallerFabric.m
   UI/Download/DownloadViewController+InstallerForge.m

@@ -16,6 +16,18 @@
 // Nothing
 @end
 
+/// P7-engine（画布手柄锚点收敛）：缩放手柄固定锚在目标右下角，全文件两处变体共 6 处重复。
+/// 手势每帧改写 frame，约束会打赢手势，故保留 frame 制，仅把数值公式收敛为单点
+/// （数值逐字等价，无需像素验证；手写 frame 计数只减不增，顺应 Frame 棘轮）。
+/// 内嵌：手柄压在目标右下角内（拖 ctrlView 画布时用，避免手柄被切出可视区）。
+static inline CGRect AMEResizeHandleFrameInside(CGRect target, CGSize handle) {
+    return (CGRect){{CGRectGetMaxX(target) - handle.width, CGRectGetMaxY(target) - handle.height}, handle};
+}
+/// 外挂：手柄挂在目标右下角外（按钮/菜单目标用）。
+static inline CGRect AMEResizeHandleFrameOutside(CGRect target, CGSize handle) {
+    return (CGRect){{CGRectGetMaxX(target), CGRectGetMaxY(target)}, handle};
+}
+
 @interface CustomControlsViewController () <UIGestureRecognizerDelegate, UIPopoverPresentationControllerDelegate>{
 }
 
@@ -136,7 +148,7 @@
     rect.origin.y = clamp(rect.origin.y + current.y - previous.y, 0, self.view.frame.size.height - rect.size.height);
     self.ctrlView.frame = rect;
 
-    self.resizeView.frame = CGRectMake(CGRectGetMaxX(self.ctrlView.frame) - self.resizeView.frame.size.width, CGRectGetMaxY(self.ctrlView.frame) - self.resizeView.frame.size.height, self.resizeView.frame.size.width, self.resizeView.frame.size.height);
+    self.resizeView.frame = AMEResizeHandleFrameInside(self.ctrlView.frame, self.resizeView.frame.size);
 
     previous = current;
 }
@@ -159,7 +171,7 @@
         clamp(self.ctrlView.frame.size.width * sender.scale, self.view.frame.size.width / 2, self.view.frame.size.width),
         clamp(self.ctrlView.frame.size.height * sender.scale, self.view.frame.size.height / 2, self.view.frame.size.height)
     );
-    self.resizeView.frame = CGRectMake(CGRectGetMaxX(self.ctrlView.frame), CGRectGetMaxY(self.ctrlView.frame), self.resizeView.frame.size.width, self.resizeView.frame.size.height);
+    self.resizeView.frame = AMEResizeHandleFrameOutside(self.ctrlView.frame, self.resizeView.frame.size);
 
     previous = current;
 
@@ -343,7 +355,7 @@
     self.navigationBar.hidden = !self.navigationBar.hidden;
     self.ctrlView.layer.borderWidth = self.navigationBar.hidden ? 0 : 2;
     self.ctrlView.userInteractionEnabled = self.navigationBar.hidden || isCustom;
-    self.resizeView.frame = CGRectMake(CGRectGetMaxX(self.ctrlView.frame), CGRectGetMaxY(self.ctrlView.frame), self.resizeView.frame.size.width, self.resizeView.frame.size.height);
+    self.resizeView.frame = AMEResizeHandleFrameOutside(self.ctrlView.frame, self.resizeView.frame.size);
     self.resizeView.hidden = self.navigationBar.hidden || !isCustom;
     self.resizeView.layer.maskedCorners = kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner | kCALayerMinXMaxYCorner;
     self.resizeView.target = nil;
@@ -481,7 +493,7 @@
     
     if (view) {
         CGPoint origin = [self.ctrlView convertPoint:view.frame.origin toView:self.view];
-        self.resizeView.frame = CGRectMake(origin.x + view.frame.size.width, origin.y + view.frame.size.height, self.resizeView.frame.size.width, self.resizeView.frame.size.height);
+        self.resizeView.frame = AMEResizeHandleFrameOutside((CGRect){origin, view.frame.size}, self.resizeView.frame.size);
     }
 }
 
@@ -537,8 +549,7 @@
             [sender setTranslation:CGPointZero inView:sender.view];
 
             // Keep track of handle view location
-            self.resizeView.frame = CGRectMake(CGRectGetMaxX(self.resizeView.target.frame), CGRectGetMaxY(self.resizeView.target.frame),
-                self.resizeView.frame.size.width, self.resizeView.frame.size.height);
+            self.resizeView.frame = AMEResizeHandleFrameOutside(self.resizeView.target.frame, self.resizeView.frame.size);
         } break;
         case UIGestureRecognizerStateCancelled:
         case UIGestureRecognizerStateEnded: {
@@ -577,7 +588,7 @@
             //button.center = CGPointMake(button.center.x + translation.x, button.center.y + translation.y);
             [button snapAndAlignX:clamp(button.frame.origin.x+translation.x, 0, self.ctrlView.frame.size.width - button.frame.size.width) Y:clamp(button.frame.origin.y+translation.y, 0, self.ctrlView.frame.size.height - button.frame.size.height)];
             [sender setTranslation:CGPointZero inView:button];
-            self.resizeView.frame = CGRectMake(CGRectGetMaxX(button.frame), CGRectGetMaxY(button.frame), self.resizeView.frame.size.width, self.resizeView.frame.size.height);
+            self.resizeView.frame = AMEResizeHandleFrameOutside(button.frame, self.resizeView.frame.size);
         } break;
         case UIGestureRecognizerStateCancelled:
         case UIGestureRecognizerStateEnded: {

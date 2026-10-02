@@ -57,6 +57,14 @@ typedef NS_ENUM(NSInteger, BackgroundUIEffect) {
 - (BOOL)hasImageBackground;
 - (BOOL)hasVideoBackground;
 
+// P8-dark：壁纸明暗自适应。图片壁纸按平均亮度判定（<0.5 为暗）；视频/未知默认暗
+// （=  historic 白字行为，暗壁纸下像素不变）。浅壁纸时调用方应改用 label 系颜色。
+- (BOOL)backgroundIsDark;
+/// 深壁纸 → 白；浅壁纸 → labelColor。
+- (UIColor *)contentTextColorForBackground;
+/// 深壁纸 → 浅灰；浅壁纸 → secondaryLabelColor。
+- (UIColor *)contentDetailTextColorForBackground;
+
 // Get background preview
 - (nullable UIImage *)backgroundPreview;
 

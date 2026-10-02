@@ -31,6 +31,9 @@ static const NSInteger kDefaultBackgroundTag = 99995;
 @property (nonatomic, weak) UIWindow *currentWindow;
 @property (nonatomic, weak) UISplitViewController *currentSplitVC;
 @property (nonatomic, strong, readwrite, nullable) UIView *globalBackgroundContainer;
+// P8-dark：按壁纸路径缓存明暗判定（preview 全图解码较贵，路径不变不重算）
+@property (nonatomic, strong, nullable) NSNumber *cachedBackgroundIsDark;
+@property (nonatomic, copy, nullable) NSString *cachedBackgroundIsDarkPath;
 @end
 
 @implementation BackgroundManager
@@ -1085,6 +1088,46 @@ static const NSInteger kDefaultBackgroundTag = 99995;
         return [UIImage imageWithContentsOfFile:self.currentBackgroundPath];
     }
     return nil;
+}
+
+/// P8-dark：壁纸平均亮度判定。降采样到 8x8 取均值（便宜且抗局部高光）；
+/// 视频/无图/解码失败默认暗（= historic 白字行为）。
+- (BOOL)backgroundIsDark {
+    NSString *path = (self.currentType == BackgroundTypeImage) ? self.currentBackgroundPath : nil;
+    if (path && [path isEqualToString:self.cachedBackgroundIsDarkPath] && self.cachedBackgroundIsDark) {
+        return self.cachedBackgroundIsDark.boolValue;
+    }
+    BOOL dark = YES;
+    UIImage *preview = self.backgroundPreview;
+    CGImageRef cg = preview.CGImage;
+    if (cg) {
+        size_t w = 8, h = 8;
+        CGColorSpaceRef cs = CGColorSpaceCreateDeviceRGB();
+        unsigned char px[8 * 8 * 4] = {0};
+        CGContextRef ctx = CGBitmapContextCreate(px, w, h, 8, w * 4, cs,
+                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+        if (ctx) {
+            CGContextDrawImage(ctx, CGRectMake(0, 0, w, h), cg);
+            CGContextRelease(ctx);
+            double sum = 0;
+            for (int i = 0; i < 64; i++) {
+                sum += 0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2];
+            }
+            dark = (sum / 64.0) < 127.5;
+        }
+        CGColorSpaceRelease(cs);
+    }
+    self.cachedBackgroundIsDarkPath = path;
+    self.cachedBackgroundIsDark = @(dark);
+    return dark;
+}
+
+- (UIColor *)contentTextColorForBackground {
+    return self.backgroundIsDark ? [UIColor whiteColor] : [UIColor labelColor];
+}
+
+- (UIColor *)contentDetailTextColorForBackground {
+    return self.backgroundIsDark ? [UIColor colorWithWhite:0.8 alpha:1.0] : [UIColor secondaryLabelColor];
 }
 
 @end
