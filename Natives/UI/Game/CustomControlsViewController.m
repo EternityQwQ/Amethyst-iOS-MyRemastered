@@ -8,6 +8,7 @@
 #import "customcontrols/ControlDrawer.h"
 #import "customcontrols/ControlJoystick.h"
 #import "customcontrols/CustomControlsUtils.h"
+#import "AMEControlCanvasLayout.h"
 
 #include "glfw_keycodes.h"
 #include "utils.h"
@@ -15,18 +16,6 @@
 @implementation ControlHandleView
 // Nothing
 @end
-
-/// P7-engine（画布手柄锚点收敛）：缩放手柄固定锚在目标右下角，全文件两处变体共 6 处重复。
-/// 手势每帧改写 frame，约束会打赢手势，故保留 frame 制，仅把数值公式收敛为单点
-/// （数值逐字等价，无需像素验证；手写 frame 计数只减不增，顺应 Frame 棘轮）。
-/// 内嵌：手柄压在目标右下角内（拖 ctrlView 画布时用，避免手柄被切出可视区）。
-static inline CGRect AMEResizeHandleFrameInside(CGRect target, CGSize handle) {
-    return (CGRect){{CGRectGetMaxX(target) - handle.width, CGRectGetMaxY(target) - handle.height}, handle};
-}
-/// 外挂：手柄挂在目标右下角外（按钮/菜单目标用）。
-static inline CGRect AMEResizeHandleFrameOutside(CGRect target, CGSize handle) {
-    return (CGRect){{CGRectGetMaxX(target), CGRectGetMaxY(target)}, handle};
-}
 
 @interface CustomControlsViewController () <UIGestureRecognizerDelegate, UIPopoverPresentationControllerDelegate>{
 }
