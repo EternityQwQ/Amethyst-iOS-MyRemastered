@@ -375,6 +375,11 @@ static void ame_task49_geo_heal_blit(ame_es_t es, int drawFb, int readFb,
         NSLog(@"[RenderDiag] Task49 scratch FBO ready %dx%d", sw, sh);
     }
     // 2) scissor 保存/关闭 + 两段 blit
+    // 黑屏归因诊断（MoltenVK-ANGLE 计划）：此前只记段后总值，分不清是 MC 残留
+    // 还是 blit 段自举。此处分三段取证：pre=进段前残留，seg1/seg2=各段首错。
+    // GL 错误不影响后续调用执行，仅做归因记录后排空，行为与原来一致。
+    unsigned int preErr = 0;
+    { unsigned int c = 0; unsigned int e; while ((e = es.getError()) != 0) { if (!preErr) preErr = e; c++; } (void)c; }
     int scissorWasOn = es.isEnabled(0x0C11 /*GL_SCISSOR_TEST*/);
     if (scissorWasOn) es.enable(0x0C11, 0 /*GL_FALSE*/);
     // 段1：MC 帧（viewport 区域，源 = MC 当前 FBO 或 FBO 0）→ scratch 全尺寸缩放
@@ -382,12 +387,15 @@ static void ame_task49_geo_heal_blit(ame_es_t es, int drawFb, int readFb,
     es.bindFramebuffer(0x8CA9 /*GL_DRAW_FRAMEBUFFER*/, g_ame49_scratch_fb);
     es.blitFramebuffer(0, 0, vw, vh, 0, 0, sw, sh,
                        0x4000 /*GL_COLOR_BUFFER_BIT*/, 0x2601 /*GL_LINEAR*/);
+    unsigned int seg1Err = es.getError();
+    while (es.getError() != 0) {}
     // 段2：scratch → FBO 0 全表面 1:1
     es.bindFramebuffer(0x8CA8, g_ame49_scratch_fb);
     es.bindFramebuffer(0x8CA9, 0);
     es.blitFramebuffer(0, 0, sw, sh, 0, 0, sw, sh,
                        0x4000, 0x2601 /*GL_LINEAR*/);
-    unsigned int blitErr = es.getError();
+    unsigned int seg2Err = es.getError();
+    unsigned int blitErr = seg1Err ? seg1Err : seg2Err;
     // 3) 状态恢复
     es.bindFramebuffer(0x8CA8, (unsigned)readFb);
     es.bindFramebuffer(0x8CA9, (unsigned)drawFb);
@@ -395,9 +403,9 @@ static void ame_task49_geo_heal_blit(ame_es_t es, int drawFb, int readFb,
     while (es.getError() != 0) {}
     static unsigned long s_blitLogs = 0;
     s_blitLogs++;
-    if (s_blitLogs <= 3 || s_blitLogs % 300 == 0 || blitErr != 0) {
-        NSLog(@"[RenderDiag] geo-heal blit #%lu (Task49): srcFb=%d %dx%d -> scratch %dx%d -> FBO0 %dx%d blitErr=0x%x",
-              s_blitLogs, drawFb, vw, vh, sw, sh, sw, sh, blitErr);
+    if (s_blitLogs <= 3 || s_blitLogs % 300 == 0 || blitErr != 0 || preErr != 0) {
+        NSLog(@"[RenderDiag] geo-heal blit #%lu (Task49): srcFb=%d %dx%d -> scratch %dx%d -> FBO0 %dx%d pre=0x%x seg1=0x%x seg2=0x%x",
+              s_blitLogs, drawFb, vw, vh, sw, sh, sw, sh, preErr, seg1Err, seg2Err);
     }
 }
 
