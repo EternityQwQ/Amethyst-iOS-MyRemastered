@@ -1639,6 +1639,14 @@ static BOOL ameSFPEWForceDesktopGL(void) {
 gl_render_window_t* gl_init_context(gl_render_window_t *share) {
     gl_render_window_t* bundle = calloc(1, sizeof(gl_render_window_t));
 
+    // P0（MoltenVK-ANGLE 计划）：EGL 函数表从未装载（dlsym_EGL 失败，如 ANGLE
+    // 缺导出致 dlopen 被拒）时直接回 NULL，禁止空指针调用（曾 SIGSEGV pc=0）。
+    if (handle.eglGetDisplay == NULL) {
+        NSDebugLog(@"EGLBridge: EGL function table not loaded, refusing gl_init_context");
+        free(bundle);
+        return NULL;
+    }
+
     NSString *renderer = NSProcessInfo.processInfo.environment[@"AMETHYST_RENDERER"];
     // SFPEW 叠加模式下 AMETHYST_RENDERER 已被换成 libSimpleFPEWrapper.dylib，
     // 真后端名在 AMETHYST_SFPEW_BACKEND（EGL 来源判定用它，见 dlsym_EGL()）。
