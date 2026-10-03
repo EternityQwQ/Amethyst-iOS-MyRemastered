@@ -45,6 +45,12 @@ static egl_library handle;
 static _Atomic unsigned long g_eglSwapOK = 0;
 static _Atomic unsigned long g_eglSwapFail = 0;
 
+// 后台停渲染 + CONTEXT_LOST 熔断共享状态（MoltenVK-ANGLE 计划 #1/#2）。
+// 放文件头：gl_init_context（前）与 gl_swap_buffers（后）都要可见。
+// 后台暂停由主线程通知置位；熔断锁存后只能重启解除（MC 重建不了 GL 对象）。
+static atomic_bool g_ame_bg_paused = false;
+static atomic_bool g_ame_render_dead = false;
+
 // ============================================================================
 // Task 76：swap 帧间隔尖峰跟踪（帧节奏诊断）
 //
@@ -515,8 +521,9 @@ static BOOL ame55_verify_surface(ame_es_t es, EGLSurface s, CGSize expected,
         !es.querySurface(g_EglDisplay, s, EGL_HEIGHT, &h)) return NO;
     if (outQW) *outQW = w;
     if (outQH) *outQH = h;
-    return (w == (EGLint)MAX(1.0, round(expected.width))) &&
-           (h == (EGLint)MAX(1.0, round(expected.height)));
+    // 1px 容差（同上）：取整分歧不算失配，真转置差数百 px 照常触发。
+    return (abs(w - (EGLint)MAX(1.0, round(expected.width))) <= 1) &&
+           (abs(h - (EGLint)MAX(1.0, round(expected.height))) <= 1);
 }
 
 /// Task 55 梯度式表面重对齐（取代 Task53 的单式 destroy-recreate）。
@@ -784,9 +791,12 @@ static void ame_task41_swap_forensics(EGLSurface surface, unsigned long swapInde
             NSLog(@"[GLGeo] Task78 FSR linkage active: renderer=MobileGlues fsr1_setting=%ld -- viewport (render) < surface is the expected upscale geometry, compensation chain exempted", (long)ame78_fsr);
         }
     }
+    // 1px 容差（MoltenVK-ANGLE 计划）：半像素取整（563 vs 562）是取整分歧不是
+    // 几何事故，geo-heal 缩放 blit 本可无害补偿；严格相等让 Task55 永动
+    // destroy/recreate（崩溃窗口）。真转置差数百 px，不受 1px 容差影响。
     const BOOL geoMismatch = (viewport[2] > 0 && viewport[3] > 0 &&
                               surfW > 0 && surfH > 0 &&
-                              (viewport[2] != surfW || viewport[3] != surfH)) &&
+                              (abs(viewport[2] - surfW) > 1 || abs(viewport[3] - surfH) > 1)) &&
                              !(s_task78_fsr_link &&
                                viewport[2] < surfW && viewport[3] < surfH);
     if (s_task78_fsr_link && viewport[2] > 0 && viewport[2] < surfW &&
@@ -1688,8 +1698,9 @@ gl_render_window_t* gl_init_context(gl_render_window_t *share) {
 
     // P0（MoltenVK-ANGLE 计划）：EGL 函数表从未装载（dlsym_EGL 失败，如 ANGLE
     // 缺导出致 dlopen 被拒）时直接回 NULL，禁止空指针调用（曾 SIGSEGV pc=0）。
-    if (handle.eglGetDisplay == NULL) {
-        NSDebugLog(@"EGLBridge: EGL function table not loaded, refusing gl_init_context");
+    // CONTEXT_LOST 熔断后同样拒绝：死设备上建不出活上下文。
+    if (handle.eglGetDisplay == NULL || atomic_load(&g_ame_render_dead)) {
+        NSDebugLog(@"EGLBridge: EGL not ready (table missing or context dead), refusing gl_init_context");
         free(bundle);
         return NULL;
     }
@@ -2019,6 +2030,29 @@ void gl_make_current(gl_render_window_t* bundle) {
     }
 }
 
+// 后台停渲染（MoltenVK-ANGLE 计划 #2）：resign-active 即停 GPU 提交
+//（device 不丢），回前台自动恢复。static 原子标志 + 单次注册
+//（set_gl_bridge_tbl 可能被多次调用）。放 swap 前面因为 C 要先声明后使用。
+static BOOL g_ame_bg_obs_installed = NO;
+
+static void ame_bg_set_paused(BOOL paused) {
+    BOOL was = atomic_exchange(&g_ame_bg_paused, paused ? true : false);
+    if (was != paused) {
+        NSLog(@"[RenderDiag] background render pause %s (resign-active guard)",
+              paused ? @"ENGAGED -- skipping backend swaps" : @"released -- swaps resume");
+    }
+}
+
+static void ame_bg_pause_install_once(void) {
+    if (g_ame_bg_obs_installed) return;
+    g_ame_bg_obs_installed = YES;
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc addObserverForName:UIApplicationWillResignActiveNotification object:nil queue:nil
+                usingBlock:^(NSNotification *note) { (void)note; ame_bg_set_paused(YES); }];
+    [nc addObserverForName:UIApplicationDidBecomeActiveNotification object:nil queue:nil
+                usingBlock:^(NSNotification *note) { (void)note; ame_bg_set_paused(NO); }];
+}
+
 void gl_swap_buffers() {
     // currentBundle 只在 eglMakeCurrent 成功后赋值。若 MC 在 MakeCurrent 之前
     // （或 MakeCurrent(NULL) 释放之后）调用 swap，这里解引用空指针会直接段错误。
@@ -2026,6 +2060,15 @@ void gl_swap_buffers() {
     // 所以必须显式防护。
     if (currentBundle == NULL) {
         NSLog(@"EGLBridge: gl_swap_buffers called with no current context, ignored");
+        return;
+    }
+    // 后台停渲染（MoltenVK-ANGLE 计划 #2）：后台提交 GPU 任务即 device lost
+    //（BackgroundExecutionNotPermitted），之后全是 0x300E 连败直到 MC 误触
+    // 死 context 崩溃。后台期间跳过后端 swap（MC 循环照跑，只是零 GPU 提交），
+    // 回前台自动恢复。只读原子标志，主线程通知置位，渲染线程无锁消费。
+    // CONTEXT_LOST 熔断（计划 #1）：已锁死同样跳过，后台暂停解除不解此锁
+    //（死设备只能重启，MC 重建不了 GL 对象）。
+    if (atomic_load(&g_ame_bg_paused) || atomic_load(&g_ame_render_dead)) {
         return;
     }
     // Task 77：build 相位起点——上一次 present 返回至今的全部 MC 帧构造
@@ -2054,6 +2097,20 @@ void gl_swap_buffers() {
         if (fails <= 10 || fails % 100 == 0) {
             NSLog(@"[RenderDiag] eglSwapBuffers FAILED #%lu eglError=0x%x surface=%p (render loop alive, presentation broken)",
                   fails, eglErr, (void *)currentBundle->gl.surface);
+        }
+        // CONTEXT_LOST 熔断（MoltenVK-ANGLE 计划 #1）：连续 0x300E 说明设备已死，
+        // 后续提交全是空转，MC 一旦碰死 context 就会崩（调分辨率崩即此）。
+        // 120 连败后锁死提交并明示重启（MC 重建不了 GL 对象，透明恢复不可能，
+        // 后台暂停（#2）才是正解，这里只负责不再雪崩）。
+        static int s_ctxlost_streak = 0;
+        if (eglErr == 0x300E /*EGL_CONTEXT_LOST*/) {
+            if (++s_ctxlost_streak == 120) {
+                atomic_store(&g_ame_render_dead, true);
+                NSLog(@"[RenderDiag] EGL CONTEXT_LOST x120 -- render halted, restart required "
+                      @"(backend submits suspended to avoid crash cascade)");
+            }
+        } else {
+            s_ctxlost_streak = 0;
         }
         return;
     }
@@ -2089,4 +2146,5 @@ void set_gl_bridge_tbl() {
     br_swap_buffers = gl_swap_buffers;
     br_swap_interval = gl_swap_interval;
     br_terminate = gl_terminate;
+    ame_bg_pause_install_once();
 }
