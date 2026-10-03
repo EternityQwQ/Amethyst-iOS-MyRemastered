@@ -660,7 +660,18 @@ dep_openal_shim:
 		$(SOURCEDIR)/Natives/openal_shim.c || exit 1
 	echo '[Amethyst v$(VERSION)] dep_openal_shim - end'
 
-dep_angle_freeze:
+# P1（MoltenVK-ANGLE 计划）：ANGLE 版本锁——tinygl4angle 的 AliasDeclPriv 跳板
+# 在 dyld 加载期硬绑定 _GL_DrawBuffer/_GL_PolygonMode，libGLESv2 缺任一导出则
+# 整个 dlopen 被拒（曾致 10-02 MobileGlues SIGSEGV）。三件套须同批，缺失响亮失败。
+dep_angle_version_lock:
+	echo '[Amethyst v$(VERSION)] dep_angle_version_lock - start'
+	@for sym in _GL_DrawBuffer _GL_PolygonMode; do \
+	  nm -g $(SOURCEDIR)/Natives/resources/Frameworks/libGLESv2.framework/libGLESv2 | grep -q " T $$sym$$" || \
+	  (echo "[Amethyst] ANGLE version skew: $$sym missing from bundled libGLESv2, refusing build" && exit 1); \
+	done
+	echo '[Amethyst v$(VERSION)] dep_angle_version_lock - exports OK'
+
+dep_angle_freeze: dep_angle_version_lock
 	echo '[Amethyst v$(VERSION)] dep_angle_freeze - start'
 	# Task 57 (画面分裂根治): 8-byte machine-code patch -- ANGLE Metal
 	# WindowSurfaceMtl::checkIfLayerResized: expected size source switched from
