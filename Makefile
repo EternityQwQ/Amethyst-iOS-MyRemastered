@@ -684,8 +684,15 @@ dep_angle_freeze: dep_angle_version_lock
 	# mismatch (ANGLE version drift guard); full root-cause chain in script
 	# header comments (scripts/patch_angle_surface_freeze.py).
 	# 补丁改写源文件后签名哈希失效 —— 打包时 ldid -S 全 app 递归重签覆盖。
-	python3 $(SOURCEDIR)/scripts/patch_angle_surface_freeze.py \
-		$(SOURCEDIR)/Natives/resources/Frameworks/libGLESv2.framework/libGLESv2 || exit 1
+	# MoltenVK-ANGLE 计划：Vulkan-only 构建无 Metal 后端（WindowSurfaceMtl 不存在），
+	# 该补丁不适用；有符号才打，无则跳过（尺寸跟随由 Vulkan 侧 frame 同步覆盖）。
+	# version_lock 已先验过导出表，此处只做适用性分流，不静默放行错包。
+	if nm -g $(SOURCEDIR)/Natives/resources/Frameworks/libGLESv2.framework/libGLESv2 2>/dev/null | grep -q "WindowSurfaceMtl.*checkIfLayerResized"; then \
+	  python3 $(SOURCEDIR)/scripts/patch_angle_surface_freeze.py \
+	    $(SOURCEDIR)/Natives/resources/Frameworks/libGLESv2.framework/libGLESv2 || exit 1; \
+	else \
+	  echo '[Amethyst v$(VERSION)] dep_angle_freeze - skipped (Vulkan-only build, no WindowSurfaceMtl)'; \
+	fi
 	echo '[Amethyst v$(VERSION)] dep_angle_freeze - end'
 
 dep_sdl3_guard:
