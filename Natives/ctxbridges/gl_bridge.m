@@ -221,6 +221,7 @@ typedef void (*ame_es_genfb_t)(int, unsigned int *);
 typedef void (*ame_es_delfb_t)(int, const unsigned int *);
 typedef void (*ame_es_fbtex2d_t)(unsigned int, unsigned int, unsigned int, unsigned int, int);
 typedef unsigned int (*ame_es_checkfb_t)(unsigned int);
+typedef void (*ame_es_readpx_t)(int, int, unsigned int, unsigned int, unsigned int, unsigned int, void *);
 
 typedef struct {
     ame_es_getint_t    getIntegerv;
@@ -239,6 +240,7 @@ typedef struct {
     ame_es_delfb_t     deleteFramebuffers; // Task 49 几何自愈
     ame_es_fbtex2d_t   framebufferTexture2D; // Task 49 几何自愈
     ame_es_checkfb_t   checkFramebufferStatus; // Task 49 几何自愈
+    ame_es_readpx_t    readPixels;             // 黑屏探针（只读默认帧 1px，不碰渲染）
 } ame_es_t;
 
 static ame_es_t ame_es(void) {
@@ -281,6 +283,7 @@ static ame_es_t ame_es(void) {
     s_es.deleteFramebuffers = (ame_es_delfb_t)dlsym(h, "glDeleteFramebuffers");
     s_es.framebufferTexture2D = (ame_es_fbtex2d_t)dlsym(h, "glFramebufferTexture2D");
     s_es.checkFramebufferStatus = (ame_es_checkfb_t)dlsym(h, "glCheckFramebufferStatus");
+    s_es.readPixels = (ame_es_readpx_t)dlsym(h, "glReadPixels");  // 黑屏探针，可为 NULL（跳过探针）
     // eglQuerySurface 在 libEGL（ANGLE EGL）里，与 libGLESv2 同一 ANGLE 家族，
     // 已加载镜像 dlopen 仅引用计数 +1。自行解析以避免前向依赖文件后部的
     // ame_raw_query_surface（static 声明位于本块之后，不可提前引用）。
@@ -396,6 +399,20 @@ static void ame_task49_geo_heal_blit(ame_es_t es, int drawFb, int readFb,
                        0x4000, 0x2601 /*GL_LINEAR*/);
     unsigned int seg2Err = es.getError();
     unsigned int blitErr = seg1Err ? seg1Err : seg2Err;
+    // 黑屏探针（MoltenVK-ANGLE 计划）：读默认帧中心 1px，判“画没进去”还是“呈错了”。
+    // 只读不写；恢复段会重绑 READ/DRAW，故此处改绑定无副作用；300 抽 1 防读回开销。
+    static unsigned long s_pxLogs = 0;
+    s_pxLogs++;
+    if (es.readPixels != NULL && (s_pxLogs <= 3 || s_pxLogs % 300 == 0)) {
+        unsigned char px[4] = {0, 0, 0, 0};
+        es.bindFramebuffer(0x8CA8 /*GL_READ_FRAMEBUFFER*/, 0);
+        es.readPixels(sw / 2, sh / 2, 1, 1,
+                      0x1908 /*GL_RGBA*/, 0x1401 /*GL_UNSIGNED_BYTE*/, px);
+        unsigned int pxErr = es.getError();
+        while (es.getError() != 0) {}
+        NSLog(@"[RenderDiag] px-probe #%lu defaultFb center=(%d,%d) rgba=(%u,%u,%u,%u) err=0x%x",
+              s_pxLogs, sw / 2, sh / 2, px[0], px[1], px[2], px[3], pxErr);
+    }
     // 3) 状态恢复
     es.bindFramebuffer(0x8CA8, (unsigned)readFb);
     es.bindFramebuffer(0x8CA9, (unsigned)drawFb);
