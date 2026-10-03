@@ -956,6 +956,28 @@ static void ame_task41_swap_forensics(EGLSurface surface, unsigned long swapInde
                     NSLog(@"[GLGeo] Task51 hierarchy #%lu: layer=%p drawable=%@ scale=%.2f surface=%dx%d inTree=%d chain=%@",
                           h_idx, ame51_h_layer, dw, (double)l.contentsScale,
                           h_sw, h_sh, (int)inTree, chain);
+                    // MoltenVK-ANGLE 黑屏探针：向下枚举直接子 layer。ANGLE-Vulkan 自建
+                    // CAMetalLayer 挂在这里（原 dump 只往上走永远看不到它）。确认挂载、
+                    // 几何、可见性与 presentsWithTransaction，一次判定呈现链。
+                    NSMutableString *subs = [NSMutableString stringWithCapacity:256];
+                    for (CALayer *s in l.sublayers) {
+                        NSString *extra = @"";
+                        if ([s isKindOfClass:CAMetalLayer.class]) {
+                            CAMetalLayer *ml = (CAMetalLayer *)s;
+                            extra = [NSString stringWithFormat:
+                                     @" drawable=%.0fx%.0f presentsWithTransaction=%d maxDrawables=%lu",
+                                     ml.drawableSize.width, ml.drawableSize.height,
+                                     (int)ml.presentsWithTransaction,
+                                     (unsigned long)ml.maximumDrawableCount];
+                        }
+                        [subs appendFormat:@" -> [%@ %dx%d hid=%d op=%.2f%@]",
+                         NSStringFromClass(s.class),
+                         (int)round(s.bounds.size.width), (int)round(s.bounds.size.height),
+                         (int)s.hidden, (double)s.opacity, extra];
+                    }
+                    if (subs.length == 0) [subs appendString:@" (no sublayers)"];
+                    NSLog(@"[GLGeo] Task51 sublayers #%lu: host=%p count=%lu%@",
+                          h_idx, ame51_h_layer, (unsigned long)l.sublayers.count, subs);
                 } @catch (NSException *e) {
                     NSLog(@"[GLGeo] Task51 hierarchy exception: %@", e);
                 }
