@@ -1328,8 +1328,11 @@ static UIView *findSDL_uikitview(UIView *root);
 
     physicalWidth = roundf(self.surfaceView.frame.size.width * self.screenScale);
     physicalHeight = roundf(self.surfaceView.frame.size.height * self.screenScale);
-    windowWidth = roundf(physicalWidth * resolutionScale);
-    windowHeight = roundf(physicalHeight * resolutionScale);
+    // MoltenVK-ANGLE 计划：向下取整与 ANGLE/MoltenVK 的截断对齐（375pt x 1.5=562.5
+    // 时 roundf 给 563 而 surface 侧截断得 562，1px 永差致 Task55 永动）。
+    // 真转置差数百 px，floor 不影响其检出（gl_bridge 另有 1px 容差兜底）。
+    windowWidth = floorf(physicalWidth * resolutionScale);
+    windowHeight = floorf(physicalHeight * resolutionScale);
     // 【iPhone X 1px 失配根治 —— "必须手动调一次分辨率才有画面"的成因】
     // 旧代码在此把奇数宽/高 -- 取偶（iPhone X: 375*3=1125 -> 1124）。
     // 但 ANGLE 建 EGL window surface 时**不读 drawableSize、也不理我们传的
