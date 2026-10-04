@@ -187,10 +187,13 @@ METHOD_CODESIGN = \
 	codesign -f -s $(1) --generate-entitlement-der --entitlements entitlements.codesign.xml $(2); \
 	printf 'File: '; printf $(2); printf ', Codesigned with team: '; printf $(1); printf '\n'
 
-# Function to run code when finding Mach-O files (parallel over all cores;
-# symlinks must NOT be skipped -- frameworks rely on them, same as before).
+# Function to run code when finding Mach-O files.
 METHOD_MACHO = \
-	find $(1) -print0 | xargs -0 -P $$(sysctl -n hw.ncpu) -I{} sh -c 'file="{}"; if [[ "$$(file $$file)" == *"Mach-O"* ]]; then $(2); fi'
+	for file in $$(find $(1)); do \
+		if [[ "$$(file $$file)" == *"Mach-O"* ]]; then \
+			$(2); \
+		fi; \
+	done
 
 # Make sure everything is already available for use. Error if they require something
 ifneq ($(call METHOD_DEPCHECK,cmake --version),1)
