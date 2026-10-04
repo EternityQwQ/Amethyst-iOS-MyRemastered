@@ -7,6 +7,7 @@
 #include <dlfcn.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 #include <stdatomic.h>
 #include "bridge_tbl.h"
 #include "environ.h"
@@ -2040,7 +2041,8 @@ static void ame_bg_set_paused(BOOL paused) {
     BOOL was = atomic_exchange(&g_ame_bg_paused, paused ? true : false);
     if (was != paused) {
         NSLog(@"[RenderDiag] background render pause %s (resign-active guard)",
-              paused ? @"ENGAGED -- skipping backend swaps" : @"released -- swaps resume");
+              paused ? @"ENGAGED -- render thread stalled, zero GPU submissions"
+                     : @"released -- swaps resume");
     }
 }
 
@@ -2097,13 +2099,19 @@ void gl_swap_buffers() {
         return;
     }
     // 后台停渲染（MoltenVK-ANGLE 计划 #2）：后台提交 GPU 任务即 device lost
-    //（BackgroundExecutionNotPermitted），之后全是 0x300E 连败直到 MC 误触
-    // 死 context 崩溃。后台期间跳过后端 swap（MC 循环照跑，只是零 GPU 提交），
-    // 回前台自动恢复。只读原子标志，主线程通知置位，渲染线程无锁消费。
+    //（BackgroundExecutionNotPermitted）。仅跳过 swap 不够——MC 照画照提交，
+    // 故在此直接卡住渲染线程（语义 = 无限长 vsync；MC 可容忍任意长帧，
+    // 与调试器暂停无异），零 GPU 提交，回前台自动续跑。
     // CONTEXT_LOST 熔断（计划 #1）：已锁死同样跳过，后台暂停解除不解此锁
     //（死设备只能重启，MC 重建不了 GL 对象）。
-    if (atomic_load(&g_ame_bg_paused) || atomic_load(&g_ame_render_dead)) {
+    if (atomic_load(&g_ame_render_dead)) {
         return;
+    }
+    if (atomic_load(&g_ame_bg_paused)) {
+        while (atomic_load(&g_ame_bg_paused)) {
+            usleep(100 * 1000);
+        }
+        // 回前台后落到正常 swap 流程（本帧绘制照呈，不丢帧）。
     }
     // Task 77：build 相位起点——上一次 present 返回至今的全部 MC 帧构造
     // （tick/事件泵/GL 编码）时长在此刻定格。先于卫兵/取证记录，卫兵与
