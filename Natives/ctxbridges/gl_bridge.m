@@ -2,6 +2,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "SurfaceViewController.h"
 #import "LauncherPreferences.h"
+#import "PLCrashView.h"
 
 #include <dlfcn.h>
 #include <string.h>
@@ -2053,6 +2054,39 @@ static void ame_bg_pause_install_once(void) {
                 usingBlock:^(NSNotification *note) { (void)note; ame_bg_set_paused(NO); }];
 }
 
+// 设备丢失弹框（MoltenVK-ANGLE 计划：熔断后不再装活冻屏，直接请用户重启）。
+// render 线程调用，只弹一次；UIKit 操作切主线程；present 到最上层 VC。
+static void ame_show_device_lost_alert(void) {
+    static BOOL shown = NO;
+    if (shown) return;
+    shown = YES;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIViewController *host = [SurfaceViewController currentInstance];
+        while (host.presentedViewController != nil) {
+            host = host.presentedViewController;
+        }
+        if (host == nil) return;
+        UIAlertController *alert = [UIAlertController
+            alertControllerWithTitle:@"图形设备已丢失"
+                             message:@"切后台时 GPU 设备丢失且无法恢复（Minecraft 重建不了 GL 资源）。"
+                                     @"点“重新启动”回到启动器再进游戏；留在此页画面将保持冻结。"
+                                     @"\nGraphics device lost and unrecoverable, please restart."
+            preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *relaunch = [UIAlertAction actionWithTitle:@"重新启动"
+                                                           style:UIAlertActionStyleDefault
+                                                         handler:^(UIAlertAction *a) {
+                                                             (void)a;
+                                                             [PLCrashView restartLauncher];
+                                                         }];
+        UIAlertAction *stay = [UIAlertAction actionWithTitle:@"留下"
+                                                      style:UIAlertActionStyleCancel
+                                                    handler:nil];
+        [alert addAction:relaunch];
+        [alert addAction:stay];
+        [host presentViewController:alert animated:YES completion:nil];
+    });
+}
+
 void gl_swap_buffers() {
     // currentBundle 只在 eglMakeCurrent 成功后赋值。若 MC 在 MakeCurrent 之前
     // （或 MakeCurrent(NULL) 释放之后）调用 swap，这里解引用空指针会直接段错误。
@@ -2108,6 +2142,7 @@ void gl_swap_buffers() {
                 atomic_store(&g_ame_render_dead, true);
                 NSLog(@"[RenderDiag] EGL CONTEXT_LOST x120 -- render halted, restart required "
                       @"(backend submits suspended to avoid crash cascade)");
+                ame_show_device_lost_alert();
             }
         } else {
             s_ctxlost_streak = 0;
